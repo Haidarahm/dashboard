@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   FiMenu,
   FiBell,
@@ -7,16 +7,28 @@ import {
   FiLogOut,
   FiSettings,
   FiChevronDown,
-} from 'react-icons/fi';
-import { Avatar, Badge, Dropdown, Input } from 'antd';
-
-
+} from "react-icons/fi";
+import { Avatar, Badge, Dropdown, Input } from "antd";
+import { logoutUser } from "../../utils/auth";
+import { logout } from "../../api/auth";
 
 // Navbar Component
 const Navbar = ({ collapsed, setCollapsed }) => {
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call API logout
+      logoutUser(); // Clear data and redirect
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if API fails, still logout locally
+      logoutUser();
+    }
+  };
+
   const userMenuItems = [
     {
-      key: 'profile',
+      key: "profile",
       label: (
         <div className="flex items-center space-x-2 py-1">
           <FiUser className="w-4 h-4" />
@@ -25,7 +37,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
       ),
     },
     {
-      key: 'settings',
+      key: "settings",
       label: (
         <div className="flex items-center space-x-2 py-1">
           <FiSettings className="w-4 h-4" />
@@ -34,10 +46,10 @@ const Navbar = ({ collapsed, setCollapsed }) => {
       ),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      key: 'logout',
+      key: "logout",
       label: (
         <div className="flex items-center space-x-2 py-1 text-red-600">
           <FiLogOut className="w-4 h-4" />
@@ -46,6 +58,14 @@ const Navbar = ({ collapsed, setCollapsed }) => {
       ),
     },
   ];
+
+  // Handle menu item clicks
+  const handleMenuClick = ({ key }) => {
+    if (key === "logout") {
+      handleLogout();
+    }
+    // Add other menu item handlers here as needed
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
@@ -58,7 +78,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
           >
             <FiMenu className="w-5 h-5 text-gray-600" />
           </button>
-          
+
           <div className="hidden md:block">
             <Input
               placeholder="Search..."
@@ -87,17 +107,19 @@ const Navbar = ({ collapsed, setCollapsed }) => {
 
           {/* User Menu */}
           <Dropdown
-            menu={{ items: userMenuItems }}
-            trigger={['click']}
+            menu={{ items: userMenuItems, onClick: handleMenuClick }}
+            trigger={["click"]}
             placement="bottomRight"
           >
             <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-              <Avatar 
+              <Avatar
                 size={32}
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
               />
               <div className="hidden sm:block text-left">
-                <div className="text-sm font-medium text-gray-900">John Doe</div>
+                <div className="text-sm font-medium text-gray-900">
+                  John Doe
+                </div>
                 <div className="text-xs text-gray-500">Admin</div>
               </div>
               <FiChevronDown className="w-4 h-4 text-gray-500 hidden sm:block" />
@@ -109,4 +131,4 @@ const Navbar = ({ collapsed, setCollapsed }) => {
   );
 };
 
-export default Navbar
+export default Navbar;
