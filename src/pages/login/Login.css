@@ -1,0 +1,206 @@
+
+.login-container {
+  @apply min-h-screen bg-gray-50 flex;
+}
+
+.login-left-side {
+  @apply hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-primary-dark relative overflow-hidden;
+}
+
+.login-left-overlay {
+  @apply absolute inset-0 bg-black/10;
+}
+
+.login-pattern-container {
+  @apply absolute inset-0 opacity-10;
+}
+
+.login-pattern-icon-1 {
+  @apply absolute top-20 left-20 text-6xl text-white transform rotate-12;
+}
+
+.login-pattern-icon-2 {
+  @apply absolute top-40 right-32 text-4xl text-white transform -rotate-12;
+}
+
+.login-pattern-icon-3 {
+  @apply absolute bottom-32 left-32 text-5xl text-white transform rotate-6;
+}
+
+.login-pattern-icon-4 {
+  @apply absolute bottom-20 right-20 text-3xl text-white transform -rotate-6;
+}
+
+.login-left-content {
+  @apply relative z-10 flex flex-col justify-center px-12 py-12 text-white;
+}
+
+.login-left-inner {
+  @apply max-w-md;
+}
+
+.login-brand-container {
+  @apply flex items-center mb-8;
+}
+
+.login-brand-icon {
+  @apply bg-white/20 p-3 rounded-xl mr-4 backdrop-blur-sm;
+}
+
+.login-brand-icon-inner {
+  @apply text-3xl text-white;
+}
+
+.login-brand-text {
+  @apply text-3xl font-bold;
+}
+
+.login-brand-subtext {
+  @apply text-primary-light;
+}
+
+.login-left-title {
+  @apply text-4xl font-bold mb-6 leading-tight;
+}
+
+.login-left-highlight {
+  @apply text-primary-light;
+}
+
+.login-left-description {
+  @apply text-lg text-white/90 leading-relaxed mb-8;
+}
+
+.login-feature-list {
+  @apply space-y-4;
+}
+
+.login-feature-item {
+  @apply flex items-center;
+}
+
+.login-feature-dot {
+  @apply w-2 h-2 bg-primary-light rounded-full mr-3;
+}
+
+.login-feature-text {
+  @apply text-white/90;
+}
+
+.login-right-side {
+  @apply w-full lg:w-1/2 flex items-center justify-center px-6 py-12;
+}
+
+.login-right-inner {
+  @apply max-w-md w-full;
+}
+
+.login-mobile-logo {
+  @apply lg:hidden flex items-center justify-center mb-8;
+}
+
+.login-mobile-logo-icon {
+  @apply bg-primary/10 p-3 rounded-xl mr-3;
+}
+
+.login-mobile-logo-icon-inner {
+  @apply text-2xl text-primary;
+}
+
+.login-mobile-logo-text {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.login-mobile-logo-subtext {
+  @apply text-primary text-sm;
+}
+
+.login-form {
+  @apply bg-white p-8 rounded-2xl shadow-xl border border-gray-100;
+}
+
+.login-form-header {
+  @apply text-center mb-8;
+}
+
+.login-form-title {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.login-form-subtitle {
+  @apply text-gray-600;
+}
+
+.login-form-fields {
+  @apply space-y-6;
+}
+
+.login-input-group {
+  @apply relative;
+}
+
+.login-input-icon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl;
+}
+
+.login-input-field {
+  @apply w-full h-12 pl-12 pr-4 rounded-lg border border-gray-300 hover:border-primary focus:border-primary focus:outline-none transition-colors;
+}
+
+.login-password-input {
+  @apply w-full h-12 pl-12 pr-12 rounded-lg border border-gray-300 hover:border-primary focus:border-primary focus:outline-none transition-colors;
+}
+
+.login-password-toggle {
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors;
+}
+
+.login-form-options {
+  @apply flex items-center justify-between mb-6;
+}
+
+.login-remember-me {
+  @apply flex items-center cursor-pointer;
+}
+
+.login-remember-checkbox {
+  @apply w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2;
+}
+
+.login-remember-text {
+  @apply ml-2 text-sm text-gray-600;
+}
+
+
+
+.login-button {
+  @apply w-full h-12 bg-primary hover:bg-primary-dark border-primary hover:border-primary-dark rounded-lg font-medium text-base transition-all duration-200 shadow-lg hover:shadow-xl;
+}
+
+.login-signup-prompt {
+  @apply mt-6 text-center;
+}
+
+.login-signup-text {
+  @apply text-gray-600;
+}
+
+.login-signup-link {
+  @apply text-primary hover:text-primary-dark font-medium transition-colors;
+}
+
+.login-footer {
+  @apply mt-8 text-center text-sm text-gray-500;
+}
+
+.login-footer-links {
+  @apply flex justify-center space-x-4 mt-2;
+}
+
+.login-footer-link {
+  @apply hover:text-primary transition-colors;
+}
+
+.login-footer-divider {
+  @apply text-gray-400;
+}
