@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { Button, message } from "antd";
-import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { MdPhone, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ phone: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.phone || !formData.password) {
       message.error("Please fill in all fields");
+      return;
+    }
+
+    // Basic phone number validation
+    const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+    if (!phoneRegex.test(formData.phone.replace(/[\s\-()]/g, ""))) {
+      message.error("Please enter a valid phone number");
       return;
     }
 
@@ -37,14 +44,14 @@ const LoginForm = () => {
 
       <div className="login-form-fields">
         <FormInput
-          label="Email Address"
-          type="email"
-          icon={<MdEmail className="login-input-icon" />}
-          value={formData.email}
-          onChange={(e) => handleInputChange("email", e.target.value)}
-          placeholder="Enter your email"
+          label="Phone Number"
+          type="tel"
+          icon={<MdPhone className="login-input-icon" />}
+          value={formData.phone}
+          onChange={(e) => handleInputChange("phone", e.target.value)}
+          placeholder="Enter your phone number"
         />
-        
+
         <PasswordInput
           label="Password"
           value={formData.password}
@@ -74,9 +81,7 @@ const LoginForm = () => {
       <div className="login-signup-prompt">
         <p className="login-signup-text">
           Don't have an account?{" "}
-          <button className="login-signup-link">
-            Contact Administrator
-          </button>
+          <button className="login-signup-link">Contact Administrator</button>
         </p>
       </div>
     </div>
