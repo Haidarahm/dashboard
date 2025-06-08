@@ -5,7 +5,7 @@ import { clearAuthData } from "../utils/auth";
 // Login API
 export const login = async (phone, password) => {
   try {
-    const response = await api.post("/api/login", {
+    const response = await api.post("/api/admin/adminLogin", {
       phone,
       password,
     });

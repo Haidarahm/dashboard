@@ -17,6 +17,7 @@ import {
   isTokenValid,
   handleSessionExpired,
 } from "./utils/auth";
+import Pharmacies from "./pages/pharmacies/Pharmacies";
 
 function ProtectedRoute({ children }) {
   // Check if user is authenticated and token is valid
@@ -67,6 +68,7 @@ function App() {
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="pharmacies" element={<Pharmacies />} />
           {/* Add more nested routes here */}
         </Route>
       </Routes>

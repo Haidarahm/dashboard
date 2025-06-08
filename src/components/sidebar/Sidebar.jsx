@@ -7,25 +7,30 @@ import {
   FiShoppingCart,
   FiMail,
   FiCalendar,
+  
 } from "react-icons/fi";
+import { FaUserDoctor } from "react-icons/fa6";
+
+import { PiHospital } from "react-icons/pi";
+
 import { Avatar, Badge, Menu } from "antd";
 
 // Sidebar Component
 const Sidebar = ({ collapsed }) => {
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const [activeItem, setActiveItem] = useState("pharmacies");
 
   const menuItems = [
     {
-      key: "dashboard",
-      icon: <FiHome className="sidebar-menu-icon w-5 h-5" />,
-      label: "Dashboard",
-      path: "/dashboard",
+      key: "pharmacies",
+      icon: <PiHospital className="sidebar-menu-icon w-5 h-5" />,
+      label: "Pharmacies",
+      path: "/pharmacies",
     },
     {
-      key: "users",
-      icon: <FiUsers className="sidebar-menu-icon w-5 h-5" />,
-      label: "Users",
-      path: "/users",
+      key: "doctors",
+      icon: <FaUserDoctor className="sidebar-menu-icon w-5 h-5" />,
+      label: "Doctors",
+      path: "/doctors",
     },
     {
       key: "orders",

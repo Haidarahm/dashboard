@@ -1,7 +1,6 @@
 // src/api/axiosConfig.js
 import axios from "axios";
 import { toast } from "react-toastify";
-
 // Function to clear authentication data and redirect to login
 const clearAuthAndRedirect = () => {
   // Clear all authentication related data from both storages
@@ -21,6 +20,7 @@ const clearAuthAndRedirect = () => {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
+
   headers: {
     "Content-Type": "application/json",
   },
