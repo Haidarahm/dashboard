@@ -21,13 +21,7 @@ const Sidebar = ({ collapsed }) => {
         collapsed ? "w-20" : "w-64"
       } transition-width duration-300 ease-in-out`}
     >
-      <div className="flex items-center justify-center h-20 border-b">
-        <Avatar
-          size={collapsed ? 40 : 64}
-          src="https://via.placeholder.com/150"
-          className="transition-all duration-300 ease-in-out"
-        />
-      </div>
+     
       <Menu
         mode="inline"
         selectedKeys={[location.pathname]}

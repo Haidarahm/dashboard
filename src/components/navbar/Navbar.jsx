@@ -2,13 +2,12 @@ import React from "react";
 import {
   FiMenu,
   FiBell,
-  FiSearch,
   FiUser,
   FiLogOut,
   FiSettings,
   FiChevronDown,
 } from "react-icons/fi";
-import { Avatar, Badge, Dropdown, Input } from "antd";
+import { Avatar, Badge, Dropdown } from "antd";
 import { logoutUser } from "../../utils/auth";
 import { logout } from "../../api/auth";
 
@@ -79,23 +78,14 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             <FiMenu className="w-5 h-5 text-gray-600" />
           </button>
 
-          <div className="hidden md:block">
-            <Input
-              placeholder="Search..."
-              prefix={<FiSearch className="w-4 h-4 text-gray-400" />}
-              className="w-64"
-              size="middle"
-            />
-          </div>
+          {/* Clinic Dashboard Title */}
+          <h1 className="text-xl font-semibold text-blue-600 hidden sm:block">
+            Clinic Dashboard
+          </h1>
         </div>
 
         {/* Right Section */}
         <div className="flex items-center space-x-4">
-          {/* Search Icon for Mobile */}
-          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 md:hidden">
-            <FiSearch className="w-5 h-5 text-gray-600" />
-          </button>
-
           {/* Notifications */}
           <div className="relative">
             <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
@@ -112,10 +102,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             placement="bottomRight"
           >
             <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-              <Avatar
-                size={32}
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
-              />
+             
               <div className="hidden sm:block text-left">
                 <div className="text-sm font-medium text-gray-900">
                   John Doe
