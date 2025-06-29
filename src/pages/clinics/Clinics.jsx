@@ -64,6 +64,7 @@ function Clinics() {
     setLoading(true);
     try {
       const response = await getAllClinics();
+      console.log(response)
       let clinicsData = [];
       let totalCount = 0;
 

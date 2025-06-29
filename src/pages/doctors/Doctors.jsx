@@ -10,55 +10,64 @@ import {
   Popconfirm,
   Tag,
   Tooltip,
-  Input,
   Row,
   Col,
   Spin,
   Form,
-  InputNumber, // Import InputNumber for numeric fields
+  InputNumber,
+  Select,
+  Avatar,
 } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  SearchOutlined,
   ReloadOutlined,
   PhoneOutlined,
   MailOutlined,
   UserOutlined,
   DollarCircleOutlined,
   ClockCircleOutlined,
+  TrophyOutlined,
+  StarOutlined,
+  MedicineBoxOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined as ClockIcon,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import {
   fetchDoctors,
   createDoctor,
-  showDoctorDetails, // Although we might not use this directly in the view modal initially
+  showDoctorDetails,
   //   deleteDoctor,
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";
 
 const { Title } = Typography;
-const { Search } = Input;
+const { Option } = Select;
 
 // Define the initial state structure for a new doctor
 const initialNewDoctorState = {
   first_name: "",
   last_name: "",
-  department: "",
+  speciality: "",
   email: "",
   phone: "",
-  password: "", // Password field for creation
-  average_visit_duration: null, // Use null initially for InputNumber
-  visit_fee: null, // Use null initially for InputNumber
+  password: "",
+  average_visit_duration: null,
+  visit_fee: null,
+  experience: null,
+  professional_title: "",
+  status: "available",
+  clinic_id: 1,
 };
 
 function Doctors() {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -129,50 +138,6 @@ function Doctors() {
     }
   };
 
-  // Search doctors (Placeholder - implement actual search API call if available)
-  const handleSearch = async (searchTerm) => {
-    if (!searchTerm.trim()) {
-      fetchDoctorsData(); // Fetch all if search term is empty
-      return;
-    }
-
-    setSearchLoading(true);
-    try {
-      // Replace with actual search API call if available
-      // const response = await searchDoctors(searchTerm);
-      // setDoctors(response.data || response.doctors || response);
-      // setPagination((prev) => ({
-      //   ...prev,
-      //   current: 1,
-      //   total: response.total || response.count || response.data?.length || 0,
-      // }));
-
-      // --- Temporary client-side filtering if no search API ---
-      const filteredDoctors = doctors.filter(
-        (doctor) =>
-          doctor.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doctor.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doctor.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doctor.phone.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setDoctors(filteredDoctors);
-      setPagination((prev) => ({
-        ...prev,
-        current: 1,
-        total: filteredDoctors.length,
-      }));
-      // --- End Temporary client-side filtering ---
-
-      toast.info(`Showing results for "${searchTerm}"`);
-    } catch (error) {
-      console.error("Error searching doctors:", error);
-      toast.error("Failed to search doctors");
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
   // Delete doctor
   const handleDelete = async (doctorId) => {
     try {
@@ -190,6 +155,20 @@ function Doctors() {
   // Handle table pagination
   const handleTableChange = (paginationInfo) => {
     fetchDoctorsData(paginationInfo.current, paginationInfo.pageSize);
+  };
+
+  // Get status color and icon
+  const getStatusConfig = (status) => {
+    switch (status) {
+      case "available":
+        return { color: "green", icon: <CheckCircleOutlined />, text: "Available" };
+      case "notAvailable":
+        return { color: "red", icon: <CloseCircleOutlined />, text: "Not Available" };
+      case "busy":
+        return { color: "orange", icon: <ClockIcon />, text: "Busy" };
+      default:
+        return { color: "default", icon: <ClockIcon />, text: status || "Unknown" };
+    }
   };
 
   // Modal handlers
@@ -211,6 +190,7 @@ function Doctors() {
           ? Number(doctor.average_visit_duration)
           : null,
         visit_fee: doctor.visit_fee ? Number(doctor.visit_fee) : null,
+        experience: doctor.experience ? Number(doctor.experience) : null,
       };
       form.resetFields(); // Reset form fields before setting new values
       form.setFieldsValue(editData); // Set form fields for edit
@@ -237,6 +217,7 @@ function Doctors() {
           ? Number(values.average_visit_duration)
           : null,
         visit_fee: values.visit_fee ? Number(values.visit_fee) : null,
+        experience: values.experience ? Number(values.experience) : null,
       };
 
       if (modalType === "create") {
@@ -288,52 +269,90 @@ function Doctors() {
   // Table columns configuration
   const columns = [
     {
+      title: "Photo",
+      key: "photo",
+      width: 80,
+      render: (_, record) => (
+        <Avatar
+          size={40}
+          src={record.photo}
+          icon={<UserOutlined />}
+          style={{ backgroundColor: record.photo ? 'transparent' : '#1890ff' }}
+        />
+      ),
+    },
+    {
       title: "Name",
       key: "name",
       sorter: true,
       render: (_, record) => (
-        <span style={{ fontWeight: 500, color: "#1890ff" }}>
-          {record.first_name} {record.last_name}
-        </span>
+        <div>
+          <div style={{ fontWeight: 500, color: "#1890ff" }}>
+            {record.first_name} {record.last_name}
+          </div>
+          {record.professional_title && (
+            <div style={{ fontSize: '12px', color: '#666' }}>
+              {record.professional_title}
+            </div>
+          )}
+        </div>
       ),
     },
     {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
+      title: "Speciality",
+      dataIndex: "speciality",
+      key: "speciality",
       sorter: true,
-      render: (text) => <Tag color="blue">{text}</Tag>,
+      render: (text) => text ? <Tag color="blue">{text}</Tag> : <span style={{ color: '#999' }}>Not specified</span>,
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const config = getStatusConfig(status);
+        return (
+          <Tag color={config.color} icon={config.icon}>
+            {config.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Contact",
+      key: "contact",
+      render: (_, record) => (
+        <div>
+          <div>
+            <MailOutlined style={{ marginRight: 4, color: "#faad14" }} />
+            {record.email}
+          </div>
+          <div>
+            <PhoneOutlined style={{ marginRight: 4, color: "#1890ff" }} />
+            {record.phone}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Experience",
+      dataIndex: "experience",
+      key: "experience",
       render: (text) => (
         <span>
-          <MailOutlined style={{ marginRight: 4, color: "#faad14" }} />
-          {text}
+          <TrophyOutlined style={{ marginRight: 4, color: "#fa8c16" }} />
+          {text ? `${text} years` : 'Not specified'}
         </span>
       ),
     },
     {
-      title: "Phone",
-      dataIndex: "phone",
-      key: "phone",
-      render: (text) => (
-        <span>
-          <PhoneOutlined style={{ marginRight: 4, color: "#1890ff" }} />
-          {text}
-        </span>
-      ),
-    },
-    {
-      title: "Avg. Visit Duration (min)",
+      title: "Visit Duration",
       dataIndex: "average_visit_duration",
       key: "average_visit_duration",
       render: (text) => (
         <span>
           <ClockCircleOutlined style={{ marginRight: 4, color: "#fa8c16" }} />
-          {text}
+          {text ? `${text} min` : 'Not specified'}
         </span>
       ),
     },
@@ -344,7 +363,29 @@ function Doctors() {
       render: (text) => (
         <span>
           <DollarCircleOutlined style={{ marginRight: 4, color: "#52c41a" }} />
-          {text}
+          {text ? `$${text}` : 'Not specified'}
+        </span>
+      ),
+    },
+    {
+      title: "Patients Treated",
+      dataIndex: "treated",
+      key: "treated",
+      render: (text) => (
+        <span>
+          <MedicineBoxOutlined style={{ marginRight: 4, color: "#722ed1" }} />
+          {text || 0}
+        </span>
+      ),
+    },
+    {
+      title: "Rating",
+      dataIndex: "finalRate",
+      key: "finalRate",
+      render: (text) => (
+        <span>
+          <StarOutlined style={{ marginRight: 4, color: "#faad14" }} />
+          {text ? `${text}/5` : 'No rating'}
         </span>
       ),
     },
@@ -419,19 +460,9 @@ function Doctors() {
           </Col>
         </Row>
 
-        {/* Search and Actions */}
-        <Row gutter={16} style={{ marginBottom: "16px" }}>
-          <Col xs={24} sm={12} md={8}>
-            <Search
-              placeholder="Search doctors..."
-              allowClear
-              enterButton={<SearchOutlined />}
-              size="large"
-              onSearch={handleSearch}
-              loading={searchLoading}
-            />
-          </Col>
-          <Col xs={24} sm={12} md={16} style={{ textAlign: "right" }}>
+        {/* Actions */}
+        <Row style={{ marginBottom: "16px" }}>
+          <Col span={24} style={{ textAlign: "right" }}>
             <Space>
               <Button
                 icon={<ReloadOutlined />}
@@ -454,7 +485,7 @@ function Doctors() {
           <Table
             columns={columns}
             dataSource={doctors}
-            rowKey="id" // Assuming 'id' is the unique key for doctors
+            rowKey="id"
             pagination={{
               ...pagination,
               showSizeChanger: true,
@@ -463,7 +494,7 @@ function Doctors() {
                 `${range[0]}-${range[1]} of ${total} doctors`,
             }}
             onChange={handleTableChange}
-            scroll={{ x: 1200 }}
+            scroll={{ x: 1400 }}
             size="middle"
           />
         </Spin>
@@ -481,7 +512,7 @@ function Doctors() {
         open={showModal}
         onCancel={closeModal}
         footer={
-          modalType !== "view" && ( // Show footer buttons only for create/edit
+          modalType !== "view" && (
             <Space>
               <Button onClick={closeModal}>Cancel</Button>
               <Button
@@ -494,18 +525,34 @@ function Doctors() {
             </Space>
           )
         }
-        width={800}
-        destroyOnClose={true} // Destroy form fields on close to reset state
+        width={900}
+        destroyOnClose={true}
       >
         {modalType === "view" && selectedDoctor && (
           <div style={{ padding: "16px 0" }}>
             <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <strong>Name:</strong> {selectedDoctor.first_name}{" "}
-                {selectedDoctor.last_name}
+              <Col span={24} style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <Avatar
+                  size={80}
+                  src={selectedDoctor.photo}
+                  icon={<UserOutlined />}
+                  style={{ backgroundColor: selectedDoctor.photo ? 'transparent' : '#1890ff' }}
+                />
               </Col>
               <Col span={12}>
-                <strong>Department:</strong> {selectedDoctor.department}
+                <strong>Name:</strong> {selectedDoctor.first_name} {selectedDoctor.last_name}
+              </Col>
+              <Col span={12}>
+                <strong>Professional Title:</strong> {selectedDoctor.professional_title || 'Not specified'}
+              </Col>
+              <Col span={12}>
+                <strong>Speciality:</strong> {selectedDoctor.speciality || 'Not specified'}
+              </Col>
+              <Col span={12}>
+                <strong>Status:</strong> 
+                <Tag color={getStatusConfig(selectedDoctor.status).color} style={{ marginLeft: 8 }}>
+                  {getStatusConfig(selectedDoctor.status).text}
+                </Tag>
               </Col>
               <Col span={12}>
                 <strong>Email:</strong> {selectedDoctor.email}
@@ -514,13 +561,23 @@ function Doctors() {
                 <strong>Phone:</strong> {selectedDoctor.phone}
               </Col>
               <Col span={12}>
-                <strong>Avg. Visit Duration:</strong>{" "}
-                {selectedDoctor.average_visit_duration} minutes
+                <strong>Experience:</strong> {selectedDoctor.experience ? `${selectedDoctor.experience} years` : 'Not specified'}
               </Col>
               <Col span={12}>
-                <strong>Visit Fee:</strong> ${selectedDoctor.visit_fee}
+                <strong>Avg. Visit Duration:</strong> {selectedDoctor.average_visit_duration ? `${selectedDoctor.average_visit_duration} minutes` : 'Not specified'}
               </Col>
-              {/* Add other doctor details here if available in the record */}
+              <Col span={12}>
+                <strong>Visit Fee:</strong> {selectedDoctor.visit_fee ? `$${selectedDoctor.visit_fee}` : 'Not specified'}
+              </Col>
+              <Col span={12}>
+                <strong>Patients Treated:</strong> {selectedDoctor.treated || 0}
+              </Col>
+              <Col span={12}>
+                <strong>Rating:</strong> {selectedDoctor.finalRate ? `${selectedDoctor.finalRate}/5` : 'No rating'}
+              </Col>
+              <Col span={12}>
+                <strong>Clinic ID:</strong> {selectedDoctor.clinic_id}
+              </Col>
             </Row>
           </div>
         )}
@@ -531,7 +588,6 @@ function Doctors() {
               form={form}
               layout="vertical"
               onFinish={handleFormSubmit}
-              // initialValues are set in openModal based on type
             >
               <Row gutter={16}>
                 <Col span={12}>
@@ -558,13 +614,18 @@ function Doctors() {
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="department"
-                    label="Department"
-                    rules={[
-                      { required: true, message: "Please enter department" },
-                    ]}
+                    name="professional_title"
+                    label="Professional Title"
                   >
-                    <Input placeholder="Enter department" />
+                    <Input placeholder="Enter professional title" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="speciality"
+                    label="Speciality"
+                  >
+                    <Input placeholder="Enter speciality" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -590,7 +651,7 @@ function Doctors() {
                     <Input placeholder="Enter phone number" />
                   </Form.Item>
                 </Col>
-                {modalType === "create" && ( // Password only required for creation
+                {modalType === "create" && (
                   <Col span={12}>
                     <Form.Item
                       name="password"
@@ -605,14 +666,20 @@ function Doctors() {
                 )}
                 <Col span={12}>
                   <Form.Item
+                    name="experience"
+                    label="Experience (years)"
+                  >
+                    <InputNumber
+                      min={0}
+                      placeholder="Enter years of experience"
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
                     name="average_visit_duration"
                     label="Avg. Visit Duration (min)"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter average visit duration",
-                      },
-                    ]}
                   >
                     <InputNumber
                       min={1}
@@ -625,14 +692,38 @@ function Doctors() {
                   <Form.Item
                     name="visit_fee"
                     label="Visit Fee ($)"
-                    rules={[
-                      { required: true, message: "Please enter visit fee" },
-                    ]}
                   >
                     <InputNumber
                       min={0}
                       step={0.01}
                       placeholder="Enter fee"
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="status"
+                    label="Status"
+                  >
+                    <Select placeholder="Select status">
+                      <Option value="available">Available</Option>
+                      <Option value="notAvailable">Not Available</Option>
+                      <Option value="busy">Busy</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="clinic_id"
+                    label="Clinic ID"
+                    rules={[
+                      { required: true, message: "Please enter clinic ID" },
+                    ]}
+                  >
+                    <InputNumber
+                      min={1}
+                      placeholder="Enter clinic ID"
                       style={{ width: "100%" }}
                     />
                   </Form.Item>
