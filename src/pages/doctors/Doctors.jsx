@@ -35,7 +35,7 @@ import {
   fetchDoctors,
   createDoctor,
   showDoctorDetails, // Although we might not use this directly in the view modal initially
-  deleteDoctor,
+  //   deleteDoctor,
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";
@@ -74,7 +74,7 @@ function Doctors() {
     setLoading(true);
     try {
       const response = await fetchDoctors();
-
+      console.log(response)
       // Handle different response structures (adjust based on your actual API response)
       let doctorsData = [];
       let totalCount = 0;
@@ -148,19 +148,23 @@ function Doctors() {
       // }));
 
       // --- Temporary client-side filtering if no search API ---
-      const filteredDoctors = doctors.filter(doctor =>
-        doctor.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doctor.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doctor.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doctor.phone.toLowerCase().includes(searchTerm.toLowerCase())
+      const filteredDoctors = doctors.filter(
+        (doctor) =>
+          doctor.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          doctor.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          doctor.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          doctor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          doctor.phone.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setDoctors(filteredDoctors);
-      setPagination(prev => ({ ...prev, current: 1, total: filteredDoctors.length }));
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+        total: filteredDoctors.length,
+      }));
       // --- End Temporary client-side filtering ---
 
       toast.info(`Showing results for "${searchTerm}"`);
-
     } catch (error) {
       console.error("Error searching doctors:", error);
       toast.error("Failed to search doctors");
@@ -177,7 +181,8 @@ function Doctors() {
       fetchDoctorsData(pagination.current, pagination.pageSize); // Refresh list
     } catch (error) {
       console.error("Error deleting doctor:", error);
-      const errorMessage = error.response?.data?.message || "Failed to delete doctor";
+      const errorMessage =
+        error.response?.data?.message || "Failed to delete doctor";
       toast.error(errorMessage);
     }
   };
@@ -193,22 +198,24 @@ function Doctors() {
     setSelectedDoctor(doctor);
     setShowModal(true);
 
-    if (type === 'create') {
+    if (type === "create") {
       form.resetFields(); // Reset form fields for create
       form.setFieldsValue(initialNewDoctorState); // Set initial values
-    } else if (type === 'edit' && doctor) {
+    } else if (type === "edit" && doctor) {
       // Set initial values for edit form
       // Note: Password is NOT set for editing for security reasons
       const editData = {
         ...doctor,
         // Ensure numeric fields are numbers, not strings
-        average_visit_duration: doctor.average_visit_duration ? Number(doctor.average_visit_duration) : null,
+        average_visit_duration: doctor.average_visit_duration
+          ? Number(doctor.average_visit_duration)
+          : null,
         visit_fee: doctor.visit_fee ? Number(doctor.visit_fee) : null,
       };
       form.resetFields(); // Reset form fields before setting new values
       form.setFieldsValue(editData); // Set form fields for edit
-    } else if (type === 'view' && doctor) {
-        // For view, we just need the selectedDoctor state
+    } else if (type === "view" && doctor) {
+      // For view, we just need the selectedDoctor state
     }
   };
 
@@ -226,20 +233,22 @@ function Doctors() {
       const doctorData = {
         ...values,
         // Ensure numeric fields are numbers
-        average_visit_duration: values.average_visit_duration ? Number(values.average_visit_duration) : null,
+        average_visit_duration: values.average_visit_duration
+          ? Number(values.average_visit_duration)
+          : null,
         visit_fee: values.visit_fee ? Number(values.visit_fee) : null,
       };
 
-      if (modalType === 'create') {
+      if (modalType === "create") {
         // Ensure password is included for creation
         if (!doctorData.password) {
-             toast.error("Password is required for creating a doctor.");
-             setLoading(false);
-             return;
+          toast.error("Password is required for creating a doctor.");
+          setLoading(false);
+          return;
         }
         await createDoctor(doctorData);
         toast.success("Doctor created successfully");
-      } else if (modalType === 'edit' && selectedDoctor) {
+      } else if (modalType === "edit" && selectedDoctor) {
         // For edit, we typically don't send the password unless it's a specific password change form
         // Remove password from data if it's empty or not intended to be changed via this form
         const dataToUpdate = { ...doctorData };
@@ -247,7 +256,10 @@ function Doctors() {
 
         // Assuming an updateDoctor API function exists
         // await updateDoctor(selectedDoctor.id, dataToUpdate);
-        console.log(`Updating doctor ${selectedDoctor.id} with data:`, dataToUpdate); // Placeholder if updateDoctor is not implemented yet
+        console.log(
+          `Updating doctor ${selectedDoctor.id} with data:`,
+          dataToUpdate
+        ); // Placeholder if updateDoctor is not implemented yet
         toast.success("Doctor updated successfully (simulated)"); // Placeholder success
       }
 
@@ -255,13 +267,13 @@ function Doctors() {
       fetchDoctorsData(pagination.current, pagination.pageSize); // Refresh list
     } catch (error) {
       console.error(`Error ${modalType}ing doctor:`, error);
-      const errorMessage = error.response?.data?.message || `Failed to ${modalType} doctor`;
+      const errorMessage =
+        error.response?.data?.message || `Failed to ${modalType} doctor`;
       toast.error(errorMessage);
     } finally {
       setLoading(false); // Stop loading
     }
   };
-
 
   // Refresh data
   const handleRefresh = () => {
@@ -294,14 +306,14 @@ function Doctors() {
     },
     {
       title: "Email",
-dataIndex: "email",
-key: "email",
-render: (text) => (
-  <span>
-    <MailOutlined style={{ marginRight: 4, color: "#faad14" }} />
-    {text}
-  </span>
-),
+      dataIndex: "email",
+      key: "email",
+      render: (text) => (
+        <span>
+          <MailOutlined style={{ marginRight: 4, color: "#faad14" }} />
+          {text}
+        </span>
+      ),
     },
     {
       title: "Phone",
@@ -472,8 +484,12 @@ render: (text) => (
           modalType !== "view" && ( // Show footer buttons only for create/edit
             <Space>
               <Button onClick={closeModal}>Cancel</Button>
-              <Button type="primary" onClick={() => form.submit()} loading={loading}>
-                {modalType === 'create' ? 'Create' : 'Save Changes'}
+              <Button
+                type="primary"
+                onClick={() => form.submit()}
+                loading={loading}
+              >
+                {modalType === "create" ? "Create" : "Save Changes"}
               </Button>
             </Space>
           )
@@ -485,7 +501,8 @@ render: (text) => (
           <div style={{ padding: "16px 0" }}>
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <strong>Name:</strong> {selectedDoctor.first_name} {selectedDoctor.last_name}
+                <strong>Name:</strong> {selectedDoctor.first_name}{" "}
+                {selectedDoctor.last_name}
               </Col>
               <Col span={12}>
                 <strong>Department:</strong> {selectedDoctor.department}
@@ -497,7 +514,8 @@ render: (text) => (
                 <strong>Phone:</strong> {selectedDoctor.phone}
               </Col>
               <Col span={12}>
-                <strong>Avg. Visit Duration:</strong> {selectedDoctor.average_visit_duration} minutes
+                <strong>Avg. Visit Duration:</strong>{" "}
+                {selectedDoctor.average_visit_duration} minutes
               </Col>
               <Col span={12}>
                 <strong>Visit Fee:</strong> ${selectedDoctor.visit_fee}
@@ -509,92 +527,118 @@ render: (text) => (
 
         {(modalType === "create" || modalType === "edit") && (
           <div style={{ padding: "16px 0" }}>
-             <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleFormSubmit}
-                // initialValues are set in openModal based on type
-             >
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="first_name"
-                            label="First Name"
-                            rules={[{ required: true, message: 'Please enter first name' }]}
-                        >
-                            <Input placeholder="Enter first name" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="last_name"
-                            label="Last Name"
-                            rules={[{ required: true, message: 'Please enter last name' }]}
-                        >
-                            <Input placeholder="Enter last name" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="department"
-                            label="Department"
-                            rules={[{ required: true, message: 'Please enter department' }]}
-                        >
-                            <Input placeholder="Enter department" />
-                        </Form.Item>
-                    </Col>
-                     <Col span={12}>
-                        <Form.Item
-                            name="email"
-                            label="Email"
-                            rules={[
-                                { required: true, message: 'Please enter email' },
-                                { type: 'email', message: 'Please enter a valid email' }
-                            ]}
-                        >
-                            <Input placeholder="Enter email" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="phone"
-                            label="Phone Number"
-                            rules={[{ required: true, message: 'Please enter phone number' }]}
-                        >
-                            <Input placeholder="Enter phone number" />
-                        </Form.Item>
-                    </Col>
-                    {modalType === 'create' && ( // Password only required for creation
-                        <Col span={12}>
-                            <Form.Item
-                                name="password"
-                                label="Password"
-                                rules={[{ required: true, message: 'Please enter password' }]}
-                            >
-                                <Input.Password placeholder="Enter password" />
-                            </Form.Item>
-                        </Col>
-                    )}
-                    <Col span={12}>
-                        <Form.Item
-                            name="average_visit_duration"
-                            label="Avg. Visit Duration (min)"
-                            rules={[{ required: true, message: 'Please enter average visit duration' }]}
-                        >
-                            <InputNumber min={1} placeholder="Enter duration" style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="visit_fee"
-                            label="Visit Fee ($)"
-                            rules={[{ required: true, message: 'Please enter visit fee' }]}
-                        >
-                            <InputNumber min={0} step={0.01} placeholder="Enter fee" style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-             </Form>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleFormSubmit}
+              // initialValues are set in openModal based on type
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="first_name"
+                    label="First Name"
+                    rules={[
+                      { required: true, message: "Please enter first name" },
+                    ]}
+                  >
+                    <Input placeholder="Enter first name" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="last_name"
+                    label="Last Name"
+                    rules={[
+                      { required: true, message: "Please enter last name" },
+                    ]}
+                  >
+                    <Input placeholder="Enter last name" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="department"
+                    label="Department"
+                    rules={[
+                      { required: true, message: "Please enter department" },
+                    ]}
+                  >
+                    <Input placeholder="Enter department" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                      { required: true, message: "Please enter email" },
+                      { type: "email", message: "Please enter a valid email" },
+                    ]}
+                  >
+                    <Input placeholder="Enter email" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="phone"
+                    label="Phone Number"
+                    rules={[
+                      { required: true, message: "Please enter phone number" },
+                    ]}
+                  >
+                    <Input placeholder="Enter phone number" />
+                  </Form.Item>
+                </Col>
+                {modalType === "create" && ( // Password only required for creation
+                  <Col span={12}>
+                    <Form.Item
+                      name="password"
+                      label="Password"
+                      rules={[
+                        { required: true, message: "Please enter password" },
+                      ]}
+                    >
+                      <Input.Password placeholder="Enter password" />
+                    </Form.Item>
+                  </Col>
+                )}
+                <Col span={12}>
+                  <Form.Item
+                    name="average_visit_duration"
+                    label="Avg. Visit Duration (min)"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter average visit duration",
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      min={1}
+                      placeholder="Enter duration"
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="visit_fee"
+                    label="Visit Fee ($)"
+                    rules={[
+                      { required: true, message: "Please enter visit fee" },
+                    ]}
+                  >
+                    <InputNumber
+                      min={0}
+                      step={0.01}
+                      placeholder="Enter fee"
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
           </div>
         )}
       </Modal>

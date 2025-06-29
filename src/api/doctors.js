@@ -5,7 +5,7 @@ import api from './config';
 // Function to create a new doctor
 export const createDoctor = async (doctorData) => {
   try {
-    const response = await api.post(`/admin/addDoctor`, doctorData);
+    const response = await api.post(`/api/admin/addDoctor`, doctorData);
     return response.data;
   } catch (error) {
     console.error('Error creating doctor:', error);
@@ -16,7 +16,7 @@ export const createDoctor = async (doctorData) => {
 // Function to fetch all doctors
 export const fetchDoctors = async () => {
   try {
-    const response = await api.get(`/admin/showDoctors`);
+    const response = await api.get(`/api/admin/showDoctors`);
     return response.data;
   } catch (error) {
     console.error('Error fetching doctors:', error);
