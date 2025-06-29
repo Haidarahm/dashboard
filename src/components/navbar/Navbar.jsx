@@ -67,29 +67,35 @@ const Navbar = ({ collapsed, setCollapsed }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 h-16 flex items-center">
+      <div className="flex items-center justify-between w-full">
         {/* Left Section */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-6">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
           >
             <FiMenu className="w-5 h-5 text-gray-600" />
           </button>
 
           {/* Clinic Dashboard Title */}
-          <h1 className="text-xl font-semibold text-blue-600 hidden sm:block">
-            Clinic Dashboard
-          </h1>
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-blue-600 hidden sm:block">
+              Clinic Dashboard
+            </h1>
+            <div className="w-1 h-6 bg-blue-600 rounded-full mx-4 hidden sm:block"></div>
+            <span className="text-sm text-gray-500 hidden md:block">
+              Management System
+            </span>
+          </div>
         </div>
 
         {/* Right Section */}
         <div className="flex items-center space-x-4">
           {/* Notifications */}
           <div className="relative">
-            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-              <Badge count={3} size="small">
+            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
+              <Badge count={3} size="small" className="text-xs">
                 <FiBell className="w-5 h-5 text-gray-600" />
               </Badge>
             </button>
@@ -101,13 +107,13 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             trigger={["click"]}
             placement="bottomRight"
           >
-            <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-             
+            <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+
               <div className="hidden sm:block text-left">
-                <div className="text-sm font-medium text-gray-900">
-                  John Doe
+                <div className="text-sm font-semibold text-gray-900">
+                  Haidar AHmad
                 </div>
-                <div className="text-xs text-gray-500">Admin</div>
+                <div className="text-xs text-gray-500">Administrator</div>
               </div>
               <FiChevronDown className="w-4 h-4 text-gray-500 hidden sm:block" />
             </button>

@@ -17,6 +17,7 @@ import {
   InputNumber,
   Select,
   Avatar,
+  Input,
 } from "antd";
 import {
   PlusOutlined,

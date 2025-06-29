@@ -45,11 +45,16 @@ function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen">
-      <Sidebar collapsed={collapsed} />
-      <div className="flex-1 overflow-auto">
-        <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Outlet /> {/* This renders nested routes */}
+    <div className="flex flex-col h-screen">
+      {/* Navbar at the top */}
+      <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+      
+      {/* Main content area with sidebar and page content */}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar collapsed={collapsed} />
+        <div className="flex-1 overflow-auto">
+          <Outlet /> {/* This renders nested routes */}
+        </div>
       </div>
     </div>
   );
