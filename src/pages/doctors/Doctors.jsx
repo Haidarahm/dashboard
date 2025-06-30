@@ -46,6 +46,7 @@ import {
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";
+import DoctorDetails from "./DoctorDetails";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -78,13 +79,15 @@ function Doctors() {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(""); // 'view', 'create', 'edit'
   const [form] = Form.useForm(); // Ant Design form instance
+  const [doctorDetails, setDoctorDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   // Fetch doctors data
   const fetchDoctorsData = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
       const response = await fetchDoctors();
-      console.log(response)
+      console.log(response);
       // Handle different response structures (adjust based on your actual API response)
       let doctorsData = [];
       let totalCount = 0;
@@ -162,13 +165,25 @@ function Doctors() {
   const getStatusConfig = (status) => {
     switch (status) {
       case "available":
-        return { color: "green", icon: <CheckCircleOutlined />, text: "Available" };
+        return {
+          color: "green",
+          icon: <CheckCircleOutlined />,
+          text: "Available",
+        };
       case "notAvailable":
-        return { color: "red", icon: <CloseCircleOutlined />, text: "Not Available" };
+        return {
+          color: "red",
+          icon: <CloseCircleOutlined />,
+          text: "Not Available",
+        };
       case "busy":
         return { color: "orange", icon: <ClockIcon />, text: "Busy" };
       default:
-        return { color: "default", icon: <ClockIcon />, text: status || "Unknown" };
+        return {
+          color: "default",
+          icon: <ClockIcon />,
+          text: status || "Unknown",
+        };
     }
   };
 
@@ -262,6 +277,23 @@ function Doctors() {
     fetchDoctorsData(pagination.current, pagination.pageSize);
   };
 
+  // Fetch and show doctor details in modal
+  const handleViewDoctor = async (doctor) => {
+    setModalType("view");
+    setShowModal(true);
+    setDetailsLoading(true);
+    setDoctorDetails(null);
+    try {
+      const details = await showDoctorDetails(doctor.id);
+      setDoctorDetails(details);
+    } catch (error) {
+      toast.error("Failed to fetch doctor details");
+      setDoctorDetails(null);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   // Load data on component mount
   useEffect(() => {
     fetchDoctorsData();
@@ -278,7 +310,7 @@ function Doctors() {
           size={40}
           src={record.photo}
           icon={<UserOutlined />}
-          style={{ backgroundColor: record.photo ? 'transparent' : '#1890ff' }}
+          style={{ backgroundColor: record.photo ? "transparent" : "#1890ff" }}
         />
       ),
     },
@@ -292,7 +324,7 @@ function Doctors() {
             {record.first_name} {record.last_name}
           </div>
           {record.professional_title && (
-            <div style={{ fontSize: '12px', color: '#666' }}>
+            <div style={{ fontSize: "12px", color: "#666" }}>
               {record.professional_title}
             </div>
           )}
@@ -304,7 +336,12 @@ function Doctors() {
       dataIndex: "speciality",
       key: "speciality",
       sorter: true,
-      render: (text) => text ? <Tag color="blue">{text}</Tag> : <span style={{ color: '#999' }}>Not specified</span>,
+      render: (text) =>
+        text ? (
+          <Tag color="blue">{text}</Tag>
+        ) : (
+          <span style={{ color: "#999" }}>Not specified</span>
+        ),
     },
     {
       title: "Status",
@@ -335,7 +372,7 @@ function Doctors() {
         </div>
       ),
     },
- 
+
     {
       title: "Visit Duration",
       dataIndex: "average_visit_duration",
@@ -343,7 +380,7 @@ function Doctors() {
       render: (text) => (
         <span>
           <ClockCircleOutlined style={{ marginRight: 4, color: "#fa8c16" }} />
-          {text ? `${text} min` : 'Not specified'}
+          {text ? `${text} min` : "Not specified"}
         </span>
       ),
     },
@@ -354,7 +391,7 @@ function Doctors() {
       render: (text) => (
         <span>
           <DollarCircleOutlined style={{ marginRight: 4, color: "#52c41a" }} />
-          {text ? `$${text}` : 'Not specified'}
+          {text ? `$${text}` : "Not specified"}
         </span>
       ),
     },
@@ -380,7 +417,7 @@ function Doctors() {
             <Button
               type="text"
               icon={<EyeOutlined />}
-              onClick={() => openModal("view", record)}
+              onClick={() => handleViewDoctor(record)}
               style={{ color: "#1890ff" }}
             />
           </Tooltip>
@@ -508,67 +545,17 @@ function Doctors() {
         width={900}
         destroyOnClose={true}
       >
-        {modalType === "view" && selectedDoctor && (
-          <div style={{ padding: "16px 0" }}>
-            <Row gutter={[16, 16]}>
-              <Col span={24} style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <Avatar
-                  size={80}
-                  src={selectedDoctor.photo}
-                  icon={<UserOutlined />}
-                  style={{ backgroundColor: selectedDoctor.photo ? 'transparent' : '#1890ff' }}
-                />
-              </Col>
-              <Col span={12}>
-                <strong>Name:</strong> {selectedDoctor.first_name} {selectedDoctor.last_name}
-              </Col>
-              <Col span={12}>
-                <strong>Professional Title:</strong> {selectedDoctor.professional_title || 'Not specified'}
-              </Col>
-              <Col span={12}>
-                <strong>Speciality:</strong> {selectedDoctor.speciality || 'Not specified'}
-              </Col>
-              <Col span={12}>
-                <strong>Status:</strong> 
-                <Tag color={getStatusConfig(selectedDoctor.status).color} style={{ marginLeft: 8 }}>
-                  {getStatusConfig(selectedDoctor.status).text}
-                </Tag>
-              </Col>
-              <Col span={12}>
-                <strong>Email:</strong> {selectedDoctor.email}
-              </Col>
-              <Col span={12}>
-                <strong>Phone:</strong> {selectedDoctor.phone}
-              </Col>
-              <Col span={12}>
-                <strong>Experience:</strong> {selectedDoctor.experience ? `${selectedDoctor.experience} years` : 'Not specified'}
-              </Col>
-              <Col span={12}>
-                <strong>Avg. Visit Duration:</strong> {selectedDoctor.average_visit_duration ? `${selectedDoctor.average_visit_duration} minutes` : 'Not specified'}
-              </Col>
-              <Col span={12}>
-                <strong>Visit Fee:</strong> {selectedDoctor.visit_fee ? `$${selectedDoctor.visit_fee}` : 'Not specified'}
-              </Col>
-              <Col span={12}>
-                <strong>Patients Treated:</strong> {selectedDoctor.treated || 0}
-              </Col>
-              <Col span={12}>
-                <strong>Rating:</strong> {selectedDoctor.finalRate ? `${selectedDoctor.finalRate}/5` : 'No rating'}
-              </Col>
-              <Col span={12}>
-                <strong>Clinic ID:</strong> {selectedDoctor.clinic_id}
-              </Col>
-            </Row>
-          </div>
-        )}
-
+        {modalType === "view" &&
+          (detailsLoading ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Spin size="large" />
+            </div>
+          ) : (
+            <DoctorDetails doctor={doctorDetails} />
+          ))}
         {(modalType === "create" || modalType === "edit") && (
           <div style={{ padding: "16px 0" }}>
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleFormSubmit}
-            >
+            <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
@@ -601,10 +588,7 @@ function Doctors() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="speciality"
-                    label="Speciality"
-                  >
+                  <Form.Item name="speciality" label="Speciality">
                     <Input placeholder="Enter speciality" />
                   </Form.Item>
                 </Col>
@@ -645,10 +629,7 @@ function Doctors() {
                   </Col>
                 )}
                 <Col span={12}>
-                  <Form.Item
-                    name="experience"
-                    label="Experience (years)"
-                  >
+                  <Form.Item name="experience" label="Experience (years)">
                     <InputNumber
                       min={0}
                       placeholder="Enter years of experience"
@@ -669,10 +650,7 @@ function Doctors() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="visit_fee"
-                    label="Visit Fee ($)"
-                  >
+                  <Form.Item name="visit_fee" label="Visit Fee ($)">
                     <InputNumber
                       min={0}
                       step={0.01}
@@ -682,10 +660,7 @@ function Doctors() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="status"
-                    label="Status"
-                  >
+                  <Form.Item name="status" label="Status">
                     <Select placeholder="Select status">
                       <Option value="available">Available</Option>
                       <Option value="notAvailable">Not Available</Option>

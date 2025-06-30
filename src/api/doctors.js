@@ -32,7 +32,7 @@ export const showDoctorReviews = async (doctorId) => {
     // Assuming the endpoint is something like '/api/admin/doctorReviews/{doctorId}'
     // Or it could be a GET request to a specific endpoint with doctorId as a query parameter
     // Example using a placeholder endpoint and query parameter:
-    const response = await axios.get(`${API_BASE_URL}/admin/showDoctorReviewsEndpoint`, {
+    const response = await api.get(`/api/admin/showDoctorReviewsEndpoint`, {
       params: { doctor_id: doctorId }
     });
     return response.data;
@@ -47,7 +47,7 @@ export const showDoctorReviews = async (doctorId) => {
 export const showDoctorDetails = async (doctorId) => {
   try {
     // Assuming the endpoint takes doctor_id as a query parameter
-    const response = await axios.get(`${API_BASE_URL}/admin/showDoctorDetails`, {
+    const response = await api.get(`/api/admin/showDoctorDetails`, {
       params: { doctor_id: doctorId }
     });
     return response.data;

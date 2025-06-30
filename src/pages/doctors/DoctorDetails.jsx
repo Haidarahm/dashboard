@@ -1,0 +1,194 @@
+import React from "react";
+import { Card, Row, Col, Tag, Avatar, Descriptions } from "antd";
+import {
+  Mail,
+  Phone,
+  User,
+  Clock,
+  DollarSign,
+  Star,
+  CheckCircle2,
+  XCircle,
+  IdCard,
+} from "lucide-react";
+
+const statusMap = {
+  available: {
+    color: "green",
+    text: "Available",
+    icon: <CheckCircle2 size={18} />,
+  },
+  notAvailable: {
+    color: "red",
+    text: "Not Available",
+    icon: <XCircle size={18} />,
+  },
+  busy: { color: "orange", text: "Busy", icon: <Clock size={18} /> },
+};
+
+const labelStyle = {
+  fontWeight: 600,
+  color: "#444",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+};
+const contentStyle = { color: "#222", fontSize: 15 };
+
+const DoctorDetails = ({ doctor }) => {
+  if (!doctor) return null;
+  const status = statusMap[doctor.status] || {
+    color: "default",
+    text: doctor.status,
+    icon: <Clock size={18} />,
+  };
+
+  return (
+    <Card
+      bordered={false}
+      style={{
+        boxShadow: "0 2px 16px #e6eaf1",
+        borderRadius: 18,
+        background: "linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%)",
+        padding: 0,
+      }}
+      bodyStyle={{ padding: 0 }}
+    >
+      <Row gutter={[32, 0]} align="middle">
+        <Col xs={24} sm={8} style={{ textAlign: "center", padding: 32 }}>
+          <Avatar
+            size={100}
+            src={doctor.photo}
+            icon={<User size={40} />}
+            style={{
+              backgroundColor: doctor.photo ? "#fff" : "#3b82f6",
+              marginBottom: 18,
+            }}
+          />
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 22,
+              marginBottom: 6,
+              color: "#222",
+            }}
+          >
+            {doctor.first_name} {doctor.last_name}
+          </div>
+          <div style={{ color: "#64748b", fontSize: 15, marginBottom: 10 }}>
+            {doctor.professional_title || (
+              <span style={{ color: "#cbd5e1" }}>No title</span>
+            )}
+          </div>
+          <Tag
+            color={status.color}
+            icon={status.icon}
+            style={{ fontSize: 15, padding: "3px 16px", borderRadius: 8 }}
+          >
+            {status.text}
+          </Tag>
+        </Col>
+        <Col
+          xs={24}
+          sm={16}
+          style={{
+            background: "#fff",
+            borderTopRightRadius: 18,
+            borderBottomRightRadius: 18,
+            padding: 32,
+          }}
+        >
+          <Descriptions
+            column={1}
+            size="middle"
+            labelStyle={labelStyle}
+            contentStyle={contentStyle}
+            bordered={false}
+          >
+            <Descriptions.Item
+              label={
+                <>
+                  <Mail size={16} /> Email
+                </>
+              }
+            >
+              {doctor.email}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <>
+                  <Phone size={16} /> Phone
+                </>
+              }
+            >
+              {doctor.phone}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <>
+                  <IdCard size={16} /> Clinic ID
+                </>
+              }
+            >
+              {doctor.clinic_id}
+            </Descriptions.Item>
+            <Descriptions.Item label={<span>Speciality</span>}>
+              {doctor.speciality || (
+                <span style={{ color: "#cbd5e1" }}>Not specified</span>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label={<span>Experience</span>}>
+              {doctor.experience ? (
+                `${doctor.experience} years`
+              ) : (
+                <span style={{ color: "#cbd5e1" }}>Not specified</span>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <>
+                  <Clock size={16} /> Avg. Visit Duration
+                </>
+              }
+            >
+              {doctor.average_visit_duration || (
+                <span style={{ color: "#cbd5e1" }}>Not specified</span>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <>
+                  <DollarSign size={16} /> Visit Fee
+                </>
+              }
+            >
+              {doctor.visit_fee !== null && doctor.visit_fee !== undefined ? (
+                `$${doctor.visit_fee}`
+              ) : (
+                <span style={{ color: "#cbd5e1" }}>Not specified</span>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label={<span>Patients Treated</span>}>
+              {doctor.treated || 0}
+            </Descriptions.Item>
+            <Descriptions.Item
+              label={
+                <>
+                  <Star size={16} /> Rating
+                </>
+              }
+            >
+              {doctor.finalRate ? (
+                `${doctor.finalRate}/5`
+              ) : (
+                <span style={{ color: "#cbd5e1" }}>No rating</span>
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+        </Col>
+      </Row>
+    </Card>
+  );
+};
+
+export default DoctorDetails;
