@@ -30,19 +30,22 @@ import {
   UserOutlined,
   DollarCircleOutlined,
   ClockCircleOutlined,
-  TrophyOutlined,
-  StarOutlined,
+ 
   MedicineBoxOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined as ClockIcon,
 } from "@ant-design/icons";
+import {
+  getAllClinics,
+
+} from "../../api/clinics";
 import { toast } from "react-toastify";
 import {
   fetchDoctors,
   createDoctor,
   showDoctorDetails,
-    deleteDoctor,
+  deleteDoctor,
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";
@@ -77,7 +80,7 @@ function Doctors() {
   });
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // 'view', 'create', 'edit'
+  const [modalType, setModalType] = useState(""); // 'view', 'create'
   const [form] = Form.useForm(); // Ant Design form instance
   const [doctorDetails, setDoctorDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -196,22 +199,6 @@ function Doctors() {
     if (type === "create") {
       form.resetFields(); // Reset form fields for create
       form.setFieldsValue(initialNewDoctorState); // Set initial values
-    } else if (type === "edit" && doctor) {
-      // Set initial values for edit form
-      // Note: Password is NOT set for editing for security reasons
-      const editData = {
-        ...doctor,
-        // Ensure numeric fields are numbers, not strings
-        average_visit_duration: doctor.average_visit_duration
-          ? Number(doctor.average_visit_duration)
-          : null,
-        visit_fee: doctor.visit_fee ? Number(doctor.visit_fee) : null,
-        experience: doctor.experience ? Number(doctor.experience) : null,
-      };
-      form.resetFields(); // Reset form fields before setting new values
-      form.setFieldsValue(editData); // Set form fields for edit
-    } else if (type === "view" && doctor) {
-      // For view, we just need the selectedDoctor state
     }
   };
 
@@ -222,7 +209,7 @@ function Doctors() {
     form.resetFields(); // Reset form fields on close
   };
 
-  // Handle form submission for Create/Edit
+  // Handle form submission for Create
   const handleFormSubmit = async (values) => {
     setLoading(true); // Indicate loading during submission
     try {
@@ -233,31 +220,22 @@ function Doctors() {
           ? Number(values.average_visit_duration)
           : null,
         visit_fee: values.visit_fee ? Number(values.visit_fee) : null,
-        experience: values.experience ? Number(values.experience) : null,
       };
 
       if (modalType === "create") {
-        // Ensure password is included for creation
-        if (!doctorData.password) {
-          toast.error("Password is required for creating a doctor.");
-          setLoading(false);
-          return;
-        }
-        await createDoctor(doctorData);
+        // Only send the required fields for creation
+        const createPayload = {
+          first_name: doctorData.first_name,
+          last_name: doctorData.last_name,
+          clinic_id: `${doctorData.clinic_id}`,
+          average_visit_duration: `${doctorData.average_visit_duration} min`,
+          visit_fee: doctorData.visit_fee,
+          phone: doctorData.phone,
+          email: doctorData.email,
+          password: doctorData.password,
+        };
+        await createDoctor(createPayload);
         toast.success("Doctor created successfully");
-      } else if (modalType === "edit" && selectedDoctor) {
-        // For edit, we typically don't send the password unless it's a specific password change form
-        // Remove password from data if it's empty or not intended to be changed via this form
-        const dataToUpdate = { ...doctorData };
-        delete dataToUpdate.password; // Remove password field for edit
-
-        // Assuming an updateDoctor API function exists
-        // await updateDoctor(selectedDoctor.id, dataToUpdate);
-        console.log(
-          `Updating doctor ${selectedDoctor.id} with data:`,
-          dataToUpdate
-        ); // Placeholder if updateDoctor is not implemented yet
-        toast.success("Doctor updated successfully (simulated)"); // Placeholder success
       }
 
       closeModal(); // Close modal on success
@@ -265,7 +243,7 @@ function Doctors() {
     } catch (error) {
       console.error(`Error ${modalType}ing doctor:`, error);
       const errorMessage =
-        error.response?.data?.message || `Failed to ${modalType} doctor`;
+        error.response?.data?.message[0] || `Failed to ${modalType} doctor`;
       toast.error(errorMessage);
     } finally {
       setLoading(false); // Stop loading
@@ -380,7 +358,7 @@ function Doctors() {
       render: (text) => (
         <span>
           <ClockCircleOutlined style={{ marginRight: 4, color: "#fa8c16" }} />
-          {text ? `${text} min` : "Not specified"}
+          {text ? `${text}` : "Not specified"}
         </span>
       ),
     },
@@ -419,14 +397,6 @@ function Doctors() {
               icon={<EyeOutlined />}
               onClick={() => handleViewDoctor(record)}
               style={{ color: "#1890ff" }}
-            />
-          </Tooltip>
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => openModal("edit", record)}
-              style={{ color: "#52c41a" }}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -517,15 +487,9 @@ function Doctors() {
         </Spin>
       </Card>
 
-      {/* Modal for View/Create/Edit */}
+      {/* Modal for View/Create */}
       <Modal
-        title={
-          modalType === "view"
-            ? "Doctor Details"
-            : modalType === "create"
-            ? "Create New Doctor"
-            : "Edit Doctor"
-        }
+        title={modalType === "view" ? "Doctor Details" : "Create New Doctor"}
         open={showModal}
         onCancel={closeModal}
         footer={
@@ -553,7 +517,7 @@ function Doctors() {
           ) : (
             <DoctorDetails doctor={doctorDetails} />
           ))}
-        {(modalType === "create" || modalType === "edit") && (
+        {modalType === "create" && (
           <div style={{ padding: "16px 0" }}>
             <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
               <Row gutter={16}>
@@ -581,19 +545,6 @@ function Doctors() {
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="professional_title"
-                    label="Professional Title"
-                  >
-                    <Input placeholder="Enter professional title" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="speciality" label="Speciality">
-                    <Input placeholder="Enter speciality" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
                     name="email"
                     label="Email"
                     rules={[
@@ -615,32 +566,16 @@ function Doctors() {
                     <Input placeholder="Enter phone number" />
                   </Form.Item>
                 </Col>
-                {modalType === "create" && (
-                  <Col span={12}>
-                    <Form.Item
-                      name="password"
-                      label="Password"
-                      rules={[
-                        { required: true, message: "Please enter password" },
-                      ]}
-                    >
-                      <Input.Password placeholder="Enter password" />
-                    </Form.Item>
-                  </Col>
-                )}
-                <Col span={12}>
-                  <Form.Item name="experience" label="Experience (years)">
-                    <InputNumber
-                      min={0}
-                      placeholder="Enter years of experience"
-                      style={{ width: "100%" }}
-                    />
-                  </Form.Item>
-                </Col>
                 <Col span={12}>
                   <Form.Item
                     name="average_visit_duration"
                     label="Avg. Visit Duration (min)"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter average visit duration",
+                      },
+                    ]}
                   >
                     <InputNumber
                       min={1}
@@ -650,22 +585,19 @@ function Doctors() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="visit_fee" label="Visit Fee ($)">
+                  <Form.Item
+                    name="visit_fee"
+                    label="Visit Fee ($)"
+                    rules={[
+                      { required: true, message: "Please enter visit fee" },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       step={0.01}
                       placeholder="Enter fee"
                       style={{ width: "100%" }}
                     />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="status" label="Status">
-                    <Select placeholder="Select status">
-                      <Option value="available">Available</Option>
-                      <Option value="notAvailable">Not Available</Option>
-                      <Option value="busy">Busy</Option>
-                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -681,6 +613,19 @@ function Doctors() {
                       placeholder="Enter clinic ID"
                       style={{ width: "100%" }}
                     />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={
+                      modalType === "create"
+                        ? [{ required: true, message: "Please enter password" }]
+                        : []
+                    }
+                  >
+                    <Input.Password placeholder="Enter password" />
                   </Form.Item>
                 </Col>
               </Row>

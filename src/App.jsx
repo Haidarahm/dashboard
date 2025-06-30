@@ -51,9 +51,9 @@ function DashboardLayout() {
       
       {/* Main content area with sidebar and page content */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar collapsed={collapsed} />
-        <div className="flex-1 overflow-auto">
-          <Outlet /> {/* This renders nested routes */}
+      <Sidebar collapsed={collapsed} />
+      <div className="flex-1 overflow-auto">
+        <Outlet /> {/* This renders nested routes */}
         </div>
       </div>
     </div>
