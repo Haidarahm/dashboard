@@ -7,7 +7,7 @@ import api from "./config";
  */
 export const fetchEmployees = async (params) => {
   try {
-    const response = await api.post("/api/admin/showEmployee", params);
+    const response = await api.get("/api/admin/showEmployee", params);
     return response.data;
   } catch (error) {
     console.error("Error fetching employees:", error);

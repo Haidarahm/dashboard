@@ -16,11 +16,7 @@ import {
   Tag,
   Radio,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import {
   fetchEmployees,
@@ -104,7 +100,10 @@ function Employees() {
       form.resetFields();
       form.setFieldsValue({ is_secretary: false });
     } else if (type === "edit" && employee) {
-      form.setFieldsValue({ ...employee, is_secretary: !!employee.is_secretary });
+      form.setFieldsValue({
+        ...employee,
+        is_secretary: !!employee.is_secretary,
+      });
     }
     setShowModal(true);
   };
@@ -186,7 +185,10 @@ function Employees() {
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => openModal("edit", record)}>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => openModal("edit", record)}
+          >
             Edit
           </Button>
           <Popconfirm
@@ -248,7 +250,9 @@ function Employees() {
           <Form.Item
             name="first_name"
             label="First Name"
-            rules={[{ required: true, message: "Please input the first name!" }]}
+            rules={[
+              { required: true, message: "Please input the first name!" },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -262,21 +266,34 @@ function Employees() {
           <Form.Item
             name="email"
             label="Email"
-            rules={[{ required: true, type: "email", message: "Please input a valid email!" }]}
+            rules={[
+              {
+                required: true,
+                type: "email",
+                message: "Please input a valid email!",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="phone"
             label="Phone"
-            rules={[{ required: true, message: "Please input the phone number!" }]}
+            rules={[
+              { required: true, message: "Please input the phone number!" },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="password"
             label="Password"
-            rules={[{ required: modalType === 'create', message: "Password is required" }]}
+            rules={[
+              {
+                required: modalType === "create",
+                message: "Password is required",
+              },
+            ]}
           >
             <Input.Password />
           </Form.Item>
