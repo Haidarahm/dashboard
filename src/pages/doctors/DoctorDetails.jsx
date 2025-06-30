@@ -10,20 +10,27 @@ import {
   CheckCircle2,
   XCircle,
   IdCard,
+  Stethoscope,
+  Award,
+  Users,
 } from "lucide-react";
 
 const statusMap = {
   available: {
     color: "green",
     text: "Available",
-    icon: <CheckCircle2 size={18} />,
+    icon: <CheckCircle2 size={18} color="#22c55e" />,
   },
   notAvailable: {
     color: "red",
     text: "Not Available",
-    icon: <XCircle size={18} />,
+    icon: <XCircle size={18} color="#ef4444" />,
   },
-  busy: { color: "orange", text: "Busy", icon: <Clock size={18} /> },
+  busy: {
+    color: "orange",
+    text: "Busy",
+    icon: <Clock size={18} color="#f59e42" />,
+  },
 };
 
 const labelStyle = {
@@ -40,7 +47,7 @@ const DoctorDetails = ({ doctor }) => {
   const status = statusMap[doctor.status] || {
     color: "default",
     text: doctor.status,
-    icon: <Clock size={18} />,
+    icon: <Clock size={18} color="#64748b" />,
   };
 
   return (
@@ -108,7 +115,7 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <Mail size={16} /> Email
+                  <Mail size={16} color="#2563eb" /> Email
                 </>
               }
             >
@@ -117,7 +124,7 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <Phone size={16} /> Phone
+                  <Phone size={16} color="#10b981" /> Phone
                 </>
               }
             >
@@ -126,18 +133,30 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <IdCard size={16} /> Clinic ID
+                  <IdCard size={16} color="#6366f1" /> Clinic ID
                 </>
               }
             >
               {doctor.clinic_id}
             </Descriptions.Item>
-            <Descriptions.Item label={<span>Speciality</span>}>
+            <Descriptions.Item
+              label={
+                <>
+                  <Stethoscope size={16} color="#f59e42" /> Speciality
+                </>
+              }
+            >
               {doctor.speciality || (
                 <span style={{ color: "#cbd5e1" }}>Not specified</span>
               )}
             </Descriptions.Item>
-            <Descriptions.Item label={<span>Experience</span>}>
+            <Descriptions.Item
+              label={
+                <>
+                  <Award size={16} color="#fbbf24" /> Experience
+                </>
+              }
+            >
               {doctor.experience ? (
                 `${doctor.experience} years`
               ) : (
@@ -147,7 +166,7 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <Clock size={16} /> Avg. Visit Duration
+                  <Clock size={16} color="#0ea5e9" /> Avg. Visit Duration
                 </>
               }
             >
@@ -158,7 +177,7 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <DollarSign size={16} /> Visit Fee
+                  <DollarSign size={16} color="#22c55e" /> Visit Fee
                 </>
               }
             >
@@ -168,13 +187,19 @@ const DoctorDetails = ({ doctor }) => {
                 <span style={{ color: "#cbd5e1" }}>Not specified</span>
               )}
             </Descriptions.Item>
-            <Descriptions.Item label={<span>Patients Treated</span>}>
+            <Descriptions.Item
+              label={
+                <>
+                  <Users size={16} color="#6366f1" /> Patients Treated
+                </>
+              }
+            >
               {doctor.treated || 0}
             </Descriptions.Item>
             <Descriptions.Item
               label={
                 <>
-                  <Star size={16} /> Rating
+                  <Star size={16} color="#f59e42" /> Rating
                 </>
               }
             >

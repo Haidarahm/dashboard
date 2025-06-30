@@ -42,7 +42,7 @@ import {
   fetchDoctors,
   createDoctor,
   showDoctorDetails,
-  //   deleteDoctor,
+    deleteDoctor,
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";
