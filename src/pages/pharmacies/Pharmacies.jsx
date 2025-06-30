@@ -70,10 +70,10 @@ function Pharmacies() {
   const [form] = Form.useForm(); // Ant Design form instance
 
   // Fetch pharmacies data
-  const fetchPharmacies = async (page = 1, pageSize = 10) => {
+  const fetchPharmacies = async (page, pageSize ) => {
     setLoading(true);
     try {
-      const response = await fetchAllPharmacies();
+      const response = await fetchAllPharmacies(page , pageSize );
 
       // Handle different response structures
       let pharmaciesData = [];

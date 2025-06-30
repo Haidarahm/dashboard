@@ -15,6 +15,7 @@ import {
   Col,
   Image,
   Tag,
+  Select,
 } from "antd";
 import {
   PlusOutlined,
@@ -39,6 +40,7 @@ import {
 } from "lucide-react";
 
 const { Title } = Typography;
+const { Option } = Select;
 
 function Clinics() {
   const [clinics, setClinics] = useState([]);
@@ -53,6 +55,7 @@ function Clinics() {
   const [modalType, setModalType] = useState(""); // 'create', 'edit', 'view'
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  const [filter, setFilter] = useState("all");
 
   // Custom styles for image preview
   const imageStyle = {
@@ -67,39 +70,25 @@ function Clinics() {
     transform: "scale(1.1)",
   };
 
-  const fetchClinicsData = async (page = 1, pageSize = 10) => {
+  const fetchClinicsData = async (is_secretary = null) => {
     setLoading(true);
     try {
-      const response = await getAllClinics();
-      console.log(response);
+      const params = {};
+      if (is_secretary !== null) params.is_secretary = is_secretary;
+      const response = await getAllClinics(params);
       let clinicsData = [];
-      let totalCount = 0;
-
       if (Array.isArray(response)) {
         clinicsData = response;
-        totalCount = response.length;
       } else if (response.data && Array.isArray(response.data)) {
         clinicsData = response.data;
-        totalCount = response.total || response.count || response.data.length;
       } else if (response.clinics && Array.isArray(response.clinics)) {
         clinicsData = response.clinics;
-        totalCount =
-          response.total || response.count || response.clinics.length;
       } else {
-        console.warn("Unexpected response structure:", response);
         clinicsData = [];
-        totalCount = 0;
       }
-
       setClinics(clinicsData);
-      setPagination((prev) => ({
-        ...prev,
-        current: page,
-        pageSize,
-        total: totalCount,
-      }));
     } catch (error) {
-      console.error("Error fetching clinics:", error);
+      setClinics([]);
       toast.error("Failed to fetch clinics");
     } finally {
       setLoading(false);
@@ -110,8 +99,11 @@ function Clinics() {
     fetchClinicsData();
   }, []);
 
-  const handleTableChange = (paginationInfo) => {
-    fetchClinicsData(paginationInfo.current, paginationInfo.pageSize);
+  const handleFilterChange = (value) => {
+    setFilter(value);
+    if (value === "all") fetchClinicsData(null);
+    else if (value === "secretaries") fetchClinicsData(1);
+    else if (value === "employees") fetchClinicsData(0);
   };
 
   const openModal = (type, clinic = null) => {
@@ -343,27 +335,51 @@ function Clinics() {
 
   return (
     <div style={{ padding: "24px" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={4}>Clinics Management</Title>
-        </Col>
-        <Col>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => openModal("create")}
-          >
-            Add Clinic
-          </Button>
-        </Col>
-      </Row>
+      <Card style={{ marginBottom: "24px" }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col>
+            <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
+              Clinics Management
+            </Title>
+          </Col>
+          <Col>
+            <Space>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => openModal("create")}
+                size="large"
+              >
+                Create New Clinic
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+        <Row style={{ marginBottom: "16px" }} gutter={16}>
+          <Col xs={24} sm={12} md={8}>
+            <Select
+              value={filter}
+              onChange={handleFilterChange}
+              style={{ width: "100%" }}
+            >
+              <Option value="all">All</Option>
+              <Option value="secretaries">Secretaries</Option>
+              <Option value="employees">Employees</Option>
+            </Select>
+          </Col>
+        </Row>
+      </Card>
       <Spin spinning={loading}>
         <Table
-          dataSource={clinics}
           columns={columns}
+          dataSource={clinics}
           rowKey="id"
-          pagination={pagination}
-          onChange={handleTableChange}
+          pagination={false}
+          size="middle"
         />
       </Spin>
       <Modal

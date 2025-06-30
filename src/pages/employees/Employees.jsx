@@ -30,26 +30,21 @@ const { Title } = Typography;
 function Employees() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
+ 
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(""); // 'create', 'edit'
   const [form] = Form.useForm();
   const [filter, setFilter] = useState(null); // null for all, 1 for secretaries, 0 for employees
 
-  const fetchEmployeesData = async (page = 1, pageSize = 10) => {
+  const fetchEmployeesData = async () => {
     setLoading(true);
     const params = {};
-    if (filter !== null) {
-      params.is_secretary = filter;
-    }
+
+    params.is_secretary = filter;
 
     try {
-      const response = await fetchEmployees(params);
+      const response = await fetchEmployees( params.is_secretary );
       let employeesData = [];
       let totalCount = 0;
 
@@ -70,12 +65,7 @@ function Employees() {
       }
 
       setEmployees(employeesData);
-      setPagination((prev) => ({
-        ...prev,
-        current: page,
-        pageSize,
-        total: totalCount,
-      }));
+      
     } catch (error) {
       console.error("Error fetching employees:", error);
       toast.error("Failed to fetch employees");
@@ -88,9 +78,7 @@ function Employees() {
     fetchEmployeesData();
   }, [filter]);
 
-  const handleTableChange = (paginationInfo) => {
-    fetchEmployeesData(paginationInfo.current, paginationInfo.pageSize);
-  };
+ 
 
   const openModal = (type, employee = null) => {
     setModalType(type);
@@ -130,7 +118,7 @@ function Employees() {
         await updateEmployee({ ...employeeData, user_id: selectedEmployee.id });
         toast.success("Employee updated successfully");
       }
-      fetchEmployeesData(pagination.current, pagination.pageSize);
+      fetchEmployeesData();
       closeModal();
     } catch (error) {
       const errorMessage =
@@ -145,7 +133,7 @@ function Employees() {
     try {
       await deleteEmployee(userId);
       toast.success("Employee deleted successfully");
-      fetchEmployeesData(pagination.current, pagination.pageSize);
+      fetchEmployeesData();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Failed to delete employee";
@@ -236,8 +224,8 @@ function Employees() {
           dataSource={employees}
           columns={columns}
           rowKey="id"
-          pagination={pagination}
-          onChange={handleTableChange}
+         
+          
         />
       </Spin>
       <Modal

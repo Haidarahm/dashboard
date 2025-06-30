@@ -83,9 +83,14 @@ export const deletePharmacy = async (pharmacyId) => {
  * Fetch all pharmacies
  * @returns {Promise<Object>} - List of all pharmacies
  */
-export const fetchAllPharmacies = async () => {
+export const fetchAllPharmacies = async (page, pageSize) => {
   try {
-    const response = await api.get("/api/admin/showAllPharmacies");
+    const response = await api.get("/api/admin/showAllPharmacies", {
+      params: {
+        siz: pageSize,
+        page: page,
+      },
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || error;

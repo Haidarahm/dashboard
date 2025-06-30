@@ -5,9 +5,15 @@ import api from "./config";
  * @param {object} params - The parameters for fetching employees
  * @param {number|null} params.is_secretary - 1 for secretaries, 0 for employees, null for all
  */
-export const fetchEmployees = async (params) => {
+export const fetchEmployees = async (is_secretary) => {
+  console.log(is_secretary)
   try {
-    const response = await api.get("/api/admin/showEmployee", params);
+    const response = await api.get("/api/admin/showEmployee",{
+      params:{
+        is_secretary:is_secretary
+      }
+    });
+    console.log(response.data)
     return response.data;
   } catch (error) {
     console.error("Error fetching employees:", error);
