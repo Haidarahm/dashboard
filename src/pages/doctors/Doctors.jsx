@@ -257,8 +257,9 @@ function Doctors() {
   };
 
   // Refresh data
-  const handleRefresh = () => {
-    fetchDoctorsData(pagination.current, pagination.pageSize);
+  const handleRefresh = async () => {
+    setSelectedClinic("all");
+    await fetchDoctorsData();
   };
 
   // Fetch and show doctor details in modal
@@ -512,7 +513,7 @@ function Doctors() {
             <Space>
               <Button
                 icon={<ReloadOutlined />}
-                onClick={fetchDoctorsData}
+                onClick={handleRefresh}
                 loading={loading}
               >
                 Refresh
