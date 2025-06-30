@@ -35,13 +35,14 @@ import {
   CloseCircleOutlined,
   ClockCircleOutlined as ClockIcon,
 } from "@ant-design/icons";
-import { getAllClinics ,getClinicById} from "../../api/clinics";
+import { getAllClinics } from "../../api/clinics";
 import { toast } from "react-toastify";
 import {
   fetchDoctors,
   createDoctor,
   showDoctorDetails,
   deleteDoctor,
+  showDoctorsByClinic,
   // Assuming an updateDoctor function exists in your api/doctors.js
   // import { updateDoctor } from "../../api/doctors";
 } from "../../api/doctors";

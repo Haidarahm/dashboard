@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, Row, Col, Tag, Avatar, Descriptions } from "antd";
+import React, { useEffect, useState } from "react";
+import { Card, Row, Col, Tag, Avatar, Descriptions, Spin } from "antd";
 import {
   Mail,
   Phone,
@@ -14,6 +14,7 @@ import {
   Award,
   Users,
 } from "lucide-react";
+import { getClinicById } from "../../api/clinics";
 
 const statusMap = {
   available: {
@@ -43,6 +44,29 @@ const labelStyle = {
 const contentStyle = { color: "#222", fontSize: 15 };
 
 const DoctorDetails = ({ doctor }) => {
+  const [clinicName, setClinicName] = useState("");
+  const [clinicLoading, setClinicLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (doctor && doctor.clinic_id) {
+      setClinicLoading(true);
+      getClinicById(doctor.clinic_id)
+        .then((data) => {
+          if (isMounted) setClinicName(data?.name || "");
+        })
+        .catch(() => {
+          if (isMounted) setClinicName("");
+        })
+        .finally(() => {
+          if (isMounted) setClinicLoading(false);
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [doctor]);
+
   if (!doctor) return null;
   const status = statusMap[doctor.status] || {
     color: "default",
@@ -133,11 +157,11 @@ const DoctorDetails = ({ doctor }) => {
             <Descriptions.Item
               label={
                 <>
-                  <IdCard size={16} color="#6366f1" /> Clinic ID
+                  <IdCard size={16} color="#6366f1" /> Clinic
                 </>
               }
             >
-              {doctor.clinic_id}
+              {clinicLoading ? <Spin size="small" /> : clinicName}
             </Descriptions.Item>
             <Descriptions.Item
               label={

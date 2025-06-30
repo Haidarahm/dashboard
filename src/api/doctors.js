@@ -62,3 +62,10 @@ export async function deleteDoctor(doctor_id) {
   });
   return response.data;
 }
+
+export async function showDoctorsByClinic(clinic_id) {
+  const response = await api.get("/api/admin/showDoctorsClinic", {
+    params: { clinic_id },
+  });
+  return response.data;
+}
