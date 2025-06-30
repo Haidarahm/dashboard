@@ -82,6 +82,7 @@ function Doctors() {
   const [doctorDetails, setDoctorDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [clinics, setClinics] = useState([]);
+  const [selectedClinic, setSelectedClinic] = useState("all");
 
   // Fetch doctors data
   const fetchDoctorsData = async (page = 1, pageSize = 10) => {
@@ -280,7 +281,48 @@ function Doctors() {
   // Load data on component mount
   useEffect(() => {
     fetchDoctorsData();
+    getAllClinics()
+      .then(setClinics)
+      .catch(() => setClinics([]));
   }, []);
+
+  const handleClinicFilterChange = async (value) => {
+    setSelectedClinic(value);
+    setLoading(true);
+    try {
+      if (value === "all") {
+        await fetchDoctorsData();
+      } else {
+        const data = await showDoctorsByClinic(value);
+        let doctorsData = [];
+        let totalCount = 0;
+        if (Array.isArray(data)) {
+          doctorsData = data;
+          totalCount = data.length;
+        } else if (data.data && Array.isArray(data.data)) {
+          doctorsData = data.data;
+          totalCount = data.total || data.count || data.data.length;
+        } else if (data.doctors && Array.isArray(data.doctors)) {
+          doctorsData = data.doctors;
+          totalCount = data.total || data.count || data.doctors.length;
+        } else {
+          doctorsData = [];
+          totalCount = 0;
+        }
+        setDoctors(doctorsData);
+        setPagination((prev) => ({
+          ...prev,
+          current: 1,
+          total: totalCount,
+        }));
+      }
+    } catch (error) {
+      setDoctors([]);
+      setPagination((prev) => ({ ...prev, current: 1, total: 0 }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Table columns configuration
   const columns = [
@@ -451,14 +493,26 @@ function Doctors() {
             </Space>
           </Col>
         </Row>
-
-        {/* Actions */}
-        <Row style={{ marginBottom: "16px" }}>
-          <Col span={24} style={{ textAlign: "right" }}>
+        <Row style={{ marginBottom: "16px" }} gutter={16}>
+          <Col xs={24} sm={12} md={8}>
+            <Select
+              value={selectedClinic}
+              onChange={handleClinicFilterChange}
+              style={{ width: "100%" }}
+            >
+              <Option value="all">All Clinics</Option>
+              {clinics.map((clinic) => (
+                <Option key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={16} style={{ textAlign: "right" }}>
             <Space>
               <Button
                 icon={<ReloadOutlined />}
-                onClick={handleRefresh}
+                onClick={fetchDoctorsData}
                 loading={loading}
               >
                 Refresh
