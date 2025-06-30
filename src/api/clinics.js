@@ -10,7 +10,7 @@ export const createClinic = async (name, photo) => {
   try {
     const formData = new FormData();
     formData.append("name", name);
-    
+
     // Only append photo if it exists and is a valid File object
     if (photo && photo instanceof File) {
       formData.append("photo", photo);
@@ -18,7 +18,7 @@ export const createClinic = async (name, photo) => {
 
     const response = await api.post("/api/admin/addClinic", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
@@ -85,7 +85,7 @@ export const updateClinic = async (clinicId, name, photo) => {
     const formData = new FormData();
     formData.append("clinic_id", clinicId);
     formData.append("name", name);
-    
+
     // Only append photo if it exists and is a valid File object
     if (photo && photo instanceof File) {
       formData.append("photo", photo);
@@ -93,7 +93,7 @@ export const updateClinic = async (clinicId, name, photo) => {
 
     const response = await api.post("/api/admin/editClinic", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
@@ -102,3 +102,10 @@ export const updateClinic = async (clinicId, name, photo) => {
     throw error;
   }
 };
+
+export async function getClinicById(clinic_id) {
+  const response = await api.get("/api/admin/showDetails", {
+    params: { clinic_id },
+  });
+  return response.data;
+}

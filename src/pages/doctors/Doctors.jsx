@@ -30,16 +30,12 @@ import {
   UserOutlined,
   DollarCircleOutlined,
   ClockCircleOutlined,
- 
   MedicineBoxOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined as ClockIcon,
 } from "@ant-design/icons";
-import {
-  getAllClinics,
-
-} from "../../api/clinics";
+import { getAllClinics ,getClinicById} from "../../api/clinics";
 import { toast } from "react-toastify";
 import {
   fetchDoctors,
@@ -84,6 +80,7 @@ function Doctors() {
   const [form] = Form.useForm(); // Ant Design form instance
   const [doctorDetails, setDoctorDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [clinics, setClinics] = useState([]);
 
   // Fetch doctors data
   const fetchDoctorsData = async (page = 1, pageSize = 10) => {
@@ -191,7 +188,7 @@ function Doctors() {
   };
 
   // Modal handlers
-  const openModal = (type, doctor = null) => {
+  const openModal = async (type, doctor = null) => {
     setModalType(type);
     setSelectedDoctor(doctor);
     setShowModal(true);
@@ -199,6 +196,13 @@ function Doctors() {
     if (type === "create") {
       form.resetFields(); // Reset form fields for create
       form.setFieldsValue(initialNewDoctorState); // Set initial values
+      // Fetch clinics for the select menu
+      try {
+        const clinicsData = await getAllClinics();
+        setClinics(clinicsData);
+      } catch (e) {
+        setClinics([]);
+      }
     }
   };
 
@@ -603,16 +607,27 @@ function Doctors() {
                 <Col span={12}>
                   <Form.Item
                     name="clinic_id"
-                    label="Clinic ID"
+                    label="Clinic"
                     rules={[
-                      { required: true, message: "Please enter clinic ID" },
+                      { required: true, message: "Please select a clinic" },
                     ]}
                   >
-                    <InputNumber
-                      min={1}
-                      placeholder="Enter clinic ID"
-                      style={{ width: "100%" }}
-                    />
+                    <Select
+                      showSearch
+                      placeholder="Select a clinic"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {clinics.map((clinic) => (
+                        <Option key={clinic.id} value={clinic.id}>
+                          {clinic.name}
+                        </Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
