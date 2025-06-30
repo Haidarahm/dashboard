@@ -335,17 +335,7 @@ function Doctors() {
         </div>
       ),
     },
-    {
-      title: "Experience",
-      dataIndex: "experience",
-      key: "experience",
-      render: (text) => (
-        <span>
-          <TrophyOutlined style={{ marginRight: 4, color: "#fa8c16" }} />
-          {text ? `${text} years` : 'Not specified'}
-        </span>
-      ),
-    },
+ 
     {
       title: "Visit Duration",
       dataIndex: "average_visit_duration",
@@ -376,17 +366,6 @@ function Doctors() {
         <span>
           <MedicineBoxOutlined style={{ marginRight: 4, color: "#722ed1" }} />
           {text || 0}
-        </span>
-      ),
-    },
-    {
-      title: "Rating",
-      dataIndex: "finalRate",
-      key: "finalRate",
-      render: (text) => (
-        <span>
-          <StarOutlined style={{ marginRight: 4, color: "#faad14" }} />
-          {text ? `${text}/5` : 'No rating'}
         </span>
       ),
     },
