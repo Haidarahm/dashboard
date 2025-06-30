@@ -14,8 +14,8 @@ import {
   Row,
   Col,
   Spin,
-  Form, // Import Form
-  TimePicker, // Import TimePicker
+  Form,
+  TimePicker,
 } from "antd";
 import {
   PlusOutlined,
@@ -33,22 +33,20 @@ import {
   fetchAllPharmacies,
   deletePharmacy,
   searchPharmacies,
-  // Assuming createPharmacy and updatePharmacy exist in this file
-  createPharmacy, // <-- Uncommented
-  updatePharmacy, // <-- Uncommented
+  createPharmacy,
+  updatePharmacy,
 } from "../../api/pharmacies";
-import moment from 'moment'; // Import moment for TimePicker
+import moment from "moment";
 
 const { Title } = Typography;
 const { Search } = Input;
 
-// Define the initial state structure for a new pharmacy
 const initialNewPharmacyState = {
   name: "",
   location: "",
   phone: "",
-  start_time: null, // Use null initially for TimePicker
-  finish_time: null, // Use null initially for TimePicker
+  start_time: null,
+  finish_time: null,
   latitude: "",
   longitude: "",
 };
@@ -64,88 +62,91 @@ function Pharmacies() {
   });
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // 'view', 'create', 'edit'
-  const [newPharmacyData, setNewPharmacyData] = useState(initialNewPharmacyState); // State for new pharmacy form
-  const [editPharmacyData, setEditPharmacyData] = useState(null); // State for edit pharmacy form
-  const [form] = Form.useForm(); // Ant Design form instance
+  const [modalType, setModalType] = useState("");
+  const [newPharmacyData, setNewPharmacyData] = useState(initialNewPharmacyState);
+  const [editPharmacyData, setEditPharmacyData] = useState(null);
+  const [form] = Form.useForm();
 
-  // Fetch pharmacies data
-  const fetchPharmacies = async (page, pageSize ) => {
+  // Fetch pharmacies with improved pagination handling
+  const fetchPharmacies = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      const response = await fetchAllPharmacies(page , pageSize );
-
+      const response = await fetchAllPharmacies(page, pageSize);
+      console.log('API Response:', response); // Debug log
+      
       // Handle different response structures
       let pharmaciesData = [];
       let totalCount = 0;
 
-      if (Array.isArray(response)) {
-        pharmaciesData = response;
-        totalCount = response.length;
-      } else if (response.data && Array.isArray(response.data)) {
-        pharmaciesData = response.data;
-        totalCount = response.total || response.count || response.data.length;
-      } else if (response.pharmacies && Array.isArray(response.pharmacies)) {
-        pharmaciesData = response.pharmacies;
-        totalCount =
-          response.total || response.count || response.pharmacies.length;
+      if (response && typeof response === 'object') {
+        // Check for common response patterns
+        if (response.data && Array.isArray(response.data)) {
+          pharmaciesData = response.data;
+          totalCount = response.meta.total 
+        } 
       } else {
-        console.warn("Unexpected response structure:", response);
+        console.warn("Invalid response:", response);
         pharmaciesData = [];
         totalCount = 0;
       }
 
       setPharmacies(pharmaciesData);
-      setPagination((prev) => ({
+      setPagination(prev => ({
         ...prev,
         current: page,
-        pageSize,
+        pageSize: pageSize,
         total: totalCount,
       }));
+
     } catch (error) {
       console.error("Error fetching pharmacies:", error);
-
-      // More specific error messages
+      
       let errorMessage = "Failed to fetch pharmacies";
       if (error.message) {
         errorMessage += `: ${error.message}`;
       }
-      if (
-        error.code === "NETWORK_ERROR" ||
-        error.message?.includes("Network Error")
-      ) {
-        errorMessage =
-          "Network error: Please check your internet connection and server status";
+      if (error.code === "NETWORK_ERROR" || error.message?.includes("Network Error")) {
+        errorMessage = "Network error: Please check your internet connection and server status";
       }
       if (error.response?.status === 404) {
-        errorMessage =
-          "Pharmacies endpoint not found. Please check the API URL";
+        errorMessage = "Pharmacies endpoint not found. Please check the API URL";
       }
       if (error.response?.status === 401) {
         errorMessage = "Authentication required. Please login again";
       }
 
       toast.error(errorMessage);
+      
+      // Reset to empty state on error
+      setPharmacies([]);
+      setPagination(prev => ({
+        ...prev,
+        total: 0,
+      }));
     } finally {
       setLoading(false);
     }
   };
 
-  // Search pharmacies
+  // Search pharmacies with pagination reset
   const handleSearch = async (searchTerm) => {
     if (!searchTerm.trim()) {
-      fetchPharmacies();
+      // Reset to first page when clearing search
+      setPagination(prev => ({ ...prev, current: 1 }));
+      fetchPharmacies(1, pagination.pageSize);
       return;
     }
 
     setSearchLoading(true);
     try {
       const response = await searchPharmacies(searchTerm);
-      setPharmacies(response.data || response.pharmacies || response);
-      setPagination((prev) => ({
+      const searchResults = response.data || response.pharmacies || response || [];
+      
+      setPharmacies(searchResults);
+      setPagination(prev => ({
         ...prev,
-        current: 1,
-        total: response.total || response.count || response.data?.length || 0,
+        current: 1, // Reset to first page for search results
+        total: searchResults.length,
       }));
     } catch (error) {
       console.error("Error searching pharmacies:", error);
@@ -155,21 +156,44 @@ function Pharmacies() {
     }
   };
 
-  // Delete pharmacy
+  // Delete pharmacy with proper refresh
   const handleDelete = async (pharmacyId) => {
     try {
       await deletePharmacy(pharmacyId);
       toast.success("Pharmacy deleted successfully");
-      fetchPharmacies(pagination.current, pagination.pageSize);
+      
+      // Calculate if we need to go back a page after deletion
+      const currentPageItems = pharmacies.length;
+      const shouldGoToPreviousPage = currentPageItems === 1 && pagination.current > 1;
+      
+      if (shouldGoToPreviousPage) {
+        const newPage = pagination.current - 1;
+        setPagination(prev => ({ ...prev, current: newPage }));
+        fetchPharmacies(newPage, pagination.pageSize);
+      } else {
+        fetchPharmacies(pagination.current, pagination.pageSize);
+      }
     } catch (error) {
       console.error("Error deleting pharmacy:", error);
       toast.error("Failed to delete pharmacy");
     }
   };
 
-  // Handle table pagination
-  const handleTableChange = (paginationInfo) => {
-    fetchPharmacies(paginationInfo.current, paginationInfo.pageSize);
+  // Handle table pagination changes
+  const handleTableChange = (paginationInfo, filters, sorter) => {
+    console.log('Pagination change:', paginationInfo); // Debug log
+    
+    const { current, pageSize } = paginationInfo;
+    
+    // Update pagination state
+    setPagination(prev => ({
+      ...prev,
+      current: current,
+      pageSize: pageSize,
+    }));
+    
+    // Fetch new data
+    fetchPharmacies(current, pageSize);
   };
 
   // Modal handlers
@@ -178,18 +202,17 @@ function Pharmacies() {
     setSelectedPharmacy(pharmacy);
     setShowModal(true);
 
-    if (type === 'create') {
+    if (type === "create") {
       setNewPharmacyData(initialNewPharmacyState);
-      form.resetFields(); // Reset form fields for create
-    } else if (type === 'edit' && pharmacy) {
-      // Set initial values for edit form
+      form.resetFields();
+    } else if (type === "edit" && pharmacy) {
       const editData = {
         ...pharmacy,
-        start_time: pharmacy.start_time ? moment(pharmacy.start_time, 'HH:mm') : null,
-        finish_time: pharmacy.finish_time ? moment(pharmacy.finish_time, 'HH:mm') : null,
+        start_time: pharmacy.start_time ? moment(pharmacy.start_time, "HH:mm") : null,
+        finish_time: pharmacy.finish_time ? moment(pharmacy.finish_time, "HH:mm") : null,
       };
       setEditPharmacyData(editData);
-      form.setFieldsValue(editData); // Set form fields for edit
+      form.setFieldsValue(editData);
     }
   };
 
@@ -197,47 +220,41 @@ function Pharmacies() {
     setShowModal(false);
     setSelectedPharmacy(null);
     setModalType("");
-    setNewPharmacyData(initialNewPharmacyState); // Reset create form state
-    setEditPharmacyData(null); // Reset edit form state
-    form.resetFields(); // Reset form fields
+    setNewPharmacyData(initialNewPharmacyState);
+    setEditPharmacyData(null);
+    form.resetFields();
   };
 
-  // Handle form submission for Create/Edit
+  // Handle form submission
   const handleFormSubmit = async (values) => {
-    setLoading(true); // Indicate loading during submission
+    setLoading(true);
     try {
       const pharmacyData = {
         ...values,
-        // Format time values back to HH:mm strings
-        start_time: values.start_time ? values.start_time.format('HH:mm') : null,
-        finish_time: values.finish_time ? values.finish_time.format('HH:mm') : null,
-        // Convert coordinates to numbers if necessary, or handle as strings
+        start_time: values.start_time ? values.start_time.format("HH:mm") : null,
+        finish_time: values.finish_time ? values.finish_time.format("HH:mm") : null,
         latitude: parseFloat(values.latitude),
         longitude: parseFloat(values.longitude),
       };
 
-      if (modalType === 'create') {
-        // Call your createPharmacy API function here
-        await createPharmacy(pharmacyData); // <-- Actual API call
-        toast.success("Pharmacy created successfully"); // <-- Success message
-      } else if (modalType === 'edit' && selectedPharmacy) {
-        // Call your updatePharmacy API function here
-        await updatePharmacy(selectedPharmacy.id, pharmacyData); // <-- Actual API call
-        toast.success("Pharmacy updated successfully"); // <-- Success message
+      if (modalType === "create") {
+        await createPharmacy(pharmacyData);
+        toast.success("Pharmacy created successfully");
+      } else if (modalType === "edit" && selectedPharmacy) {
+        await updatePharmacy(selectedPharmacy.id, pharmacyData);
+        toast.success("Pharmacy updated successfully");
       }
 
-      closeModal(); // Close modal on success
-      fetchPharmacies(pagination.current, pagination.pageSize); // Refresh list
+      closeModal();
+      fetchPharmacies(pagination.current, pagination.pageSize);
     } catch (error) {
       console.error(`Error ${modalType}ing pharmacy:`, error);
-      // Provide more specific error feedback if possible
       const errorMessage = error.response?.data?.message || `Failed to ${modalType} pharmacy`;
       toast.error(errorMessage);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
-
 
   // Refresh data
   const handleRefresh = () => {
@@ -246,7 +263,7 @@ function Pharmacies() {
 
   // Load data on component mount
   useEffect(() => {
-    fetchPharmacies();
+    fetchPharmacies(1, 10);
   }, []);
 
   // Table columns configuration
@@ -313,23 +330,20 @@ function Pharmacies() {
       title: "Status",
       key: "status",
       render: (_, record) => {
-        // Ensure start_time and finish_time are valid strings before splitting
-        const [startHour, startMin] = (record.start_time || '00:00').split(":").map(Number);
-        const [endHour, endMin] = (record.finish_time || '23:59').split(":").map(Number);
+        const [startHour, startMin] = (record.start_time || "00:00").split(":").map(Number);
+        const [endHour, endMin] = (record.finish_time || "23:59").split(":").map(Number);
 
         const now = new Date();
         const currentTime = now.getHours() * 60 + now.getMinutes();
         const startTime = startHour * 60 + startMin;
         const endTime = endHour * 60 + endMin;
 
-        // Handle cases where end time is before start time (e.g., overnight)
         let isOpen = false;
         if (startTime <= endTime) {
-            isOpen = currentTime >= startTime && currentTime <= endTime;
-        } else { // Overnight hours, e.g., 22:00 - 06:00
-            isOpen = currentTime >= startTime || currentTime <= endTime;
+          isOpen = currentTime >= startTime && currentTime <= endTime;
+        } else {
+          isOpen = currentTime >= startTime || currentTime <= endTime;
         }
-
 
         return (
           <Tag color={isOpen ? "green" : "red"}>
@@ -385,11 +399,7 @@ function Pharmacies() {
     <div style={{ padding: "24px" }}>
       {/* Header Section */}
       <Card style={{ marginBottom: "24px" }}>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: "16px" }}
-        >
+        <Row justify="space-between" align="middle" style={{ marginBottom: "16px" }}>
           <Col>
             <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
               Pharmacies Management
@@ -446,11 +456,11 @@ function Pharmacies() {
             dataSource={pharmacies}
             rowKey="id"
             pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} pharmacies`,
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+            
+             
             }}
             onChange={handleTableChange}
             scroll={{ x: 1200 }}
@@ -471,17 +481,21 @@ function Pharmacies() {
         open={showModal}
         onCancel={closeModal}
         footer={
-          modalType !== "view" && ( // Show footer buttons only for create/edit
+          modalType !== "view" && (
             <Space>
               <Button onClick={closeModal}>Cancel</Button>
-              <Button type="primary" onClick={() => form.submit()} loading={loading}>
-                {modalType === 'create' ? 'Create' : 'Save Changes'}
+              <Button
+                type="primary"
+                onClick={() => form.submit()}
+                loading={loading}
+              >
+                {modalType === "create" ? "Create" : "Save Changes"}
               </Button>
             </Space>
           )
         }
         width={800}
-        destroyOnClose={true} // Destroy form fields on close to reset state
+        destroyOnClose={true}
       >
         {modalType === "view" && selectedPharmacy && (
           <div style={{ padding: "16px 0" }}>
@@ -513,78 +527,80 @@ function Pharmacies() {
 
         {(modalType === "create" || modalType === "edit") && (
           <div style={{ padding: "16px 0" }}>
-             <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleFormSubmit}
-                initialValues={modalType === 'edit' ? editPharmacyData : initialNewPharmacyState}
-             >
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="name"
-                            label="Pharmacy Name"
-                            rules={[{ required: true, message: 'Please enter pharmacy name' }]}
-                        >
-                            <Input placeholder="Enter name" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="phone"
-                            label="Phone Number"
-                            rules={[{ required: true, message: 'Please enter phone number' }]}
-                        >
-                            <Input placeholder="Enter phone number" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Form.Item
-                            name="location"
-                            label="Location"
-                            rules={[{ required: true, message: 'Please enter location' }]}
-                        >
-                            <Input placeholder="Enter location" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="start_time"
-                            label="Start Time"
-                            rules={[{ required: true, message: 'Please select start time' }]}
-                        >
-                            <TimePicker format="HH:mm" style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="finish_time"
-                            label="Finish Time"
-                            rules={[{ required: true, message: 'Please select finish time' }]}
-                        >
-                            <TimePicker format="HH:mm" style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="latitude"
-                            label="Latitude"
-                            rules={[{ required: true, message: 'Please enter latitude' }]}
-                        >
-                            <Input placeholder="Enter latitude" type="number" step="any" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="longitude"
-                            label="Longitude"
-                            rules={[{ required: true, message: 'Please enter longitude' }]}
-                        >
-                            <Input placeholder="Enter longitude" type="number" step="any" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-             </Form>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleFormSubmit}
+              initialValues={
+                modalType === "edit" ? editPharmacyData : initialNewPharmacyState
+              }
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="name"
+                    label="Pharmacy Name"
+                    rules={[{ required: true, message: "Please enter pharmacy name" }]}
+                  >
+                    <Input placeholder="Enter name" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="phone"
+                    label="Phone Number"
+                    rules={[{ required: true, message: "Please enter phone number" }]}
+                  >
+                    <Input placeholder="Enter phone number" />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item
+                    name="location"
+                    label="Location"
+                    rules={[{ required: true, message: "Please enter location" }]}
+                  >
+                    <Input placeholder="Enter location" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="start_time"
+                    label="Start Time"
+                    rules={[{ required: true, message: "Please select start time" }]}
+                  >
+                    <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="finish_time"
+                    label="Finish Time"
+                    rules={[{ required: true, message: "Please select finish time" }]}
+                  >
+                    <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="latitude"
+                    label="Latitude"
+                    rules={[{ required: true, message: "Please enter latitude" }]}
+                  >
+                    <Input placeholder="Enter latitude" type="number" step="any" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="longitude"
+                    label="Longitude"
+                    rules={[{ required: true, message: "Please enter longitude" }]}
+                  >
+                    <Input placeholder="Enter longitude" type="number" step="any" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
           </div>
         )}
       </Modal>
