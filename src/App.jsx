@@ -11,7 +11,7 @@ import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./pages/login/Login";
-import Dashboard from "./pages/dashboard/Dashboard";
+import Appointments from "./pages/appointments/Appointments";
 import Sidebar from "./components/sidebar/Sidebar";
 import Navbar from "./components/navbar/Navbar";
 import {
@@ -76,8 +76,8 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<Navigate to="/appointments" replace />} />
+          <Route path="appointments" element={<Appointments />} />
           <Route path="clinics" element={<Clinics />} />
           <Route path="pharmacies" element={<Pharmacies />} />
           <Route path="doctors" element={<Doctors />} />

@@ -37,15 +37,7 @@ import {
 } from "@ant-design/icons";
 import { getAllClinics } from "../../api/clinics";
 import { toast } from "react-toastify";
-import {
-  fetchDoctors,
-  createDoctor,
-  showDoctorDetails,
-  deleteDoctor,
-  showDoctorsByClinic,
-  // Assuming an updateDoctor function exists in your api/doctors.js
-  // import { updateDoctor } from "../../api/doctors";
-} from "../../api/doctors";
+import { useDoctorsStore } from "../../store/doctorsStore";
 import DoctorDetails from "./DoctorDetails";
 
 const { Title } = Typography;
@@ -68,8 +60,20 @@ const initialNewDoctorState = {
 };
 
 function Doctors() {
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    doctors,
+    loading,
+    error,
+    doctorDetails,
+    fetchDoctors,
+    createDoctor: createDoctorAction,
+    showDoctorDetails: showDoctorDetailsAction,
+    deleteDoctor: deleteDoctorAction,
+    showDoctorsByClinic: showDoctorsByClinicAction,
+    setDoctorDetails,
+    clearDoctorDetails,
+  } = useDoctorsStore();
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -77,90 +81,97 @@ function Doctors() {
   });
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // 'view', 'create'
-  const [form] = Form.useForm(); // Ant Design form instance
-  const [doctorDetails, setDoctorDetails] = useState(null);
+  const [modalType, setModalType] = useState("");
+  const [form] = Form.useForm();
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [clinics, setClinics] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState("all");
 
-  // Fetch doctors data
-  const fetchDoctorsData = async (page = 1, pageSize = 10) => {
-    setLoading(true);
+  // Fetch doctors and clinics on mount
+  useEffect(() => {
+    fetchDoctors();
+    getAllClinics()
+      .then(setClinics)
+      .catch(() => setClinics([]));
+  }, [fetchDoctors]);
+
+  // Update pagination total when doctors change
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      total: doctors.length,
+    }));
+  }, [doctors]);
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedDoctor(null);
+    setModalType("");
+    form.resetFields();
+    clearDoctorDetails();
+  };
+
+  const handleFormSubmit = async (values) => {
     try {
-      const response = await fetchDoctors();
-      console.log(response);
-      // Handle different response structures (adjust based on your actual API response)
-      let doctorsData = [];
-      let totalCount = 0;
-
-      if (Array.isArray(response)) {
-        doctorsData = response;
-        totalCount = response.length;
-      } else if (response.data && Array.isArray(response.data)) {
-        doctorsData = response.data;
-        totalCount = response.total || response.count || response.data.length;
-      } else if (response.doctors && Array.isArray(response.doctors)) {
-        doctorsData = response.doctors;
-        totalCount =
-          response.total || response.count || response.doctors.length;
-      } else {
-        console.warn("Unexpected response structure:", response);
-        doctorsData = [];
-        totalCount = 0;
+      const doctorData = {
+        ...values,
+        average_visit_duration: values.average_visit_duration
+          ? Number(values.average_visit_duration)
+          : null,
+        visit_fee: values.visit_fee ? Number(values.visit_fee) : null,
+      };
+      if (modalType === "create") {
+        const createPayload = {
+          first_name: doctorData.first_name,
+          last_name: doctorData.last_name,
+          clinic_id: `${doctorData.clinic_id}`,
+          average_visit_duration: `${doctorData.average_visit_duration} min`,
+          visit_fee: doctorData.visit_fee,
+          phone: doctorData.phone,
+          email: doctorData.email,
+          password: doctorData.password,
+        };
+        await createDoctorAction(createPayload);
+        toast.success("Doctor created successfully");
       }
-
-      setDoctors(doctorsData);
-      setPagination((prev) => ({
-        ...prev,
-        current: page,
-        pageSize,
-        total: totalCount,
-      }));
+      closeModal();
     } catch (error) {
-      console.error("Error fetching doctors:", error);
-
-      let errorMessage = "Failed to fetch doctors";
-      if (error.message) {
-        errorMessage += `: ${error.message}`;
-      }
-      if (
-        error.code === "NETWORK_ERROR" ||
-        error.message?.includes("Network Error")
-      ) {
-        errorMessage =
-          "Network error: Please check your internet connection and server status";
-      }
-      if (error.response?.status === 404) {
-        errorMessage = "Doctors endpoint not found. Please check the API URL";
-      }
-      if (error.response?.status === 401) {
-        errorMessage = "Authentication required. Please login again";
-      }
-
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      console.log(error)
+     
     }
   };
 
-  // Delete doctor
+  const handleRefresh = async () => {
+    setSelectedClinic("all");
+    await fetchDoctors();
+  };
+
+  const handleViewDoctor = async (doctor) => {
+    setModalType("view");
+    setShowModal(true);
+    setDetailsLoading(true);
+    clearDoctorDetails();
+    try {
+      await showDoctorDetailsAction(doctor.id);
+    } catch (error) {
+      toast.error("Failed to fetch doctor details");
+      clearDoctorDetails();
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   const handleDelete = async (doctorId) => {
     try {
-      await deleteDoctor(doctorId);
+      await deleteDoctorAction(doctorId);
       toast.success("Doctor deleted successfully");
-      fetchDoctorsData(pagination.current, pagination.pageSize); // Refresh list
     } catch (error) {
-      console.error("Error deleting doctor:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to delete doctor";
-      toast.error(errorMessage);
+      toast.error(error?.response?.data?.message || "Failed to delete doctor");
     }
   };
 
-  // Handle table pagination
   const handleTableChange = (paginationInfo) => {
-    fetchDoctorsData(paginationInfo.current, paginationInfo.pageSize);
+    fetchDoctors(paginationInfo.current, paginationInfo.pageSize);
   };
 
   // Get status color and icon
@@ -208,120 +219,12 @@ function Doctors() {
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedDoctor(null);
-    setModalType("");
-    form.resetFields(); // Reset form fields on close
-  };
-
-  // Handle form submission for Create
-  const handleFormSubmit = async (values) => {
-    setLoading(true); // Indicate loading during submission
-    try {
-      const doctorData = {
-        ...values,
-        // Ensure numeric fields are numbers
-        average_visit_duration: values.average_visit_duration
-          ? Number(values.average_visit_duration)
-          : null,
-        visit_fee: values.visit_fee ? Number(values.visit_fee) : null,
-      };
-
-      if (modalType === "create") {
-        // Only send the required fields for creation
-        const createPayload = {
-          first_name: doctorData.first_name,
-          last_name: doctorData.last_name,
-          clinic_id: `${doctorData.clinic_id}`,
-          average_visit_duration: `${doctorData.average_visit_duration} min`,
-          visit_fee: doctorData.visit_fee,
-          phone: doctorData.phone,
-          email: doctorData.email,
-          password: doctorData.password,
-        };
-        await createDoctor(createPayload);
-        toast.success("Doctor created successfully");
-      }
-
-      closeModal(); // Close modal on success
-      fetchDoctorsData(pagination.current, pagination.pageSize); // Refresh list
-    } catch (error) {
-      console.error(`Error ${modalType}ing doctor:`, error);
-      const errorMessage =
-        error.response?.data?.message[0] || `Failed to ${modalType} doctor`;
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false); // Stop loading
-    }
-  };
-
-  // Refresh data
-  const handleRefresh = async () => {
-    setSelectedClinic("all");
-    await fetchDoctorsData();
-  };
-
-  // Fetch and show doctor details in modal
-  const handleViewDoctor = async (doctor) => {
-    setModalType("view");
-    setShowModal(true);
-    setDetailsLoading(true);
-    setDoctorDetails(null);
-    try {
-      const details = await showDoctorDetails(doctor.id);
-      setDoctorDetails(details);
-    } catch (error) {
-      toast.error("Failed to fetch doctor details");
-      setDoctorDetails(null);
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
-  // Load data on component mount
-  useEffect(() => {
-    fetchDoctorsData();
-    getAllClinics()
-      .then(setClinics)
-      .catch(() => setClinics([]));
-  }, []);
-
   const handleClinicFilterChange = async (value) => {
     setSelectedClinic(value);
-    setLoading(true);
-    try {
-      if (value === "all") {
-        await fetchDoctorsData();
-      } else {
-        const data = await showDoctorsByClinic(value);
-        let doctorsData = [];
-        let totalCount = 0;
-        if (Array.isArray(data)) {
-          doctorsData = data;
-          totalCount = data.length;
-        } else if (data.data && Array.isArray(data.data)) {
-          doctorsData = data.data;
-          totalCount = data.total || data.count || data.data.length;
-        } else if (data.doctors && Array.isArray(data.doctors)) {
-          doctorsData = data.doctors;
-          totalCount = data.total || data.count || data.doctors.length;
-        } else {
-          doctorsData = [];
-          totalCount = 0;
-        }
-        setDoctors(doctorsData);
-        setPagination((prev) => ({
-          ...prev,
-          current: 1,
-          total: totalCount,
-        }));
-      }
-    } catch (error) {
-      setDoctors([]);
-      setPagination((prev) => ({ ...prev, current: 1, total: 0 }));
-    } finally {
-      setLoading(false);
+    if (value === "all") {
+      await fetchDoctors();
+    } else {
+      await showDoctorsByClinicAction(value);
     }
   };
 

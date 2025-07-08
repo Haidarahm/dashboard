@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { useAppointmentStore } from "../../store/appointmentStore";
+import { useDoctorsStore } from "../../store/doctorsStore";
 
 const AppointmentCalendar = () => {
   const {
@@ -27,16 +28,11 @@ const AppointmentCalendar = () => {
     applyFilters,
   } = useAppointmentStore();
 
+  const { doctors, fetchDoctors, loading: doctorsLoading } = useDoctorsStore();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedAppointments, setSelectedAppointments] = useState([]);
-
-  // Sample doctor list - you might want to fetch this from your API too
-  const [doctors] = useState([
-    { id: 1, name: "Judy Omran" },
-    { id: 2, name: "John Smith" },
-    { id: 3, name: "Sarah Johnson" },
-  ]);
 
   useEffect(() => {
     fetchAllAppointments();
@@ -45,6 +41,10 @@ const AppointmentCalendar = () => {
   useEffect(() => {
     applyFilters();
   }, [filters.doctor_id, filters.status, appointments, applyFilters]);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [fetchDoctors]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(filterType, value);
@@ -207,25 +207,28 @@ const AppointmentCalendar = () => {
           {filters.showFilters && (
             <div className="p-4 border-b bg-gray-50">
               <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Doctor:
-                  </label>
-                  <select
-                    value={filters.doctor_id}
-                    onChange={(e) =>
-                      handleFilterChange("doctor_id", e.target.value)
-                    }
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">All Doctors</option>
-                    {doctors.map((doctor) => (
-                      <option key={doctor.id} value={doctor.id}>
-                        Dr. {doctor.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Doctor Filter Dropdown */}
+                <label
+                  htmlFor="doctor-filter"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Doctor
+                </label>
+                <select
+                  id="doctor-filter"
+                  value={filters.doctor_id}
+                  onChange={(e) =>
+                    handleFilterChange("doctor_id", e.target.value)
+                  }
+                  className="w-full border rounded px-2 py-1"
+                >
+                  <option value="">All Doctors</option>
+                  {doctors.map((doc) => (
+                    <option key={doc.id} value={doc.id}>
+                      {doc.first_name} {doc.last_name}
+                    </option>
+                  ))}
+                </select>
 
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -327,7 +330,7 @@ const AppointmentCalendar = () => {
 
       {/* Sidebar */}
       <div className="w-96 bg-white border-l border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <h3 className="text-lg font-semibold mb-4">
           {selectedDate
             ? `Appointments - ${selectedDate.toLocaleDateString()}`
             : "Select a date"}

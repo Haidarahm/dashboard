@@ -18,10 +18,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const menuItems = [
     { 
-      key: "/", 
+      key: "/appointments", 
       icon: FaClinicMedical, 
-      label: "Dashboard",
-      path: "/" 
+      label: "appointments",
+      path: "/appointments" 
     },
     { 
       key: "/doctors", 

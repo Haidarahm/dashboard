@@ -51,8 +51,8 @@ const LoginForm = () => {
 
       toast.success("Login successful!");
 
-      // Navigate to dashboard
-      navigate("/dashboard");
+      // Navigate to appointments
+      navigate("/appointments");
     } catch (error) {
       console.error("Login error:", error);
 
