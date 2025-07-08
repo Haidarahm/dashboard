@@ -37,6 +37,7 @@ import {
   updatePharmacy,
 } from "../../api/pharmacies";
 import moment from "moment";
+import MapWithMovableMarker from "../../components/map/MapWithMovableMarker";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -68,6 +69,7 @@ function Pharmacies() {
   );
   const [editPharmacyData, setEditPharmacyData] = useState(null);
   const [form] = Form.useForm();
+  const [markerPosition, setMarkerPosition] = useState([34.6402, 39.0494]);
 
   // Fetch pharmacies with improved pagination handling
   const fetchPharmacies = async (page = 1, pageSize = 5) => {
@@ -212,6 +214,7 @@ function Pharmacies() {
 
     if (type === "create") {
       setNewPharmacyData(initialNewPharmacyState);
+      setMarkerPosition([34.6402, 39.0494]);
       form.resetFields();
     } else if (type === "edit" && pharmacy) {
       const editData = {
@@ -224,6 +227,10 @@ function Pharmacies() {
           : null,
       };
       setEditPharmacyData(editData);
+      setMarkerPosition([
+        parseFloat(pharmacy.latitude) || 34.6402,
+        parseFloat(pharmacy.longitude) || 39.0494,
+      ]);
       form.setFieldsValue(editData);
     }
   };
@@ -616,6 +623,30 @@ function Pharmacies() {
                     <TimePicker format="HH:mm" style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
+                <Col span={24}>
+                  <div style={{ marginTop: 24 }}>
+                    <label
+                      style={{
+                        fontWeight: 600,
+                        color: "#444",
+                        marginBottom: 8,
+                        display: "block",
+                      }}
+                    >
+                      Select Location on Map
+                    </label>
+                    <MapWithMovableMarker
+                      position={markerPosition}
+                      setPosition={(pos) => {
+                        setMarkerPosition(pos);
+                        form.setFieldsValue({
+                          latitude: pos[0],
+                          longitude: pos[1],
+                        });
+                      }}
+                    />
+                  </div>
+                </Col>
                 <Col span={12}>
                   <Form.Item
                     name="latitude"
@@ -628,6 +659,10 @@ function Pharmacies() {
                       placeholder="Enter latitude"
                       type="number"
                       step="any"
+                      onChange={(e) => {
+                        const lat = parseFloat(e.target.value);
+                        setMarkerPosition([lat, markerPosition[1]]);
+                      }}
                     />
                   </Form.Item>
                 </Col>
@@ -643,6 +678,10 @@ function Pharmacies() {
                       placeholder="Enter longitude"
                       type="number"
                       step="any"
+                      onChange={(e) => {
+                        const lng = parseFloat(e.target.value);
+                        setMarkerPosition([markerPosition[0], lng]);
+                      }}
                     />
                   </Form.Item>
                 </Col>
