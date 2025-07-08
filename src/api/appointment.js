@@ -23,12 +23,9 @@ export const getAllAppointmentsByDoctor = async (doctor_id) => {
   }
 };
 export const getAllAppointmentsByStatus = async (status) => {
+  console.log(status)
   try {
-    const response = await api.get("/api/admin/filteringAppointmentByStatus", {
-      params: {
-        status,
-      },
-    });
+    const response = await api.post("/api/admin/filteringAppointmentByStatus", {status});
     return response.data;
   } catch (error) {
     console.error("Get all clinics error:", error);

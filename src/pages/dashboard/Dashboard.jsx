@@ -1,8 +1,8 @@
-import AppointmentCalendar from "@/components/calendar/AppointmentCalendar";
+import AppointmentCalendar from "../../components/calendar/AppointmentCalendar";
 import React from "react";
 
-function Dashboard() {
+function Appointments() {
   return <AppointmentCalendar />;
 }
 
-export default Dashboard;
+export default Appointments;
