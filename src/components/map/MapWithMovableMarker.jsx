@@ -5,13 +5,13 @@ import {
   Popup,
   useMapEvents,
 } from "react-leaflet";
+import { useRef } from "react";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import SearchControl from "./SearchControl";
 
-// Fix for default marker icon not showing
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -19,7 +19,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Click-to-move marker
 const ClickHandler = ({ setPosition }) => {
   useMapEvents({
     click(e) {
@@ -33,15 +32,13 @@ const MapWithMovableMarker = ({
   position = [34.6402, 39.0494],
   setPosition,
 }) => {
+  const initialCenter = useRef(position);
   return (
     <MapContainer
-      center={position}
+      center={initialCenter.current}
       zoom={7}
       style={{ height: "300px", width: "100%", borderRadius: 12, marginTop: 8 }}
-      key={position.join(",")}
     >
-      {" "}
-      {/* key forces re-center on prop change */}
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
