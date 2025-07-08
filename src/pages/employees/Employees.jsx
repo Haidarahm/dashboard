@@ -30,7 +30,7 @@ const { Title } = Typography;
 function Employees() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
- 
+
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(""); // 'create', 'edit'
@@ -44,7 +44,7 @@ function Employees() {
     params.is_secretary = filter;
 
     try {
-      const response = await fetchEmployees( params.is_secretary );
+      const response = await fetchEmployees(params.is_secretary);
       let employeesData = [];
       let totalCount = 0;
 
@@ -65,7 +65,6 @@ function Employees() {
       }
 
       setEmployees(employeesData);
-      
     } catch (error) {
       console.error("Error fetching employees:", error);
       toast.error("Failed to fetch employees");
@@ -77,8 +76,6 @@ function Employees() {
   useEffect(() => {
     fetchEmployeesData();
   }, [filter]);
-
- 
 
   const openModal = (type, employee = null) => {
     setModalType(type);
@@ -162,9 +159,9 @@ function Employees() {
       title: "Role",
       dataIndex: "is_secretary",
       key: "role",
-      render: (is_secretary) => (
-        <Tag color={is_secretary ? "blue" : "green"}>
-          {is_secretary ? "Secretary" : "Employee"}
+      render: (_, data) => (
+        <Tag color={data.role === "secretary" ? "blue" : "green"}>
+          {data.role === "secretary" ? "Secretary" : "Employee"}
         </Tag>
       ),
     },
@@ -220,13 +217,7 @@ function Employees() {
         </Col>
       </Row>
       <Spin spinning={loading}>
-        <Table
-          dataSource={employees}
-          columns={columns}
-          rowKey="id"
-         
-          
-        />
+        <Table dataSource={employees} columns={columns} rowKey="id" />
       </Spin>
       <Modal
         title={modalType === "create" ? "Create New Employee" : "Edit Employee"}

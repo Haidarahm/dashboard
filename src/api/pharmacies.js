@@ -106,11 +106,12 @@ export const fetchAllPharmacies = async (page, pageSize) => {
  * @param {number} params.limit - Number of items per page
  * @returns {Promise<Object>} - Search results with matching pharmacies
  */
-export const searchPharmacies = async (name, params = {}) => {
+export const searchPharmacies = async (name) => {
+  console.log(name)
   try {
     const response = await api.post("/api/admin/searchPharmacy", {
       name,
-      ...params,
+     
     });
     return response.data;
   } catch (error) {

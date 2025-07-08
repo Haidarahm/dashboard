@@ -5,6 +5,8 @@ import {
   Navigate,
   Outlet,
 } from "react-router";
+import 'leaflet/dist/leaflet.css';
+
 import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

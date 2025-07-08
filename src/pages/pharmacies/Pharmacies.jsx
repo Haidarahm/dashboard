@@ -57,33 +57,35 @@ function Pharmacies() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
-  const [newPharmacyData, setNewPharmacyData] = useState(initialNewPharmacyState);
+  const [newPharmacyData, setNewPharmacyData] = useState(
+    initialNewPharmacyState
+  );
   const [editPharmacyData, setEditPharmacyData] = useState(null);
   const [form] = Form.useForm();
 
   // Fetch pharmacies with improved pagination handling
-  const fetchPharmacies = async (page = 1, pageSize = 10) => {
+  const fetchPharmacies = async (page = 1, pageSize = 5) => {
     setLoading(true);
     try {
       const response = await fetchAllPharmacies(page, pageSize);
-      console.log('API Response:', response); // Debug log
-      
+      console.log("API Response:", response); // Debug log
+
       // Handle different response structures
       let pharmaciesData = [];
       let totalCount = 0;
 
-      if (response && typeof response === 'object') {
+      if (response && typeof response === "object") {
         // Check for common response patterns
         if (response.data && Array.isArray(response.data)) {
           pharmaciesData = response.data;
-          totalCount = response.meta.total 
-        } 
+          totalCount = response.meta.total;
+        }
       } else {
         console.warn("Invalid response:", response);
         pharmaciesData = [];
@@ -91,35 +93,39 @@ function Pharmacies() {
       }
 
       setPharmacies(pharmaciesData);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         current: page,
         pageSize: pageSize,
         total: totalCount,
       }));
-
     } catch (error) {
       console.error("Error fetching pharmacies:", error);
-      
+
       let errorMessage = "Failed to fetch pharmacies";
       if (error.message) {
         errorMessage += `: ${error.message}`;
       }
-      if (error.code === "NETWORK_ERROR" || error.message?.includes("Network Error")) {
-        errorMessage = "Network error: Please check your internet connection and server status";
+      if (
+        error.code === "NETWORK_ERROR" ||
+        error.message?.includes("Network Error")
+      ) {
+        errorMessage =
+          "Network error: Please check your internet connection and server status";
       }
       if (error.response?.status === 404) {
-        errorMessage = "Pharmacies endpoint not found. Please check the API URL";
+        errorMessage =
+          "Pharmacies endpoint not found. Please check the API URL";
       }
       if (error.response?.status === 401) {
         errorMessage = "Authentication required. Please login again";
       }
 
       toast.error(errorMessage);
-      
+
       // Reset to empty state on error
       setPharmacies([]);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         total: 0,
       }));
@@ -132,7 +138,7 @@ function Pharmacies() {
   const handleSearch = async (searchTerm) => {
     if (!searchTerm.trim()) {
       // Reset to first page when clearing search
-      setPagination(prev => ({ ...prev, current: 1 }));
+      setPagination((prev) => ({ ...prev, current: 1 }));
       fetchPharmacies(1, pagination.pageSize);
       return;
     }
@@ -140,10 +146,11 @@ function Pharmacies() {
     setSearchLoading(true);
     try {
       const response = await searchPharmacies(searchTerm);
-      const searchResults = response.data || response.pharmacies || response || [];
-      
+      const searchResults =
+        response.data || response.pharmacies || response || [];
+
       setPharmacies(searchResults);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         current: 1, // Reset to first page for search results
         total: searchResults.length,
@@ -161,14 +168,15 @@ function Pharmacies() {
     try {
       await deletePharmacy(pharmacyId);
       toast.success("Pharmacy deleted successfully");
-      
+
       // Calculate if we need to go back a page after deletion
       const currentPageItems = pharmacies.length;
-      const shouldGoToPreviousPage = currentPageItems === 1 && pagination.current > 1;
-      
+      const shouldGoToPreviousPage =
+        currentPageItems === 1 && pagination.current > 1;
+
       if (shouldGoToPreviousPage) {
         const newPage = pagination.current - 1;
-        setPagination(prev => ({ ...prev, current: newPage }));
+        setPagination((prev) => ({ ...prev, current: newPage }));
         fetchPharmacies(newPage, pagination.pageSize);
       } else {
         fetchPharmacies(pagination.current, pagination.pageSize);
@@ -181,17 +189,17 @@ function Pharmacies() {
 
   // Handle table pagination changes
   const handleTableChange = (paginationInfo, filters, sorter) => {
-    console.log('Pagination change:', paginationInfo); // Debug log
-    
+    console.log("Pagination change:", paginationInfo); // Debug log
+
     const { current, pageSize } = paginationInfo;
-    
+
     // Update pagination state
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       current: current,
       pageSize: pageSize,
     }));
-    
+
     // Fetch new data
     fetchPharmacies(current, pageSize);
   };
@@ -208,8 +216,12 @@ function Pharmacies() {
     } else if (type === "edit" && pharmacy) {
       const editData = {
         ...pharmacy,
-        start_time: pharmacy.start_time ? moment(pharmacy.start_time, "HH:mm") : null,
-        finish_time: pharmacy.finish_time ? moment(pharmacy.finish_time, "HH:mm") : null,
+        start_time: pharmacy.start_time
+          ? moment(pharmacy.start_time, "HH:mm")
+          : null,
+        finish_time: pharmacy.finish_time
+          ? moment(pharmacy.finish_time, "HH:mm")
+          : null,
       };
       setEditPharmacyData(editData);
       form.setFieldsValue(editData);
@@ -231,8 +243,12 @@ function Pharmacies() {
     try {
       const pharmacyData = {
         ...values,
-        start_time: values.start_time ? values.start_time.format("HH:mm") : null,
-        finish_time: values.finish_time ? values.finish_time.format("HH:mm") : null,
+        start_time: values.start_time
+          ? values.start_time.format("HH:mm")
+          : null,
+        finish_time: values.finish_time
+          ? values.finish_time.format("HH:mm")
+          : null,
         latitude: parseFloat(values.latitude),
         longitude: parseFloat(values.longitude),
       };
@@ -249,7 +265,8 @@ function Pharmacies() {
       fetchPharmacies(pagination.current, pagination.pageSize);
     } catch (error) {
       console.error(`Error ${modalType}ing pharmacy:`, error);
-      const errorMessage = error.response?.data?.message || `Failed to ${modalType} pharmacy`;
+      const errorMessage =
+        error.response?.data?.message || `Failed to ${modalType} pharmacy`;
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -263,7 +280,7 @@ function Pharmacies() {
 
   // Load data on component mount
   useEffect(() => {
-    fetchPharmacies(1, 10);
+    fetchPharmacies(1, 5);
   }, []);
 
   // Table columns configuration
@@ -330,8 +347,12 @@ function Pharmacies() {
       title: "Status",
       key: "status",
       render: (_, record) => {
-        const [startHour, startMin] = (record.start_time || "00:00").split(":").map(Number);
-        const [endHour, endMin] = (record.finish_time || "23:59").split(":").map(Number);
+        const [startHour, startMin] = (record.start_time || "00:00")
+          .split(":")
+          .map(Number);
+        const [endHour, endMin] = (record.finish_time || "23:59")
+          .split(":")
+          .map(Number);
 
         const now = new Date();
         const currentTime = now.getHours() * 60 + now.getMinutes();
@@ -399,7 +420,11 @@ function Pharmacies() {
     <div style={{ padding: "24px" }}>
       {/* Header Section */}
       <Card style={{ marginBottom: "24px" }}>
-        <Row justify="space-between" align="middle" style={{ marginBottom: "16px" }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: "16px" }}
+        >
           <Col>
             <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
               Pharmacies Management
@@ -459,8 +484,6 @@ function Pharmacies() {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-            
-             
             }}
             onChange={handleTableChange}
             scroll={{ x: 1200 }}
@@ -532,7 +555,9 @@ function Pharmacies() {
               layout="vertical"
               onFinish={handleFormSubmit}
               initialValues={
-                modalType === "edit" ? editPharmacyData : initialNewPharmacyState
+                modalType === "edit"
+                  ? editPharmacyData
+                  : initialNewPharmacyState
               }
             >
               <Row gutter={16}>
@@ -540,7 +565,9 @@ function Pharmacies() {
                   <Form.Item
                     name="name"
                     label="Pharmacy Name"
-                    rules={[{ required: true, message: "Please enter pharmacy name" }]}
+                    rules={[
+                      { required: true, message: "Please enter pharmacy name" },
+                    ]}
                   >
                     <Input placeholder="Enter name" />
                   </Form.Item>
@@ -549,7 +576,9 @@ function Pharmacies() {
                   <Form.Item
                     name="phone"
                     label="Phone Number"
-                    rules={[{ required: true, message: "Please enter phone number" }]}
+                    rules={[
+                      { required: true, message: "Please enter phone number" },
+                    ]}
                   >
                     <Input placeholder="Enter phone number" />
                   </Form.Item>
@@ -558,7 +587,9 @@ function Pharmacies() {
                   <Form.Item
                     name="location"
                     label="Location"
-                    rules={[{ required: true, message: "Please enter location" }]}
+                    rules={[
+                      { required: true, message: "Please enter location" },
+                    ]}
                   >
                     <Input placeholder="Enter location" />
                   </Form.Item>
@@ -567,7 +598,9 @@ function Pharmacies() {
                   <Form.Item
                     name="start_time"
                     label="Start Time"
-                    rules={[{ required: true, message: "Please select start time" }]}
+                    rules={[
+                      { required: true, message: "Please select start time" },
+                    ]}
                   >
                     <TimePicker format="HH:mm" style={{ width: "100%" }} />
                   </Form.Item>
@@ -576,7 +609,9 @@ function Pharmacies() {
                   <Form.Item
                     name="finish_time"
                     label="Finish Time"
-                    rules={[{ required: true, message: "Please select finish time" }]}
+                    rules={[
+                      { required: true, message: "Please select finish time" },
+                    ]}
                   >
                     <TimePicker format="HH:mm" style={{ width: "100%" }} />
                   </Form.Item>
@@ -585,18 +620,30 @@ function Pharmacies() {
                   <Form.Item
                     name="latitude"
                     label="Latitude"
-                    rules={[{ required: true, message: "Please enter latitude" }]}
+                    rules={[
+                      { required: true, message: "Please enter latitude" },
+                    ]}
                   >
-                    <Input placeholder="Enter latitude" type="number" step="any" />
+                    <Input
+                      placeholder="Enter latitude"
+                      type="number"
+                      step="any"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
                     name="longitude"
                     label="Longitude"
-                    rules={[{ required: true, message: "Please enter longitude" }]}
+                    rules={[
+                      { required: true, message: "Please enter longitude" },
+                    ]}
                   >
-                    <Input placeholder="Enter longitude" type="number" step="any" />
+                    <Input
+                      placeholder="Enter longitude"
+                      type="number"
+                      step="any"
+                    />
                   </Form.Item>
                 </Col>
               </Row>
