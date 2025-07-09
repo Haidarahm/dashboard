@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useAppointmentStore } from "../../store/appointmentStore";
 import { useDoctorsStore } from "../../store/doctorsStore";
+import { Select } from "antd";
+const { Option } = Select;
 
 const AppointmentCalendar = () => {
   const {
@@ -23,8 +25,6 @@ const AppointmentCalendar = () => {
     setFilters,
     clearFilters,
     fetchAllAppointments,
-    fetchAppointmentsByDoctor,
-    fetchAppointmentsByStatus,
     applyFilters,
   } = useAppointmentStore();
 
@@ -214,38 +214,45 @@ const AppointmentCalendar = () => {
                 >
                   Doctor
                 </label>
-                <select
+                <Select
                   id="doctor-filter"
                   value={filters.doctor_id}
-                  onChange={(e) =>
-                    handleFilterChange("doctor_id", e.target.value)
+                  onChange={(value) => handleFilterChange("doctor_id", value)}
+                  style={{ width: "100%", marginBottom: 12 }}
+                  allowClear
+                  placeholder="All Doctors"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                   }
-                  className="w-full border rounded px-2 py-1"
                 >
-                  <option value="">All Doctors</option>
+                  <Option value="">All Doctors</Option>
                   {doctors.map((doc) => (
-                    <option key={doc.id} value={doc.id}>
+                    <Option key={doc.id} value={doc.id}>
                       {doc.first_name} {doc.last_name}
-                    </option>
+                    </Option>
                   ))}
-                </select>
+                </Select>
 
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700">
                     Status:
                   </label>
-                  <select
+                  <Select
                     value={filters.status}
-                    onChange={(e) =>
-                      handleFilterChange("status", e.target.value)
-                    }
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(value) => handleFilterChange("status", value)}
+                    style={{ width: "100%" }}
+                    allowClear
+                    placeholder="All Statuses"
                   >
-                    <option value="">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="visited">Visited</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                    <Option value="">All Statuses</Option>
+                    <Option value="pending">Pending</Option>
+                    <Option value="visited">Visited</Option>
+                    <Option value="cancelled">Cancelled</Option>
+                  </Select>
                 </div>
 
                 {(filters.doctor_id || filters.status) && (

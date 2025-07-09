@@ -23,6 +23,7 @@ import Pharmacies from "./pages/pharmacies/Pharmacies";
 import Doctors from "./pages/doctors/Doctors";
 import Clinics from "./pages/clinics/Clinics";
 import Employees from "./pages/employees/Employees";
+import Payments from "./pages/payments/Payments";
 
 function ProtectedRoute({ children }) {
   // Check if user is authenticated and token is valid
@@ -82,6 +83,7 @@ function App() {
           <Route path="pharmacies" element={<Pharmacies />} />
           <Route path="doctors" element={<Doctors />} />
           <Route path="employees" element={<Employees />} />
+          <Route path="payments" element={<Payments />} />
           {/* Add more nested routes here */}
         </Route>
       </Routes>

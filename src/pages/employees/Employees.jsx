@@ -119,7 +119,7 @@ function Employees() {
       closeModal();
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || `Failed to ${modalType} employee`;
+        error.response?.data?.message[0] || `Failed to ${modalType} employee`;
       toast.error(errorMessage);
     } finally {
       setLoading(false);

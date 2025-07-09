@@ -2,51 +2,59 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { 
-  FaClinicMedical, 
-  FaUserMd, 
-  FaRegHospital, 
-  FaUsers, 
+import {
+  FaClinicMedical,
+  FaUserMd,
+  FaRegHospital,
+  FaUsers,
   FaPills,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
 } from "react-icons/fa";
+import { FaRegCalendarCheck } from "react-icons/fa6";
+import { MdOutlinePayments } from "react-icons/md";
 
 // Sidebar Component
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
 
   const menuItems = [
-    { 
-      key: "/appointments", 
-      icon: FaClinicMedical, 
-      label: "appointments",
-      path: "/appointments" 
+    {
+      key: "/appointments",
+      icon: FaRegCalendarCheck,
+      label: "Appointments",
+      path: "/appointments",
     },
-    { 
-      key: "/doctors", 
-      icon: FaUserMd, 
+    {
+      key: "/payments",
+      icon: MdOutlinePayments,
+      label: "Payments",
+      path: "/payments",
+    },
+    {
+      key: "/doctors",
+      icon: FaUserMd,
       label: "Doctors",
-      path: "/doctors" 
+      path: "/doctors",
     },
-    { 
-      key: "/clinics", 
-      icon: FaRegHospital, 
+    {
+      key: "/clinics",
+      icon: FaRegHospital,
       label: "Clinics",
-      path: "/clinics" 
+      path: "/clinics",
     },
-    { 
-      key: "/employees", 
-      icon: FaUsers, 
+    {
+      key: "/employees",
+      icon: FaUsers,
       label: "Employees",
-      path: "/employees" 
+      path: "/employees",
     },
-    { 
-      key: "/pharmacies", 
-      icon: FaPills, 
+    {
+      key: "/pharmacies",
+      icon: FaPills,
       label: "Pharmacies",
-      path: "/pharmacies" 
-    }
+      path: "/pharmacies",
+    },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -70,13 +78,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </div>
           )}
         </div>
-        
+
         {/* Toggle Button */}
         <button
           onClick={onToggle}
           className="p-1.5 rounded-md hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600"
         >
-          {collapsed ? <FaChevronRight size={12} /> : <FaChevronLeft size={12} />}
+          {collapsed ? (
+            <FaChevronRight size={12} />
+          ) : (
+            <FaChevronLeft size={12} />
+          )}
         </button>
       </div>
 
@@ -85,7 +97,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
-          
+
           return (
             <Link
               key={item.key}
@@ -100,13 +112,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 className={`flex-shrink-0 ${
                   collapsed ? "w-5 h-5" : "w-4 h-4 mr-3"
                 } ${
-                  active ? "text-blue-600" : "text-gray-400 group-hover:text-gray-500"
+                  active
+                    ? "text-blue-600"
+                    : "text-gray-400 group-hover:text-gray-500"
                 }`}
               />
-              {!collapsed && (
-                <span className="truncate">{item.label}</span>
-              )}
-              
+              {!collapsed && <span className="truncate">{item.label}</span>}
+
               {/* Active indicator */}
               {active && (
                 <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
@@ -115,9 +127,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
           );
         })}
       </nav>
-
-  
-
     </div>
   );
 };
