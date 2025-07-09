@@ -1,29 +1,18 @@
 // src/components/PatientsTable.jsx
-import React, { useState } from "react";
-import { Table, Typography, Tag, Popconfirm, message } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Table, Typography, Tag, Spin, Empty } from "antd";
+import usePatientsStore from "../../store/patientsStore";
 
 const { Text } = Typography;
 
-const initialData = [
-  {
-    id: 1,
-    first_name: "Naya",
-    last_name: "Salha",
-    user_id: 4,
-    gender: "female",
-    age: 21,
-    address: "Mazzeh",
-  },
-];
-
 const PatientsTable = () => {
-  const [data, setData] = useState(initialData);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+  const { patients, total, loading, error, fetchPatients } = usePatientsStore();
 
-  const handleDelete = (id) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    message.success("Patient deleted");
-  };
+  useEffect(() => {
+    fetchPatients(pageSize, currentPage);
+  }, [fetchPatients, pageSize, currentPage]);
 
   const columns = [
     {
@@ -62,24 +51,7 @@ const PatientsTable = () => {
       dataIndex: "address",
       key: "address",
     },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 80,
-      render: (_, record) => (
-        <Popconfirm
-          title="Are you sure to delete this patient?"
-          onConfirm={() => handleDelete(record.id)}
-          okText="Yes"
-          cancelText="No"
-        >
-          <DeleteOutlined
-            style={{ color: "red", cursor: "pointer" }}
-            title="Delete"
-          />
-        </Popconfirm>
-      ),
-    },
+    // Actions column can be re-enabled if a real delete API is available
   ];
 
   return (
@@ -99,13 +71,19 @@ const PatientsTable = () => {
           Patients
         </Text>
       )}
-      dataSource={data}
+      dataSource={patients}
       columns={columns}
       rowKey="id"
+      loading={loading}
+     
       pagination={{
-        pageSize: 5,
-        total: data.length,
-        current: 1,
+        pageSize,
+        total,
+        current: currentPage,
+        onChange: setCurrentPage,
+        showSizeChanger: false,
+        showQuickJumper: false,
+        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} patients`,
       }}
       bordered
       size="middle"
