@@ -10,3 +10,14 @@ export const fetchPatients = async ({ size = 10, page = 1 }) => {
     throw error.response?.data?.message || error.message;
   }
 };
+
+export const removePatient = async (patient_id) => {
+  try {
+    const response = await api.delete("/api/admin/deletePatient", {
+      params: { patient_id },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || error.message;
+  }
+};
