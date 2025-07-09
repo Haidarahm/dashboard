@@ -55,7 +55,6 @@ function Clinics() {
   const [modalType, setModalType] = useState(""); // 'create', 'edit', 'view'
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
-  const [filter, setFilter] = useState("all");
 
   // Custom styles for image preview
   const imageStyle = {
@@ -70,12 +69,10 @@ function Clinics() {
     transform: "scale(1.1)",
   };
 
-  const fetchClinicsData = async (is_secretary = null) => {
+  const fetchClinicsData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (is_secretary !== null) params.is_secretary = is_secretary;
-      const response = await getAllClinics(params);
+      const response = await getAllClinics();
       let clinicsData = [];
       if (Array.isArray(response)) {
         clinicsData = response;
@@ -98,13 +95,6 @@ function Clinics() {
   useEffect(() => {
     fetchClinicsData();
   }, []);
-
-  const handleFilterChange = (value) => {
-    setFilter(value);
-    if (value === "all") fetchClinicsData(null);
-    else if (value === "secretaries") fetchClinicsData(1);
-    else if (value === "employees") fetchClinicsData(0);
-  };
 
   const openModal = (type, clinic = null) => {
     setModalType(type);
@@ -150,7 +140,7 @@ function Clinics() {
         await updateClinic(selectedClinic.id, name, photo);
         toast.success("Clinic updated successfully");
       }
-      fetchClinicsData(pagination.current, pagination.pageSize);
+      fetchClinicsData();
       closeModal();
     } catch (error) {
       const errorMessage =
@@ -165,7 +155,7 @@ function Clinics() {
     try {
       await deleteClinic(clinicId);
       toast.success("Clinic deleted successfully");
-      fetchClinicsData(pagination.current, pagination.pageSize);
+      fetchClinicsData();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Failed to delete clinic";
@@ -359,29 +349,16 @@ function Clinics() {
             </Space>
           </Col>
         </Row>
-        <Row style={{ marginBottom: "16px" }} gutter={16}>
-          <Col xs={24} sm={12} md={8}>
-            <Select
-              value={filter}
-              onChange={handleFilterChange}
-              style={{ width: "100%" }}
-            >
-              <Option value="all">All</Option>
-              <Option value="secretaries">Secretaries</Option>
-              <Option value="employees">Employees</Option>
-            </Select>
-          </Col>
-        </Row>
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={clinics}
+            rowKey="id"
+            pagination={false}
+            size="middle"
+          />
+        </Spin>
       </Card>
-      <Spin spinning={loading}>
-        <Table
-          columns={columns}
-          dataSource={clinics}
-          rowKey="id"
-          pagination={false}
-          size="middle"
-        />
-      </Spin>
       <Modal
         title={
           modalType === "view"
