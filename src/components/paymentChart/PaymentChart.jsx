@@ -1,23 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CircularProgressbarWithChildren,
   buildStyles,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Calendar, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { usePaymentsStore } from "../../store/paymentsStore";
+import { useDoctorsStore } from "../../store/doctorsStore";
 
-const SummaryBox = ({ label, value, dollar }) => (
+const SummaryBox = ({ label, value }) => (
   <div className="text-center">
     <div className="text-sm text-gray-500">{label}</div>
-    <div className="text-lg font-semibold">
-      {dollar ? "" : "$"}
-      {value}
-    </div>
+    <div className="text-lg font-semibold">{value}</div>
   </div>
 );
+
 const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date(selectedDate));
-
   const months = [
     "January",
     "February",
@@ -32,7 +31,6 @@ const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
     "November",
     "December",
   ];
-
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
@@ -62,8 +60,6 @@ const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
           ×
         </button>
       </div>
-
-      {/* Year Navigation */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => navigateYear(-1)}
@@ -79,8 +75,6 @@ const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
           <ChevronRight size={16} />
         </button>
       </div>
-
-      {/* Month Grid */}
       <div className="grid grid-cols-3 gap-2">
         {months.map((month, index) => (
           <button
@@ -97,8 +91,6 @@ const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
           </button>
         ))}
       </div>
-
-      {/* Quick Select Current Month */}
       <div className="mt-4 pt-3 border-t border-gray-200">
         <button
           onClick={() => {
@@ -116,16 +108,7 @@ const CalendarSelector = ({ isOpen, onClose, onSelectDate, selectedDate }) => {
   );
 };
 
-const DoctorSelector = ({ isOpen, onClose, onSelectDoctor }) => {
-  const doctors = [
-    { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiology" },
-    { id: 2, name: "Dr. Michael Chen", specialty: "Pediatrics" },
-    { id: 3, name: "Dr. Emily Rodriguez", specialty: "Neurology" },
-    { id: 4, name: "Dr. David Wilson", specialty: "Orthopedics" },
-    { id: 5, name: "Dr. Lisa Thompson", specialty: "Dermatology" },
-    { id: 6, name: "Dr. Robert Kim", specialty: "Internal Medicine" },
-  ];
-
+const DoctorSelector = ({ isOpen, onClose, onSelectDoctor, doctors }) => {
   if (!isOpen) return null;
 
   return (
@@ -139,19 +122,20 @@ const DoctorSelector = ({ isOpen, onClose, onSelectDoctor }) => {
           ×
         </button>
       </div>
-
       <div className="max-h-64 overflow-y-auto">
         {doctors.map((doctor) => (
           <button
-            key={doctor.id}
+            key={`${doctor.id}-${doctor.first_name}`}
             onClick={() => {
               onSelectDoctor(doctor);
               onClose();
             }}
             className="w-full text-left p-3 border border-gray-200 rounded-lg mb-2 hover:bg-blue-50 hover:border-blue-300 transition-colors"
           >
-            <div className="font-medium text-gray-800">{doctor.name}</div>
-            <div className="text-sm text-gray-500">{doctor.specialty}</div>
+            <div className="font-medium text-gray-800">
+              {doctor.first_name} {doctor.last_name}
+            </div>
+            <div className="text-sm text-gray-500">{doctor.speciality}</div>
           </button>
         ))}
       </div>
@@ -163,39 +147,58 @@ export default function PaymentChart() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showDoctorSelector, setShowDoctorSelector] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedDoctor, setSelectedDoctor] = useState({
-    name: "Dr. Sarah Johnson",
-    specialty: "Cardiology",
-  });
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [lastFilter, setLastFilter] = useState(null); // 'date' or 'doctor'
 
-  const data = {
-    totalRevenue: 151.5,
-    totalAppointments: 3,
-    averagePayment: 50.5,
-  };
+  const {
+    paymentStats,
+    fetchPayments,
+    fetchPaymentsByDate,
+    fetchPaymentsByDoctor,
+    loading,
+  } = usePaymentsStore();
+  const { doctors, fetchDoctors } = useDoctorsStore();
 
-  // Calculate percentage (optional logic for progress bar)
-  const percentage = Math.min(
-    (data.averagePayment / data.totalRevenue) * 100,
-    100
-  );
+  useEffect(() => {
+    fetchDoctors();
+    fetchPayments();
+  }, [fetchDoctors, fetchPayments]);
+
+  useEffect(() => {
+    if (lastFilter === "date" && selectedDate) {
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+      const year = selectedDate.getFullYear();
+      fetchPaymentsByDate(`${month}-${year}`);
+    } else if (lastFilter === "doctor" && selectedDoctor) {
+      fetchPaymentsByDoctor(selectedDoctor.id);
+    } else {
+      fetchPayments();
+    }
+  }, [
+    selectedDate,
+    selectedDoctor,
+    lastFilter,
+    fetchPaymentsByDate,
+    fetchPaymentsByDoctor,
+    fetchPayments,
+  ]);
+
+  const { totalRevenue, totalAppointments, averagePayment } = paymentStats;
+  const percentage =
+    totalRevenue > 0 ? Math.min((averagePayment / totalRevenue) * 100, 100) : 0;
 
   const handleSelectDate = (date) => {
     setSelectedDate(date);
-    console.log(`Selected date: ${date.toLocaleDateString()}`);
+    setLastFilter("date");
   };
-
   const handleSelectDoctor = (doctor) => {
     setSelectedDoctor(doctor);
-    console.log(`Selected doctor: ${doctor.name}`);
+    setLastFilter("doctor");
   };
-
-  const formatSelectedDate = (date) => {
-    return date.toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
-  };
+  const formatSelectedDate = (date) =>
+    date
+      ? date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+      : "All";
 
   return (
     <div className="bg-white text-gray-800 p-6 rounded-xl w-1/3 max-w-md shadow border border-gray-200 relative">
@@ -221,13 +224,16 @@ export default function PaymentChart() {
           </button>
         </div>
       </div>
-
       {/* Selected filters display */}
       <div className="mb-4 text-sm text-gray-600">
         <div>Period: {formatSelectedDate(selectedDate)}</div>
-        <div>Doctor: {selectedDoctor.name}</div>
+        <div>
+          Doctor:{" "}
+          {selectedDoctor
+            ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}`
+            : "All"}
+        </div>
       </div>
-
       {/* Calendar Selector */}
       <CalendarSelector
         isOpen={showCalendar}
@@ -235,38 +241,38 @@ export default function PaymentChart() {
         onSelectDate={handleSelectDate}
         selectedDate={selectedDate}
       />
-
       {/* Doctor Selector */}
       <DoctorSelector
         isOpen={showDoctorSelector}
         onClose={() => setShowDoctorSelector(false)}
         onSelectDoctor={handleSelectDoctor}
+        doctors={doctors}
       />
-
       <div className="w-40 mx-auto mb-6">
         <CircularProgressbarWithChildren
           value={percentage}
-          styles={buildStyles({
-            pathColor: "#007bff",
-            trailColor: "#e5e7eb",
-          })}
+          styles={buildStyles({ pathColor: "#007bff", trailColor: "#e5e7eb" })}
         >
           <div className="text-2xl font-bold text-gray-800">
             {percentage.toFixed(1)}%
           </div>
         </CircularProgressbarWithChildren>
       </div>
-
       <div className="border-t border-gray-200 pt-4 flex justify-around text-sm">
-        <SummaryBox label="Revenue" value={data.totalRevenue.toFixed(2)} />
         <SummaryBox
-          label="Appointments"
-          value={data.totalAppointments}
+          label="Revenue"
+          value={`${totalRevenue.toFixed(2)}$`}
           dollar={true}
         />
         <SummaryBox
+          label="Appointments"
+          value={totalAppointments}
+          dollar={false}
+        />
+        <SummaryBox
           label="Avg. Payment"
-          value={data.averagePayment.toFixed(2)}
+          value={`${averagePayment}%`}
+          dollar={true}
         />
       </div>
     </div>
