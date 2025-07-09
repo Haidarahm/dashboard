@@ -26,10 +26,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
       path: "/appointments",
     },
     {
-      key: "/payments",
+      key: "/dashboard",
       icon: MdOutlinePayments,
-      label: "Payments",
-      path: "/payments",
+      label: "Dashboard",
+      path: "/dashboard",
     },
     {
       key: "/doctors",
