@@ -1,6 +1,16 @@
 // src/components/PatientsTable.jsx
 import React, { useEffect, useState } from "react";
-import { Table, Typography, Tag, Spin, Empty } from "antd";
+import {
+  Table,
+  Typography,
+  Tag,
+  Spin,
+  Empty,
+  Popconfirm,
+  Button,
+  message,
+} from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import usePatientsStore from "../../store/patientsStore";
 
 const { Text } = Typography;
@@ -8,11 +18,23 @@ const { Text } = Typography;
 const PatientsTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const { patients, total, loading, error, fetchPatients } = usePatientsStore();
+  const { patients, total, loading, error, fetchPatients, removePatient } =
+    usePatientsStore();
 
   useEffect(() => {
     fetchPatients(pageSize, currentPage);
   }, [fetchPatients, pageSize, currentPage]);
+
+  const handleDelete = async (id) => {
+    try {
+      await removePatient(id);
+      message.success("Patient deleted successfully");
+      // Optionally, refetch if pagination/total is affected
+      fetchPatients(pageSize, currentPage);
+    } catch (err) {
+      message.error(err?.toString() || "Failed to delete patient");
+    }
+  };
 
   const columns = [
     {
@@ -36,7 +58,7 @@ const PatientsTable = () => {
       key: "gender",
       render: (gender) => (
         <Tag color={gender === "female" ? "magenta" : "blue"}>
-          {gender.charAt(0).toUpperCase() + gender.slice(1)}
+          {gender?.charAt(0).toUpperCase() + gender?.slice(1)}
         </Tag>
       ),
     },
@@ -51,7 +73,26 @@ const PatientsTable = () => {
       dataIndex: "address",
       key: "address",
     },
-    // Actions column can be re-enabled if a real delete API is available
+    {
+      title: "Actions",
+      key: "actions",
+      width: 80,
+      render: (_, record) => (
+        <Popconfirm
+          title="Are you sure to delete this patient?"
+          onConfirm={() => handleDelete(record.id)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            icon={<DeleteOutlined style={{ color: "red" }} />}
+            type="text"
+            loading={loading}
+            disabled={loading}
+          />
+        </Popconfirm>
+      ),
+    },
   ];
 
   return (
@@ -75,7 +116,6 @@ const PatientsTable = () => {
       columns={columns}
       rowKey="id"
       loading={loading}
-     
       pagination={{
         pageSize,
         total,
@@ -83,7 +123,8 @@ const PatientsTable = () => {
         onChange: setCurrentPage,
         showSizeChanger: false,
         showQuickJumper: false,
-        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} patients`,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} patients`,
       }}
       bordered
       size="middle"
