@@ -5,7 +5,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router";
-import 'leaflet/dist/leaflet.css';
+import "leaflet/dist/leaflet.css";
 
 import { useState } from "react";
 import { ToastContainer } from "react-toastify";
@@ -51,12 +51,12 @@ function DashboardLayout() {
     <div className="flex flex-col h-screen">
       {/* Navbar at the top */}
       <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
-      
+
       {/* Main content area with sidebar and page content */}
       <div className="flex flex-1 overflow-hidden">
-      <Sidebar collapsed={collapsed} />
-      <div className="flex-1 overflow-auto">
-        <Outlet /> {/* This renders nested routes */}
+        <Sidebar collapsed={collapsed} />
+        <div className="flex-1 overflow-auto">
+          <Outlet /> {/* This renders nested routes */}
         </div>
       </div>
     </div>
@@ -74,7 +74,7 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardLayout />
-            </ProtectedRoute>
+            </ProtectedRoute> 
           }
         >
           <Route index element={<Navigate to="/appointments" replace />} />

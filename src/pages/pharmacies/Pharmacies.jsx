@@ -367,7 +367,9 @@ function Pharmacies() {
         const endTime = endHour * 60 + endMin;
 
         let isOpen = false;
+        console.log(now)
         if (startTime <= endTime) {
+
           isOpen = currentTime >= startTime && currentTime <= endTime;
         } else {
           isOpen = currentTime >= startTime || currentTime <= endTime;
