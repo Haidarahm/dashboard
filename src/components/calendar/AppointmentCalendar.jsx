@@ -10,8 +10,8 @@ import {
   Filter,
   X,
 } from "lucide-react";
-import { useAppointmentStore } from "../../store/appointmentStore";
-import { useDoctorsStore } from "../../store/doctorsStore";
+import { useAppointmentStore } from "../../store/admin/appointmentStore";
+import { useDoctorsStore } from "../../store/admin/doctorsStore";
 import { Select } from "antd";
 const { Option } = Select;
 

@@ -35,7 +35,7 @@ import {
   searchPharmacies,
   createPharmacy,
   updatePharmacy,
-} from "../../api/pharmacies";
+} from "../../api/admin/pharmacies";
 import moment from "moment";
 import MapWithMovableMarker from "../../components/map/MapWithMovableMarker";
 
@@ -367,9 +367,8 @@ function Pharmacies() {
         const endTime = endHour * 60 + endMin;
 
         let isOpen = false;
-        console.log(now)
+        console.log(now);
         if (startTime <= endTime) {
-
           isOpen = currentTime >= startTime && currentTime <= endTime;
         } else {
           isOpen = currentTime >= startTime || currentTime <= endTime;

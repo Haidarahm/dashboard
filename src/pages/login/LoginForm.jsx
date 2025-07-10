@@ -3,7 +3,7 @@ import { Button } from "antd";
 import { MdPhone, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { login } from "../../api/auth";
+import { login } from "../../api/admin/auth";
 import { storeAuthData } from "../../utils/auth";
 
 const LoginForm = () => {
@@ -66,7 +66,7 @@ const LoginForm = () => {
       } else if (typeof error === "string") {
         errorMessage = error;
       }
-      console.log(errorMessage)
+      console.log(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);

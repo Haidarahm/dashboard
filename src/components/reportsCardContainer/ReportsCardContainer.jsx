@@ -1,7 +1,7 @@
 // src/components/ReportsCardAntd.jsx
 import React, { useState, useEffect } from "react";
 import { Card, Pagination, Typography, Spin, Empty } from "antd";
-import useReportsStore from "../../store/reportsStore";
+import useReportsStore from "../../store/admin/reportsStore";
 
 const { Text } = Typography;
 
@@ -58,7 +58,10 @@ const ReportsCardContainer = () => {
     }
 
     return (
-      <div className="flex flex-1" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div
+        className="flex flex-1"
+        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+      >
         {reports.map((report) => (
           <Card
             key={report.id}

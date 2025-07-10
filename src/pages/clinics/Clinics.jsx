@@ -29,7 +29,7 @@ import {
   createClinic,
   updateClinic,
   deleteClinic,
-} from "../../api/clinics";
+} from "../../api/admin/clinics";
 import {
   EyeIcon,
   Building2,

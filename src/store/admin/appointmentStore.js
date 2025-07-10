@@ -3,7 +3,7 @@ import {
   getAllAppointments,
   getAllAppointmentsByDoctor,
   getAllAppointmentsByStatus,
-} from "../api/appointment";
+} from "../../api/admin/appointment";
 
 export const useAppointmentStore = create((set, get) => ({
   appointments: [],

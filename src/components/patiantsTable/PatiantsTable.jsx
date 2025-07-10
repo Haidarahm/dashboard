@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import usePatientsStore from "../../store/patientsStore";
+import usePatientsStore from "../../store/admin/patientsStore";
 
 const { Text } = Typography;
 

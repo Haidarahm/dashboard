@@ -3,7 +3,7 @@ import {
   showPaymentDetails,
   showPaymentDetailsByDate,
   showPaymentDetailsByDoctor,
-} from "../api/payments";
+} from "../../api/admin/payments";
 import { toast } from "react-toastify";
 
 export const usePaymentsStore = create((set) => ({

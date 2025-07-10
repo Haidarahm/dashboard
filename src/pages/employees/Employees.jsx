@@ -23,7 +23,7 @@ import {
   addEmployee,
   updateEmployee,
   deleteEmployee,
-} from "../../api/employees";
+} from "../../api/admin/employees";
 
 const { Title } = Typography;
 

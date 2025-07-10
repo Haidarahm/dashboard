@@ -1,6 +1,6 @@
 // auth.js
 import api from "./config";
-import { clearAuthData } from "../utils/auth";
+import { clearAuthData } from "../../utils/auth";
 
 // Login API
 export const login = async (phone, password) => {

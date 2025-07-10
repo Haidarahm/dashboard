@@ -5,7 +5,7 @@ import {
   showDoctorDetails,
   deleteDoctor,
   showDoctorsByClinic,
-} from "../api/doctors";
+} from "../../api/admin/doctors";
 import { toast } from "react-toastify";
 
 export const useDoctorsStore = create((set, get) => ({
@@ -46,7 +46,7 @@ export const useDoctorsStore = create((set, get) => ({
       await createDoctor(doctorData);
       await get().fetchDoctors();
     } catch (error) {
-      toast.error(error.response.data.message[0])
+      toast.error(error.response.data.message[0]);
       throw new Error(error);
     } finally {
       set({ loading: false });

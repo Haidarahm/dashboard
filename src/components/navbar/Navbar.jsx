@@ -9,7 +9,7 @@ import {
 } from "react-icons/fi";
 import { Avatar, Badge, Dropdown } from "antd";
 import { logoutUser } from "../../utils/auth";
-import { logout } from "../../api/auth";
+import { logout } from "../../api/admin/auth";
 
 // Navbar Component
 const Navbar = ({ collapsed, setCollapsed }) => {
@@ -108,7 +108,6 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             placement="bottomRight"
           >
             <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-
               <div className="hidden sm:block text-left">
                 <div className="text-sm font-semibold text-gray-900">
                   Haidar AHmad

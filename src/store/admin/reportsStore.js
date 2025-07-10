@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { showAllReports, showReportById } from "../api/reports";
+import { showAllReports, showReportById } from "../../api/admin/reports";
 
 const useReportsStore = create((set) => ({
   reports: [],

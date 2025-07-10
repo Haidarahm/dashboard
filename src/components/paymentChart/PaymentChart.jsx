@@ -5,8 +5,8 @@ import {
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Calendar, User, ChevronLeft, ChevronRight } from "lucide-react";
-import { usePaymentsStore } from "../../store/paymentsStore";
-import { useDoctorsStore } from "../../store/doctorsStore";
+import { usePaymentsStore } from "../../store/admin/paymentsStore";
+import { useDoctorsStore } from "../../store/admin/doctorsStore";
 
 const SummaryBox = ({ label, value }) => (
   <div className="text-center">

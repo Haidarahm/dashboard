@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { fetchPatients } from "../api/patients";
-import { removePatient } from "../api/patients";
+import { fetchPatients } from "../../api/admin/patients";
+import { removePatient } from "../../api/admin/patients";
 
 const usePatientsStore = create((set) => ({
   patients: [],
