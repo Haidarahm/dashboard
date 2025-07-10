@@ -1,17 +1,25 @@
 import { useState } from "react";
-import { Button } from "antd";
+import { Button, Select } from "antd";
 import { MdPhone, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { login } from "../../api/admin/auth";
-import { storeAuthData } from "../../utils/auth";
+import { useAuthStore } from "../../store/admin/authStore";
+import { useDoctorAuthStore } from "../../store/doctor/authStore";
 
 const LoginForm = () => {
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ phone: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [role, setRole] = useState("admin");
   const navigate = useNavigate();
+
+  const adminLogin = useAuthStore((state) => state.login);
+  const adminLoading = useAuthStore((state) => state.loading);
+  const doctorLogin = useDoctorAuthStore((state) => state.login);
+  const doctorLoading = useDoctorAuthStore((state) => state.loading);
+
+  const login = role === "admin" ? adminLogin : doctorLogin;
+  const loading = role === "admin" ? adminLoading : doctorLoading;
 
   const handleLogin = async () => {
     if (!formData.phone || !formData.password) {
@@ -39,37 +47,11 @@ const LoginForm = () => {
       return;
     }
 
-    setLoading(true);
     try {
-      // Call the login API
-      const response = await login(formData.phone, formData.password);
-
-      // Store authentication data using utility function
-      if (response.token) {
-        storeAuthData(response.token, response.user, rememberMe);
-      }
-
-      toast.success("Login successful!");
-
-      // Navigate to appointments
+      await login(formData.phone, formData.password, rememberMe);
       navigate("/appointments");
     } catch (error) {
-      console.error("Login error:", error);
-
-      // Handle different types of errors
-      let errorMessage = "Login failed. Please try again.";
-
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (error.error) {
-        errorMessage = error.error;
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
-      console.log(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      // Error is already handled in the store (toast), but you can add extra handling if needed
     }
   };
 
@@ -158,6 +140,18 @@ const LoginForm = () => {
       </div>
 
       <div className="login-form-fields">
+        <div style={{ marginBottom: 16 }}>
+          <label className="block text-gray-700 font-medium mb-2">Role</label>
+          <Select
+            value={role}
+            onChange={setRole}
+            style={{ width: "100%" }}
+            options={[
+              { label: "Admin", value: "admin" },
+              { label: "Doctor", value: "doctor" },
+            ]}
+          />
+        </div>
         <FormInput
           label="Phone Number"
           type="tel"

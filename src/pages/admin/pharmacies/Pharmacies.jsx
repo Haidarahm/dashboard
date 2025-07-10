@@ -35,9 +35,9 @@ import {
   searchPharmacies,
   createPharmacy,
   updatePharmacy,
-} from "../../api/admin/pharmacies";
+} from "../../../api/admin/pharmacies";
 import moment from "moment";
-import MapWithMovableMarker from "../../components/map/MapWithMovableMarker";
+import MapWithMovableMarker from "../../../components/map/MapWithMovableMarker";
 
 const { Title } = Typography;
 const { Search } = Input;

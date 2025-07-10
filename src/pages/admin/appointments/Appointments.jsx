@@ -1,4 +1,4 @@
-import AppointmentCalendar from "../../components/calendar/AppointmentCalendar";
+import AppointmentCalendar from "../../../components/calendar/AppointmentCalendar";
 import React from "react";
 
 function Appointments() {

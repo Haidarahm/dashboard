@@ -35,9 +35,9 @@ import {
   CloseCircleOutlined,
   ClockCircleOutlined as ClockIcon,
 } from "@ant-design/icons";
-import { getAllClinics } from "../../api/admin/clinics";
+import { getAllClinics } from "../../../api/admin/clinics";
 import { toast } from "react-toastify";
-import { useDoctorsStore } from "../../store/admin/doctorsStore";
+import { useDoctorsStore } from "../../../store/admin/doctorsStore";
 import DoctorDetails from "./DoctorDetails";
 
 const { Title } = Typography;

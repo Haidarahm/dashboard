@@ -14,7 +14,7 @@ import {
   Award,
   Users,
 } from "lucide-react";
-import { getClinicById } from "../../api/admin/clinics";
+import { getClinicById } from "../../../api/admin/clinics";
 
 const statusMap = {
   available: {
