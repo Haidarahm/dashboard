@@ -15,13 +15,13 @@ export const showAppointmentDetails = async (appointment_id) => {
 };
 
 // Show appointments by type
-export const showAppointmentsByStatus = async (type) => {
+export const showAppointmentsByStatus = async (status) => {
   const response = await api.post("/api/doctor/showAppointmentsByStatus", {
     status,
   });
   return response.data;
 };
-export const showAppointmentsByType = async (type) => {
+export const showAppointmentsByType = async (status,type) => {
   const response = await api.post("/api/doctor/showAppointmentsByType", {
     status,
     type,

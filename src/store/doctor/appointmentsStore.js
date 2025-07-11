@@ -5,6 +5,7 @@ import {
   showAppointmentDetails,
   showPatientAppointments,
   cancelAppointment,
+  showAppointmentsByType,
 } from "../../api/doctor/appointments";
 
 export const useDoctorAppointmentsStore = create((set, get) => ({
@@ -14,6 +15,7 @@ export const useDoctorAppointmentsStore = create((set, get) => ({
   error: null,
   filters: {
     status: "",
+    type: "",
     showFilters: false,
   },
   setFilters: (filterType, value) =>
@@ -27,6 +29,7 @@ export const useDoctorAppointmentsStore = create((set, get) => ({
     set({
       filters: {
         status: "",
+        type: "",
         showFilters: false,
       },
     }),
@@ -34,7 +37,7 @@ export const useDoctorAppointmentsStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const data = await showAllAppointments();
-      set({ appointments: data, filteredAppointments: data });
+      set({ appointments: data.data });
     } catch (err) {
       set({ error: "Failed to load appointments" });
     } finally {
@@ -45,21 +48,46 @@ export const useDoctorAppointmentsStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const data = await showAppointmentsByStatus(status);
-      set({ filteredAppointments: data });
+      set({ filteredAppointments: data.data });
     } catch (err) {
       set({ error: "Failed to filter appointments by status" });
     } finally {
       set({ loading: false });
     }
   },
+  fetchAppointmentsByType: async (status, type) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await showAppointmentsByType(status, type);
+      set({ filteredAppointments: data.data });
+    } catch (err) {
+      set({ error: "Failed to filter appointments by type" });
+    } finally {
+      set({ loading: false });
+    }
+  },
   applyFilters: async () => {
-    const { status } = get().filters;
-    const { appointments, fetchAppointmentsByStatus } = get();
-    if (!status) {
+    const { status, type } = get().filters;
+    // If both filters are empty, show all appointments
+    if (!status && !type) {
       set((state) => ({ filteredAppointments: state.appointments }));
       return;
     }
-    await fetchAppointmentsByStatus(status);
+    // If only status filter is applied
+    if (status && !type) {
+      await get().fetchAppointmentsByStatus(status);
+      return;
+    }
+    // If only type filter is applied
+    if (type && !status) {
+      await get().fetchAppointmentsByType("pending", type);
+      return;
+    }
+    // If both filters are applied, call showAppointmentsByType with both
+    if (status && type) {
+      await get().fetchAppointmentsByType(status, type);
+      return;
+    }
   },
   fetchAppointmentDetails: async (appointment_id) => {
     set({ loading: true, error: null });
