@@ -402,6 +402,19 @@ const DoctorAppointments = () => {
                     appointment.status.slice(1)}
                 </div>
 
+                {/* Appointment Type Badge */}
+                <div
+                  className={`inline-flex ml-4 items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getTypeColor(
+                    appointment.appointment_type
+                  )}`}
+                  style={{ marginBottom: 8 }}
+                >
+                  {appointment.appointment_type
+                    ? appointment.appointment_type.charAt(0).toUpperCase() +
+                      appointment.appointment_type.slice(1)
+                    : "Type Unknown"}
+                </div>
+
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-600" />
