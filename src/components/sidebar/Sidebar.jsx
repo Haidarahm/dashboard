@@ -2,60 +2,21 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import {
-  FaClinicMedical,
-  FaUserMd,
-  FaRegHospital,
-  FaUsers,
-  FaPills,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
-import { FaRegCalendarCheck } from "react-icons/fa6";
-import { MdOutlinePayments } from "react-icons/md";
+import { FaClinicMedical, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
+import { adminRoutes, doctorRoutes } from "./sidebarData";
+
+function getRoleFromStorage() {
+  return (
+    localStorage.getItem("role") || sessionStorage.getItem("role") || "admin"
+  );
+}
 
 // Sidebar Component
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
-
-  const menuItems = [
-    {
-      key: "/appointments",
-      icon: FaRegCalendarCheck,
-      label: "Appointments",
-      path: "/appointments",
-    },
-    {
-      key: "/dashboard",
-      icon: MdOutlinePayments,
-      label: "Dashboard",
-      path: "/dashboard",
-    },
-    {
-      key: "/doctors",
-      icon: FaUserMd,
-      label: "Doctors",
-      path: "/doctors",
-    },
-    {
-      key: "/clinics",
-      icon: FaRegHospital,
-      label: "Clinics",
-      path: "/clinics",
-    },
-    {
-      key: "/employees",
-      icon: FaUsers,
-      label: "Employees",
-      path: "/employees",
-    },
-    {
-      key: "/pharmacies",
-      icon: FaPills,
-      label: "Pharmacies",
-      path: "/pharmacies",
-    },
-  ];
+  const role = getRoleFromStorage();
+  const routes = role === "doctor" ? doctorRoutes : adminRoutes;
 
   const isActive = (path) => location.pathname === path;
 
@@ -94,7 +55,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {/* Navigation Menu */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {menuItems.map((item) => {
+        {routes.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
 

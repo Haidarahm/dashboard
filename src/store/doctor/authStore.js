@@ -20,13 +20,18 @@ export const useDoctorAuthStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const data = await doctorLogin(phone, password);
+
       if (data && data.token && data.user) {
-        storeAuthData(data.token, data.user, rememberMe);
+        storeAuthData(data.token, data.user, rememberMe,data.user.role);
+        console.log("Hello man")
         set({
           user: data.user,
           token: data.token,
           isAuthenticated: true,
+          role: data.user.role,
         });
+          window.location.href = "/";
+
         toast.success("Login successful");
       } else {
         throw new Error("Invalid login response");

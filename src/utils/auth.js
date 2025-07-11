@@ -55,7 +55,8 @@ export const clearAuthData = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("authToken");
   localStorage.removeItem("user");
-
+  localStorage.removeItem("role")
+  sessionStorage.removeItem("role")
   // Clear from sessionStorage
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("authToken");
@@ -92,11 +93,12 @@ export const handleSessionExpired = () => {
  * @param {object} user - User data object
  * @param {boolean} rememberMe - Whether to store in localStorage (true) or sessionStorage (false)
  */
-export const storeAuthData = (token, user = null, rememberMe = false) => {
+export const storeAuthData = (token, user = null, rememberMe = false,role) => {
   const storage = rememberMe ? localStorage : sessionStorage;
 
   storage.setItem("authToken", token);
   storage.setItem("token", token);
+  storage.setItem("role", role);
 
   if (user) {
     storage.setItem("user", JSON.stringify(user));
