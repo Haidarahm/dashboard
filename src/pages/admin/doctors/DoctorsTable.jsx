@@ -34,6 +34,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined as ClockIcon,
+  StarOutlined,
+  StarFilled,
 } from "@ant-design/icons";
 import { getAllClinics } from "../../../api/admin/clinics";
 import { toast } from "react-toastify";
@@ -59,7 +61,7 @@ const initialNewDoctorState = {
   clinic_id: 1,
 };
 
-function Doctors() {
+function DoctorsTable({onShowReviews}) {
   const {
     doctors,
     loading,
@@ -341,6 +343,13 @@ function Doctors() {
       width: 150,
       render: (_, record) => (
         <Space size="small">
+           <Tooltip title="View Reviews">
+            <Button
+              type="text"
+              icon={<StarOutlined style={{ color: '#faad14' }} />}
+              onClick={() => onShowReviews(record)}
+            />
+          </Tooltip>
           <Tooltip title="View Details">
             <Button
               type="text"
@@ -610,4 +619,4 @@ function Doctors() {
   );
 }
 
-export default Doctors;
+export default DoctorsTable;

@@ -3,12 +3,12 @@ import { Routes, Route, Navigate, Outlet } from "react-router";
 import Appointments from "../pages/admin/appointments/Appointments";
 import Clinics from "../pages/admin/clinics/Clinics";
 import Pharmacies from "../pages/admin/pharmacies/Pharmacies";
-import Doctors from "../pages/admin/doctors/Doctors";
 import Employees from "../pages/admin/employees/Employees";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
 import { useState } from "react";
+import DoctorsWithReviews from "../pages/admin/doctors/DoctorsWithReviews ";
 
 function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -32,7 +32,7 @@ const AdminRoutes = () => (
       <Route path="appointments" element={<Appointments />} />
       <Route path="clinics" element={<Clinics />} />
       <Route path="pharmacies" element={<Pharmacies />} />
-      <Route path="doctors" element={<Doctors />} />
+      <Route path="doctors" element={<DoctorsWithReviews />} />
       <Route path="employees" element={<Employees />} />
       <Route path="dashboard" element={<Dashboard />} />
       {/* Add more nested routes here */}

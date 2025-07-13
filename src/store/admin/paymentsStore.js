@@ -19,7 +19,8 @@ export const usePaymentsStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const data = await showPaymentDetails();
-      set({ paymentStats: data });
+      console.log(data)
+      set({ paymentStats: data.monthlyPaymentInfo });
     } catch (error) {
       set({ error: error.message || "Failed to fetch payments" });
       toast.error(error.message || "Failed to fetch payments");

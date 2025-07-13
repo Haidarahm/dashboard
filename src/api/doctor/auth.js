@@ -1,5 +1,5 @@
-import api from "../admin/config";
 import { clearAuthData } from "../../utils/auth";
+import api from "./doctorConfig";
 
 // Doctor Login API
 export const doctorLogin = async (phone, password) => {

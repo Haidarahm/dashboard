@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { useDoctorAppointmentsStore } from "../../../store/doctor/appointmentsStore";
+import { Select } from "antd";
 
 const DoctorAppointments = () => {
   const {
@@ -253,31 +254,34 @@ const DoctorAppointments = () => {
                   <label className="text-sm font-medium text-gray-700">
                     Status:
                   </label>
-                  <select
+                  <Select
                     value={filters.status}
-                    onChange={(e) => setFilters("status", e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(value) => setFilters("status", value)}
+                    className="min-w-[140px]"
+                    size="small"
                   >
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="visited">Visited</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                    <Select.Option value="">All Statuses</Select.Option>
+                    <Select.Option value="pending">Pending</Select.Option>
+                    <Select.Option value="visited">Visited</Select.Option>
+                    <Select.Option value="cancelled">Cancelled</Select.Option>
+                  </Select>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700">
                     Type:
                   </label>
-                  <select
+                  <Select
                     value={filters.type}
-                    onChange={(e) => setFilters("type", e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(value) => setFilters("type", value)}
+                    className="min-w-[140px]"
+                    size="small"
+                    disabled={!filters.status}
                   >
-                    <option value="">All Types</option>
-                    <option value="first time">First Time</option>
-                    <option value="checkup">Checkup</option>
-                  </select>
+                    <Select.Option value="">All Types</Select.Option>
+                    <Select.Option value="first time">First Time</Select.Option>
+                    <Select.Option value="checkup">Checkup</Select.Option>
+                  </Select>
                 </div>
 
                 {(filters.status || filters.type) && (

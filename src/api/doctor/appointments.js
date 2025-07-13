@@ -1,4 +1,4 @@
-import api from "../admin/config";
+import api from "./doctorConfig";
 
 // Show all appointments
 export const showAllAppointments = async () => {

@@ -3,7 +3,7 @@ import api from "./config";
 // Get all payment details
 export const showPaymentDetails = async () => {
   try {
-    const response = await api.get("/api/admin/showPaymentDetails");
+    const response = await api.get("/api/admin/showAllPayments");
     return response.data;
   } catch (error) {
     console.error("Get payment details error:", error);

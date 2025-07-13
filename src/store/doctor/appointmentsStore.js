@@ -80,7 +80,7 @@ export const useDoctorAppointmentsStore = create((set, get) => ({
     }
     // If only type filter is applied
     if (type && !status) {
-      await get().fetchAppointmentsByType("pending", type);
+      await get().fetchAppointmentsByType(status, type);
       return;
     }
     // If both filters are applied, call showAppointmentsByType with both
