@@ -3,6 +3,7 @@ import api from "./config";
 export const getAllAppointments = async () => {
   try {
     const response = await api.get("/api/admin/showAllAppointments");
+    console.log("haidar")
     return response.data;
   } catch (error) {
     console.error("Get all clinics error:", error);

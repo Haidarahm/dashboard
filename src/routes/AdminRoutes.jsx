@@ -9,6 +9,7 @@ import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
 import { useState } from "react";
 import DoctorsWithReviews from "../pages/admin/doctors/DoctorsWithReviews ";
+import Vaccine from "../pages/admin/vaccine/Vaccine";
 
 function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -35,6 +36,7 @@ const AdminRoutes = () => (
       <Route path="doctors" element={<DoctorsWithReviews />} />
       <Route path="employees" element={<Employees />} />
       <Route path="dashboard" element={<Dashboard />} />
+      <Route path="vaccins" element={<Vaccine />} />
       {/* Add more nested routes here */}
     </Route>
   </Routes>
