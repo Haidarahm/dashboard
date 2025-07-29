@@ -33,7 +33,7 @@ export const createClinic = async (name, photo) => {
  */
 export const getAllClinics = async () => {
   try {
-    const response = await api.get("/api/admin/show");
+    const response = await api.get("/api/admin/showClinic");
     return response.data;
   } catch (error) {
     console.error("Get all clinics error:", error);

@@ -3,7 +3,6 @@ import api from "./config";
 export const getAllAppointments = async () => {
   try {
     const response = await api.get("/api/admin/showAllAppointments");
-    console.log("haidar")
     return response.data;
   } catch (error) {
     console.error("Get all clinics error:", error);
@@ -32,6 +31,19 @@ export const getAllAppointmentsByStatus = async (status) => {
     return response.data;
   } catch (error) {
     console.error("Get all clinics error:", error);
+    throw error;
+  }
+};
+
+// Get appointments by month (expects date in MM-YYYY format)
+export const getAppointmentsByMonth = async (date) => {
+  try {
+    const response = await api.get("/api/admin/filteringAppointmentsByDate", {
+      params: { date },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Get appointments by month error:", error);
     throw error;
   }
 };
