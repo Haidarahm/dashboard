@@ -37,9 +37,10 @@ export const getAllAppointmentsByStatus = async (status) => {
 
 // Get appointments by month (expects date in MM-YYYY format)
 export const getAppointmentsByMonth = async (date) => {
+  console.log(date);
   try {
-    const response = await api.get("/api/admin/filteringAppointmentsByDate", {
-      params: { date },
+    const response = await api.post("/api/admin/filteringAppointmentsByDate", {
+      date,
     });
     return response.data;
   } catch (error) {

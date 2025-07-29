@@ -3,6 +3,7 @@ import {
   getAllAppointments,
   getAllAppointmentsByDoctor,
   getAllAppointmentsByStatus,
+  getAppointmentsByMonth,
 } from "../../api/admin/appointment";
 
 export const useAppointmentStore = create((set, get) => ({
@@ -64,6 +65,15 @@ export const useAppointmentStore = create((set, get) => ({
       set({ error: "Failed to filter appointments by status" });
     } finally {
       set({ loading: false });
+    }
+  },
+  fetchAppointmentsByMonth: async (date) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await getAppointmentsByMonth(date);
+      set({ filteredAppointments: data, loading: false });
+    } catch (err) {
+      set({ error: "Failed to fetch appointments by month", loading: false });
     }
   },
   applyFilters: async () => {

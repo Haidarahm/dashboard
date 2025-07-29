@@ -26,7 +26,7 @@ const AppointmentCalendar = () => {
     filters,
     setFilters,
     clearFilters,
-    fetchAllAppointments,
+    fetchAppointmentsByMonth,
     applyFilters,
   } = useAppointmentStore();
 
@@ -36,9 +36,18 @@ const AppointmentCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedAppointments, setSelectedAppointments] = useState([]);
 
+  // Helper to format date as MM-YYYY
+  const getMonthYearString = (date) => {
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}-${year}`;
+  };
+
+  // Fetch appointments for the current month
   useEffect(() => {
-    fetchAllAppointments();
-  }, [fetchAllAppointments]);
+    fetchAppointmentsByMonth(getMonthYearString(currentDate));
+    // eslint-disable-next-line
+  }, [currentDate, fetchAppointmentsByMonth]);
 
   useEffect(() => {
     applyFilters();
@@ -156,7 +165,9 @@ const AppointmentCalendar = () => {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={fetchAllAppointments}
+            onClick={() =>
+              fetchAppointmentsByMonth(getMonthYearString(currentDate))
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Retry
