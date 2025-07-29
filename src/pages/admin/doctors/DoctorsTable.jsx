@@ -37,7 +37,7 @@ import {
   StarOutlined,
   StarFilled,
 } from "@ant-design/icons";
-import { getAllClinics } from "../../../api/admin/clinics";
+import { useClinicsStore } from "../../../store/admin/clinicsStore";
 import { toast } from "react-toastify";
 import { useDoctorsStore } from "../../../store/admin/doctorsStore";
 import DoctorDetails from "./DoctorDetails";
@@ -61,7 +61,7 @@ const initialNewDoctorState = {
   clinic_id: 1,
 };
 
-function DoctorsTable({onShowReviews}) {
+function DoctorsTable({ onShowReviews }) {
   const {
     doctors,
     loading,
@@ -76,6 +76,11 @@ function DoctorsTable({onShowReviews}) {
     clearDoctorDetails,
   } = useDoctorsStore();
 
+  // Clinics from Zustand store
+  const clinics = useClinicsStore((state) => state.clinics);
+  const fetchClinics = useClinicsStore((state) => state.fetchClinics);
+  const clinicsLoading = useClinicsStore((state) => state.loading);
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -86,18 +91,16 @@ function DoctorsTable({onShowReviews}) {
   const [modalType, setModalType] = useState("");
   const [form] = Form.useForm();
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [clinics, setClinics] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState("all");
 
   // Fetch doctors and clinics on mount
   useEffect(() => {
     fetchDoctors();
-    getAllClinics()
-      .then(setClinics)
-      .catch(() => setClinics([]));
-  }, [fetchDoctors]);
+    if (!clinics || clinics.length === 0) {
+      fetchClinics();
+    }
+  }, [fetchDoctors, fetchClinics]);
 
-  // Update pagination total when doctors change
   useEffect(() => {
     setPagination((prev) => ({
       ...prev,
@@ -211,12 +214,13 @@ function DoctorsTable({onShowReviews}) {
       form.resetFields(); // Reset form fields for create
       form.setFieldsValue(initialNewDoctorState); // Set initial values
       // Fetch clinics for the select menu
-      try {
-        const clinicsData = await getAllClinics();
-        setClinics(clinicsData);
-      } catch (e) {
-        setClinics([]);
-      }
+      // try {
+      //   const clinicsData = await getAllClinics();
+      //
+      //   setClinics(clinicsData);
+      // } catch (e) {
+      //   setClinics([]);
+      // }
     }
   };
 
@@ -343,10 +347,10 @@ function DoctorsTable({onShowReviews}) {
       width: 150,
       render: (_, record) => (
         <Space size="small">
-           <Tooltip title="View Reviews">
+          <Tooltip title="View Reviews">
             <Button
               type="text"
-              icon={<StarOutlined style={{ color: '#faad14' }} />}
+              icon={<StarOutlined style={{ color: "#faad14" }} />}
               onClick={() => onShowReviews(record)}
             />
           </Tooltip>
@@ -413,7 +417,8 @@ function DoctorsTable({onShowReviews}) {
               style={{ width: "100%" }}
             >
               <Option value="all">All Clinics</Option>
-              {clinics.map((clinic) => (
+              {console.log(clinics)}
+              {clinics?.map((clinic) => (
                 <Option key={clinic.id} value={clinic.id}>
                   {clinic.name}
                 </Option>
@@ -478,7 +483,8 @@ function DoctorsTable({onShowReviews}) {
           )
         }
         width={900}
-        destroyOnClose={true}
+        // destroyOnClose={true}
+        destroyOnHidden={true}
       >
         {modalType === "view" &&
           (detailsLoading ? (
