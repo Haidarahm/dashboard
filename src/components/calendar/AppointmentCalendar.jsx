@@ -222,74 +222,85 @@ const AppointmentCalendar = () => {
           </div>
 
           {/* Filter Panel */}
-          {filters.showFilters && (
-            <div className="p-4 border-b bg-gray-50">
-              <div className="flex items-center gap-4 flex-wrap">
-                {/* Doctor Filter Dropdown */}
-                <label
-                  htmlFor="doctor-filter"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Doctor
-                </label>
-                <Select
-                  id="doctor-filter"
-                  value={filters.doctor_id}
-                  onChange={(value) => handleFilterChange("doctor_id", value)}
-                  style={{ width: "100%", marginBottom: 12 }}
-                  allowClear
-                  placeholder="All Doctors"
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  <Option value="">All Doctors</Option>
-                  {doctors.map((doc) => (
-                    <Option key={doc.id} value={doc.id}>
-                      {doc.first_name} {doc.last_name}
-                    </Option>
-                  ))}
-                </Select>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Status:
+          <div
+            style={{
+              transition:
+                "max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1)",
+              overflow: "hidden",
+              maxHeight: filters.showFilters ? 500 : 0,
+              opacity: filters.showFilters ? 1 : 0,
+              pointerEvents: filters.showFilters ? "auto" : "none",
+            }}
+          >
+            {filters.showFilters && (
+              <div className="p-4 border-b bg-gray-50">
+                <div className="flex items-center gap-4 flex-wrap">
+                  {/* Doctor Filter Dropdown */}
+                  <label
+                    htmlFor="doctor-filter"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Doctor
                   </label>
                   <Select
-                    value={filters.status}
-                    onChange={(value) => handleFilterChange("status", value)}
-                    style={{ width: "100%" }}
+                    id="doctor-filter"
+                    value={filters.doctor_id}
+                    onChange={(value) => handleFilterChange("doctor_id", value)}
+                    style={{ width: "100%", marginBottom: 12 }}
                     allowClear
-                    placeholder="All Statuses"
+                    placeholder="All Doctors"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
                   >
-                    <Option value="">All Statuses</Option>
-                    <Option value="pending">Pending</Option>
-                    <Option value="visited">Visited</Option>
-                    <Option value="cancelled">Cancelled</Option>
+                    <Option value="">All Doctors</Option>
+                    {doctors.map((doc) => (
+                      <Option key={doc.id} value={doc.id}>
+                        {doc.first_name} {doc.last_name}
+                      </Option>
+                    ))}
                   </Select>
-                </div>
 
-                {(filters.doctor_id || filters.status) && (
-                  <button
-                    onClick={clearFilters}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                    Clear Filters
-                  </button>
-                )}
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Status:
+                    </label>
+                    <Select
+                      value={filters.status}
+                      onChange={(value) => handleFilterChange("status", value)}
+                      style={{ width: "100%" }}
+                      allowClear
+                      placeholder="All Statuses"
+                    >
+                      <Option value="">All Statuses</Option>
+                      <Option value="pending">Pending</Option>
+                      <Option value="visited">Visited</Option>
+                      <Option value="cancelled">Cancelled</Option>
+                    </Select>
+                  </div>
 
-                <div className="text-sm text-gray-600">
-                  Showing {filteredAppointments.length} appointment
-                  {filteredAppointments.length !== 1 ? "s" : ""}
+                  {(filters.doctor_id || filters.status) && (
+                    <button
+                      onClick={clearFilters}
+                      className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      Clear Filters
+                    </button>
+                  )}
+
+                  <div className="text-sm text-gray-600">
+                    Showing {filteredAppointments.length} appointment
+                    {filteredAppointments.length !== 1 ? "s" : ""}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Calendar Grid */}
           <div className="p-4">
