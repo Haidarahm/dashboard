@@ -13,10 +13,12 @@ export const createDoctor = async (doctorData) => {
   }
 };
 
-// Function to fetch all doctors
-export const fetchDoctors = async () => {
+// Function to fetch all doctors with pagination
+export const fetchDoctors = async (page = 1, per_page = 3) => {
   try {
-    const response = await api.get(`/api/admin/showDoctors`);
+    const response = await api.get(`/api/admin/showDoctors`, {
+      params: { page, per_page },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching doctors:", error);

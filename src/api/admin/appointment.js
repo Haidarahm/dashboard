@@ -9,11 +9,13 @@ export const getAllAppointments = async () => {
     throw error;
   }
 };
-export const getAllAppointmentsByDoctor = async (doctor_id) => {
+// Get appointments by doctor and date (expects date in MM-YYYY format)
+export const getAllAppointmentsByDoctor = async (doctor_id, date) => {
   try {
     const response = await api.get("/api/admin/filteringAppointmentByDoctor", {
       params: {
         doctor_id,
+        date,
       },
     });
     return response.data;
@@ -22,11 +24,12 @@ export const getAllAppointmentsByDoctor = async (doctor_id) => {
     throw error;
   }
 };
-export const getAllAppointmentsByStatus = async (status) => {
-  console.log(status);
+// Get appointments by status and date (expects date in MM-YYYY format)
+export const getAllAppointmentsByStatus = async (status, date) => {
   try {
     const response = await api.post("/api/admin/filteringAppointmentByStatus", {
       status,
+      date,
     });
     return response.data;
   } catch (error) {

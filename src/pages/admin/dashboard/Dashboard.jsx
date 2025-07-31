@@ -4,6 +4,7 @@ import PatientsTable from "../../../components/patiantsTable/patiantsTable";
 import RevenueAndAverageChart from "../../../components/chart/RevenueAndAverageChart";
 import AppointmentsChart from "../../../components/chart/AppointmentsChart";
 import { usePaymentsStore } from "../../../store/admin/paymentsStore";
+import DoctorsDetailsTable from "../../../components/doctorsDetails/DoctorsDetailsTable";
 
 function Payments() {
   const { paymentStats, fetchPayments, loading } = usePaymentsStore();
@@ -22,8 +23,10 @@ function Payments() {
           <RevenueAndAverageChart data={chartData} />
           <AppointmentsChart data={chartData} />
         </div>
-
-        <ReportsCardContainer />
+        <div className="container mx-auto p-4 grid gap-6 md:grid-cols-2">
+          <ReportsCardContainer />
+          <DoctorsDetailsTable />
+        </div>
       </div>
       <PatientsTable />
     </div>

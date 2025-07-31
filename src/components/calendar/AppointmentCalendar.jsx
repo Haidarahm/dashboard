@@ -50,8 +50,14 @@ const AppointmentCalendar = () => {
   }, [currentDate, fetchAppointmentsByMonth]);
 
   useEffect(() => {
-    applyFilters();
-  }, [filters.doctor_id, filters.status, appointments, applyFilters]);
+    applyFilters(getMonthYearString(currentDate));
+  }, [
+    filters.doctor_id,
+    filters.status,
+    appointments,
+    applyFilters,
+    currentDate,
+  ]);
 
   useEffect(() => {
     fetchDoctors();
@@ -59,6 +65,10 @@ const AppointmentCalendar = () => {
 
   const handleFilterChange = (filterType, value) => {
     setFilters(filterType, value);
+    // Apply filters immediately when filter changes
+    setTimeout(() => {
+      applyFilters(getMonthYearString(currentDate));
+    }, 0);
   };
 
   const getAppointmentsForDate = (date) => {
@@ -97,6 +107,10 @@ const AppointmentCalendar = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + direction);
+      // Apply filters with new date after navigation
+      setTimeout(() => {
+        applyFilters(getMonthYearString(newDate));
+      }, 0);
       return newDate;
     });
   };
@@ -285,7 +299,13 @@ const AppointmentCalendar = () => {
 
                 {(filters.doctor_id || filters.status) && (
                   <button
-                    onClick={clearFilters}
+                    onClick={() => {
+                      clearFilters();
+                      // Apply filters after clearing to refresh the view
+                      setTimeout(() => {
+                        applyFilters(getMonthYearString(currentDate));
+                      }, 0);
+                    }}
                     className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
                     <X className="w-4 h-4" />

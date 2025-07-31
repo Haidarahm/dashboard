@@ -43,10 +43,10 @@ export const useAppointmentStore = create((set, get) => ({
       set({ loading: false });
     }
   },
-  fetchAppointmentsByDoctor: async (doctorId) => {
+  fetchAppointmentsByDoctor: async (doctorId, date) => {
     set({ loading: true, error: null });
     try {
-      const response = await getAllAppointmentsByDoctor(doctorId);
+      const response = await getAllAppointmentsByDoctor(doctorId, date);
       const data = response.data || response;
       set({ filteredAppointments: data });
     } catch (err) {
@@ -55,10 +55,10 @@ export const useAppointmentStore = create((set, get) => ({
       set({ loading: false });
     }
   },
-  fetchAppointmentsByStatus: async (status) => {
+  fetchAppointmentsByStatus: async (status, date) => {
     set({ loading: true, error: null });
     try {
-      const response = await getAllAppointmentsByStatus(status);
+      const response = await getAllAppointmentsByStatus(status, date);
       const data = response.data || response;
       set({ filteredAppointments: data });
     } catch (err) {
@@ -76,7 +76,7 @@ export const useAppointmentStore = create((set, get) => ({
       set({ error: "Failed to fetch appointments by month", loading: false });
     }
   },
-  applyFilters: async () => {
+  applyFilters: async (date) => {
     const { doctor_id, status } = get().filters;
     const {
       appointments,
@@ -91,15 +91,15 @@ export const useAppointmentStore = create((set, get) => ({
     }
     // If only doctor filter is applied
     if (doctor_id && !status) {
-      await fetchAppointmentsByDoctor(doctor_id);
+      await fetchAppointmentsByDoctor(doctor_id, date);
       return;
     }
     // If only status filter is applied
     if (status && !doctor_id) {
-      await fetchAppointmentsByStatus(status);
+      await fetchAppointmentsByStatus(status, date);
       return;
     }
-    // If both filters are applied, fetch all and filter locally
+    // If both filters are applied, fetch all and filter locally (optionally, you could also add date to this filter if your API supports it)
     if (doctor_id && status) {
       set({ loading: true });
       try {
@@ -108,7 +108,11 @@ export const useAppointmentStore = create((set, get) => ({
         const filtered = allAppointments.filter(
           (apt) =>
             apt.doctor_id.toString() === doctor_id.toString() &&
-            apt.status === status
+            apt.status === status &&
+            (date
+              ? apt.reservation_date?.includes(date.split("-")[1]) &&
+                apt.reservation_date?.includes(date.split("-")[0])
+              : true)
         );
         set({ filteredAppointments: filtered });
       } catch (err) {
