@@ -318,7 +318,9 @@ const AppointmentCalendar = () => {
               ))}
             </div>
             {/* Calendar Days or Loading Placeholders */}
-            {loading ? loadingGridSquares : (
+            {loading ? (
+              loadingGridSquares
+            ) : (
               <div className="grid grid-cols-7 gap-1">
                 {days.map((day, index) => (
                   <div

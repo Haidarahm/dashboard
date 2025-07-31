@@ -3,7 +3,7 @@ import { Table, Avatar, Typography, Spin, Card, Statistic } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useDoctorsTableStore } from "../../store/admin/doctorsStore";
 import { showPaymentDetailsByDoctor } from "../../api/admin/payments";
-import { Pie } from "@ant-design/charts";
+// Pie chart removed
 
 const { Text } = Typography;
 
@@ -29,81 +29,58 @@ const PaymentChart = ({ doctorId }) => {
   if (loading) return <Spin size="small" />;
   if (!data) return <Text type="secondary">No data</Text>;
 
-  const chartData = [
-    {
-      type: "Revenue",
-      value: data.totalRevenue,
-      color: "#3B82F6",
-    },
-    {
-      type: "Appointments",
-      value: data.totalAppointments,
-      color: "#22C55E",
-    },
-    {
-      type: "Avg Payment",
-      value: data.averagePayment,
-      color: "#F59E0B",
-    },
-  ];
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
 
-  const config = {
-    data: chartData,
-    angleField: "value",
-    colorField: "type",
-    color: ["#3B82F6", "#22C55E", "#F59E0B"],
-    radius: 0.8,
-    innerRadius: 0.6,
-    label: {
-      type: "inner",
-      offset: "-50%",
-      content: ({ value }) => `${value}`,
-      style: {
-        textAlign: "center",
-        fontSize: 12,
-        fontWeight: "bold",
-      },
-    },
-    interactions: [{ type: "element-selected" }, { type: "element-active" }],
-    statistic: {
-      title: false,
-      content: {
-        style: {
-          whiteSpace: "pre-wrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          fontSize: "14px",
-          fontWeight: "bold",
-        },
-        content: "",
-      },
-    },
+  const formatNumber = (value) => {
+    return new Intl.NumberFormat("en-US").format(value);
   };
 
   return (
-    <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-      <div style={{ width: 120, height: 120 }}>
-        <Pie {...config} />
-      </div>
-      <div>
-        <Statistic
-          title="Total Revenue"
-          value={data.totalRevenue}
-          precision={2}
-          valueStyle={{ fontSize: 16 }}
-        />
-        <Statistic
-          title="Appointments"
-          value={data.totalAppointments}
-          valueStyle={{ fontSize: 16 }}
-        />
-        <Statistic
-          title="Avg Payment"
-          value={data.averagePayment}
-          precision={2}
-          valueStyle={{ fontSize: 16 }}
-        />
-      </div>
+    <div
+      style={{
+        display: "flex",
+       
+        gap: 12,
+        alignItems: "flex-start",
+      }}
+    >
+      <Statistic
+        title="Total Revenue"
+        value={data.totalRevenue}
+        precision={0}
+        formatter={(value) => formatCurrency(value)}
+        valueStyle={{
+          fontSize: 18,
+          fontWeight: 600,
+          color: "#3B82F6",
+        }}
+      />
+      <Statistic
+        title="Appointments"
+        value={data.totalAppointments}
+        formatter={(value) => formatNumber(value)}
+        valueStyle={{
+          fontSize: 16,
+          color: "#22C55E",
+        }}
+      />
+      <Statistic
+        title="Avg Payment"
+        value={data.averagePayment}
+        precision={0}
+        formatter={(value) => formatCurrency(value)}
+        valueStyle={{
+          fontSize: 16,
+          color: "#F59E0B",
+        }}
+      />
     </div>
   );
 };
@@ -127,7 +104,10 @@ const DoctorsDetailsTable = () => {
           size={48}
           src={photo}
           icon={<UserOutlined />}
-          style={{ backgroundColor: photo ? "transparent" : "#1890ff" }}
+          style={{
+            backgroundColor: photo ? "transparent" : "#1890ff",
+            border: "1px solid #f0f0f0",
+          }}
         />
       ),
     },
@@ -136,38 +116,91 @@ const DoctorsDetailsTable = () => {
       dataIndex: "first_name",
       key: "name",
       render: (_, record) => (
-        <span style={{ fontWeight: 500, color: "#1890ff" }}>
-          {record.first_name} {record.last_name}
+        <span
+          style={{
+            fontWeight: 500,
+            color: "#1890ff",
+            fontSize: 15,
+          }}
+        >
+          {record.first_name}
         </span>
       ),
     },
     {
       title: "Payment Stats",
       key: "payments",
-      width: 400,
+      width: 280,
       render: (_, record) => <PaymentChart doctorId={record.id} />,
     },
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={doctors}
-      rowKey="id"
-      loading={loading}
-      pagination={{
-        current: meta.current_page,
-        pageSize: 3,
-        total: meta.total,
-        onChange: setPage,
-        showSizeChanger: false,
-        showTotal: (total, range) =>
-          `${range[0]}-${range[1]} of ${total} doctors`,
+    <Card
+      title={
+        <span
+          style={{
+            fontSize: 18,
+            color: "#262626",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          Doctors Payment Statistics
+        </span>
+      }
+      style={{
+        width: "100%",
+        height: "443px",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: "12px",
+        boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
+        border: "1px solid #e8e8e8",
       }}
-      bordered
-      size="middle"
-      style={{ marginTop: 16 }}
-    />
+      bodyStyle={{
+        padding: "20px",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+      }}
+      bordered={false}
+    >
+      <Table
+        columns={columns}
+        dataSource={doctors}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: meta.current_page,
+          pageSize: 3,
+          total: meta.total,
+          onChange: setPage,
+          showSizeChanger: false,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} doctors`,
+          style: {
+            marginBottom: 0,
+            padding: "0 16px",
+            fontSize: 14,
+          },
+        }}
+        size="middle"
+        style={{
+          flex: 1,
+          border: "1px solid #f0f0f0",
+          borderRadius: "8px",
+          fontSize: 14,
+        }}
+        // scroll={{ y: 290 }}
+        bordered={false}
+        showHeader={true}
+        rowClassName={() => "doctor-table-row"}
+      />
+    </Card>
   );
 };
 
