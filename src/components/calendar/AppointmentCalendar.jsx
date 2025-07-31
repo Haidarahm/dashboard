@@ -162,41 +162,24 @@ const AppointmentCalendar = () => {
 
   const days = generateCalendarDays();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading appointments...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() =>
-              fetchAppointmentsByMonth(getMonthYearString(currentDate))
-            }
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Loading placeholder squares for the grid only
+  const loadingGridSquares = (
+    <div className="grid grid-cols-7 gap-1">
+      {Array.from({ length: 42 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="min-h-[100px] p-4 border rounded-lg bg-gray-100 animate-pulse"
+        ></div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="flex  bg-gray-50 relative overflow-hidden">
       {/* Calendar Section */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
-          sidebarOpen ? "mr-96" : "mr-0"
+          sidebarOpen && !loading ? "mr-96" : "mr-0"
         }`}
       >
         <div className="bg-white rounded-lg shadow-sm">
@@ -334,179 +317,184 @@ const AppointmentCalendar = () => {
                 </div>
               ))}
             </div>
-
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-1">
-              {days.map((day, index) => (
-                <div
-                  key={index}
-                  className={`min-h-[100px]  p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                    day.isCurrentMonth ? "bg-white" : "bg-gray-50"
-                  } ${
-                    selectedDate &&
-                    selectedDate.toDateString() === day.date.toDateString()
-                      ? "ring-2 ring-blue-500 bg-blue-50"
-                      : ""
-                  }`}
-                  onClick={() => handleDateClick(day.date, day.appointments)}
-                >
+            {/* Calendar Days or Loading Placeholders */}
+            {loading ? (
+              loadingGridSquares
+            ) : (
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, index) => (
                   <div
-                    className={`text-sm font-medium ${
-                      day.isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                    key={index}
+                    className={`min-h-[100px]  p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                      day.isCurrentMonth ? "bg-white" : "bg-gray-50"
+                    } ${
+                      selectedDate &&
+                      selectedDate.toDateString() === day.date.toDateString()
+                        ? "ring-2 ring-blue-500 bg-blue-50"
+                        : ""
                     }`}
+                    onClick={() => handleDateClick(day.date, day.appointments)}
                   >
-                    {day.date.getDate()}
-                  </div>
+                    <div
+                      className={`text-sm font-medium ${
+                        day.isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                      }`}
+                    >
+                      {day.date.getDate()}
+                    </div>
 
-                  {/* Appointment Indicators */}
-                  <div className="mt-1 space-y-1">
-                    {day.appointments.slice(0, 2).map((apt) => (
-                      <div
-                        key={apt.id}
-                        className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
-                          apt.status
-                        )}`}
-                      >
-                        {apt.timeSelected.substring(0, 5)}
-                      </div>
-                    ))}
-                    {day.appointments.length > 2 && (
-                      <div className="text-xs text-gray-500 text-center">
-                        +{day.appointments.length - 2} more
-                      </div>
-                    )}
+                    {/* Appointment Indicators */}
+                    <div className="mt-1 space-y-1">
+                      {day.appointments.slice(0, 2).map((apt) => (
+                        <div
+                          key={apt.id}
+                          className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
+                            apt.status
+                          )}`}
+                        >
+                          {apt.timeSelected.substring(0, 5)}
+                        </div>
+                      ))}
+                      {day.appointments.length > 2 && (
+                        <div className="text-xs text-gray-500 text-center">
+                          +{day.appointments.length - 2} more
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Sidebar */}
-      <div
-        className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        } shadow-lg z-50`}
-      >
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
-          onClick={() => setSidebarOpen(false)}
+      {!loading && (
+        <div
+          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
+            sidebarOpen ? "translate-x-0" : "translate-x-full"
+          } shadow-lg z-50`}
         >
-          <X className="w-6 h-6" />
-        </button>
-        <h3 className="text-lg font-semibold mb-4">
-          {selectedDate
-            ? `Appointments - ${selectedDate.toLocaleDateString()}`
-            : "Select a date"}
-        </h3>
-
-        {selectedAppointments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <button
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <h3 className="text-lg font-semibold mb-4">
             {selectedDate
-              ? "No appointments for this date"
-              : "Click on a date to view appointments"}
-          </div>
-        ) : (
-          <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
-            {selectedAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                {/* Status Badge */}
+              ? `Appointments - ${selectedDate.toLocaleDateString()}`
+              : "Select a date"}
+          </h3>
+
+          {selectedAppointments.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {selectedDate
+                ? "No appointments for this date"
+                : "Click on a date to view appointments"}
+            </div>
+          ) : (
+            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+              {selectedAppointments.map((appointment) => (
                 <div
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
-                    appointment.status
-                  )}`}
+                  key={appointment.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  {getStatusIcon(appointment.status)}
-                  {appointment.status.charAt(0).toUpperCase() +
-                    appointment.status.slice(1)}
-                </div>
+                  {/* Status Badge */}
+                  <div
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
+                      appointment.status
+                    )}`}
+                  >
+                    {getStatusIcon(appointment.status)}
+                    {appointment.status.charAt(0).toUpperCase() +
+                      appointment.status.slice(1)}
+                  </div>
 
-                {/* Appointment Details */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.patient}
+                  {/* Appointment Details */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.patient}
+                        </div>
+                        <div className="text-sm text-gray-600">Patient</div>
                       </div>
-                      <div className="text-sm text-gray-600">Patient</div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          Dr. {appointment.doctor}
+                        </div>
+                        <div className="text-sm text-gray-600">Doctor</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.timeSelected}
+                        </div>
+                        <div className="text-sm text-gray-600">Time</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          ${appointment.visit_fee}
+                        </div>
+                        <div className="text-sm text-gray-600">Visit Fee</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.reservation_date}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Reservation Date
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
+                  {/* Doctor Photo */}
+                  {appointment.doctor_photo ? (
+                    <div className="mt-3 flex items-center gap-2">
+                      <img
+                        src={appointment.doctor_photo}
+                        alt={`Dr. ${appointment.doctor}`}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <span className="text-sm text-gray-600">
                         Dr. {appointment.doctor}
-                      </div>
-                      <div className="text-sm text-gray-600">Doctor</div>
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.timeSelected}
+                  ) : (
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500" />
                       </div>
-                      <div className="text-sm text-gray-600">Time</div>
+                      <span className="text-sm text-gray-600">
+                        Dr. {appointment.doctor}
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        ${appointment.visit_fee}
-                      </div>
-                      <div className="text-sm text-gray-600">Visit Fee</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.reservation_date}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Reservation Date
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-
-                {/* Doctor Photo */}
-                {appointment.doctor_photo ? (
-                  <div className="mt-3 flex items-center gap-2">
-                    <img
-                      src={appointment.doctor_photo}
-                      alt={`Dr. ${appointment.doctor}`}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Dr. {appointment.doctor}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <span className="text-sm text-gray-600">
-                      Dr. {appointment.doctor}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
