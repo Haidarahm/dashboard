@@ -46,7 +46,7 @@ const PaymentChart = ({ doctorId }) => {
     <div
       style={{
         display: "flex",
-       
+
         gap: 12,
         alignItems: "flex-start",
       }}
@@ -90,7 +90,7 @@ const DoctorsDetailsTable = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetchDoctors(page, 3);
+    fetchDoctors(page, 5);
   }, [fetchDoctors, page]);
 
   const columns = [
@@ -165,8 +165,11 @@ const DoctorsDetailsTable = () => {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        overflow: "hidden",
+        scrollbarWidth:"thin",
+       
+        overflow: "auto",
       }}
+      
       bordered={false}
     >
       <Table
@@ -175,11 +178,11 @@ const DoctorsDetailsTable = () => {
         rowKey="id"
         loading={loading}
         pagination={{
-          current: meta.current_page,
-          pageSize: 3,
+          pageSize: 5,
           total: meta.total,
           onChange: setPage,
           showSizeChanger: false,
+          hideOnSinglePage: true,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} doctors`,
           style: {
@@ -195,7 +198,7 @@ const DoctorsDetailsTable = () => {
           borderRadius: "8px",
           fontSize: 14,
         }}
-        // scroll={{ y: 290 }}
+      
         bordered={false}
         showHeader={true}
         rowClassName={() => "doctor-table-row"}
