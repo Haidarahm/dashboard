@@ -3,6 +3,7 @@ import {
   getAllAppointments,
   getAllAppointmentsByDoctor,
   getAllAppointmentsByStatus,
+  getAllAppointmentsByStatusAndDoctors,
   getAppointmentsByMonth,
 } from "../../api/admin/appointment";
 
@@ -26,9 +27,27 @@ export const useAppointmentStore = create((set, get) => ({
 
     // Automatically trigger API calls based on filter changes
     if (filterType === "status" && value) {
-      get().fetchAppointmentsByStatus(value, currentMonthDate);
+      // If both status and doctor are selected, use combined filter
+      if (newFilters.doctor_id) {
+        get().fetchAppointmentsByStatusAndDoctors(
+          value,
+          newFilters.doctor_id,
+          currentMonthDate
+        );
+      } else {
+        get().fetchAppointmentsByStatus(value, currentMonthDate);
+      }
     } else if (filterType === "doctor_id" && value) {
-      get().fetchAppointmentsByDoctor(value, currentMonthDate);
+      // If both status and doctor are selected, use combined filter
+      if (newFilters.status) {
+        get().fetchAppointmentsByStatusAndDoctors(
+          newFilters.status,
+          value,
+          currentMonthDate
+        );
+      } else {
+        get().fetchAppointmentsByDoctor(value, currentMonthDate);
+      }
     } else if (filterType === "status" && !value) {
       // If status is cleared, check if doctor filter is still active
       if (newFilters.doctor_id) {
@@ -87,6 +106,22 @@ export const useAppointmentStore = create((set, get) => ({
       set({ appointments: data });
     } catch {
       set({ error: "Failed to filter appointments by status" });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchAppointmentsByStatusAndDoctors: async (status, doctorId, date) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getAllAppointmentsByStatusAndDoctors(
+        status,
+        doctorId,
+        date
+      );
+      const data = response.data || response;
+      set({ appointments: data });
+    } catch {
+      set({ error: "Failed to filter appointments by status and doctor" });
     } finally {
       set({ loading: false });
     }

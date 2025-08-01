@@ -161,7 +161,7 @@ function Employees() {
       key: "role",
       render: (_, data) => (
         <Tag color={data.role === "secretary" ? "blue" : "green"}>
-          {data.role === "secretary" ? "Secretary" : "Employee"}
+          {data.role === "secretary" ? "Secretary" : "Labtech"}
         </Tag>
       ),
     },
@@ -204,7 +204,7 @@ function Employees() {
             style={{ marginRight: 16 }}
           >
             <Radio.Button value={null}>All</Radio.Button>
-            <Radio.Button value={0}>Employees</Radio.Button>
+            <Radio.Button value={0}>Labtechs</Radio.Button>
             <Radio.Button value={1}>Secretaries</Radio.Button>
           </Radio.Group>
           <Button
@@ -276,13 +276,18 @@ function Employees() {
           >
             <Input.Password />
           </Form.Item>
-          <Form.Item
-            name="is_secretary"
-            label="Is Secretary?"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+          {
+            modalType === "create" && (
+              <Form.Item
+              name="is_secretary"
+              label="Is Secretary?"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>    
+            )
+          }
+          
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
               {modalType === "create" ? "Create" : "Save Changes"}

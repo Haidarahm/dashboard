@@ -38,6 +38,28 @@ export const getAllAppointmentsByStatus = async (status, date) => {
   }
 };
 
+// Get appointments by status, doctor and date (expects date in MM-YYYY format)
+export const getAllAppointmentsByStatusAndDoctors = async (
+  status,
+  doctor_id,
+  date
+) => {
+  try {
+    const response = await api.post(
+      "/api/admin/filterByDoctorStatus",
+      {
+        status,
+        doctor_id,
+        date,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Get appointments by status and doctor error:", error);
+    throw error;
+  }
+};
+
 // Get appointments by month (expects date in MM-YYYY format)
 export const getAppointmentsByMonth = async (date) => {
   console.log(date);

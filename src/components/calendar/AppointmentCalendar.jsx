@@ -25,7 +25,6 @@ const AppointmentCalendar = () => {
     setFilters,
     clearFilters,
     fetchAppointmentsByMonth,
-    fetchAllAppointments,
   } = useAppointmentStore();
 
   const { doctors, fetchDoctors } = useDoctorsStore();
@@ -41,16 +40,29 @@ const AppointmentCalendar = () => {
     return `${month}-${year}`;
   };
 
-  // Fetch appointments for the current month only when no filters are active
+  // Fetch appointments when date changes, considering current filters
   useEffect(() => {
-    if (!filters.doctor_id && !filters.status) {
-      fetchAppointmentsByMonth(getMonthYearString(currentDate));
+    const currentMonthDate = getMonthYearString(currentDate);
+
+    if (filters.doctor_id && filters.status) {
+      // Both filters are active - use combined filter
+      setFilters("status", filters.status, currentMonthDate);
+    } else if (filters.doctor_id) {
+      // Only doctor filter is active
+      setFilters("doctor_id", filters.doctor_id, currentMonthDate);
+    } else if (filters.status) {
+      // Only status filter is active
+      setFilters("status", filters.status, currentMonthDate);
+    } else {
+      // No filters active - fetch appointments for current month
+      fetchAppointmentsByMonth(currentMonthDate);
     }
   }, [
     currentDate,
-    fetchAppointmentsByMonth,
     filters.doctor_id,
     filters.status,
+    fetchAppointmentsByMonth,
+    setFilters,
   ]);
 
   useEffect(() => {
@@ -105,6 +117,7 @@ const AppointmentCalendar = () => {
       newDate.setMonth(prev.getMonth() + direction);
       return newDate;
     });
+    // The useEffect will automatically handle refetching data with the new date
   };
 
   const handleDateClick = (date, dayAppointments) => {
@@ -277,11 +290,7 @@ const AppointmentCalendar = () => {
                     onClick={() => {
                       clearFilters();
                       // After clearing filters, fetch appointments for current month
-                      setTimeout(() => {
-                        fetchAppointmentsByMonth(
-                          getMonthYearString(currentDate)
-                        );
-                      }, 100);
+                      fetchAppointmentsByMonth(getMonthYearString(currentDate));
                     }}
                     className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
