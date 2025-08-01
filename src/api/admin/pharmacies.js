@@ -26,7 +26,8 @@ export const createPharmacy = async (pharmacyData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    console.log(error)
+    throw error.response?.data.message[0] || error;
   }
 };
 

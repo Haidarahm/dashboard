@@ -15,8 +15,8 @@ import {
   Tooltip,
   Row,
   Col,
-  message,
 } from "antd";
+import { toast } from "react-toastify";
 import {
   PlusOutlined,
   EditOutlined,
@@ -45,7 +45,7 @@ function Vaccine() {
     addVaccine,
     updateVaccine,
     deleteVaccine,
-    totalVaccins
+    totalVaccins,
   } = vaccineStore;
 
   const [pagination, setPagination] = useState({
@@ -87,25 +87,25 @@ function Vaccine() {
     try {
       if (modalType === "create") {
         await addVaccine(values);
-        message.success("Vaccine added successfully");
+        toast.success("Vaccine added successfully");
       } else if (modalType === "edit" && selectedVaccine) {
         await updateVaccine({ ...selectedVaccine, ...values });
-        message.success("Vaccine updated successfully");
+        toast.success("Vaccine updated successfully");
       }
       fetchVaccines(pagination.current, pagination.pageSize);
       closeModal();
     } catch (err) {
-      message.error("Operation failed");
+      toast.error("Operation failed");
     }
   };
 
   const handleDelete = async (vaccine) => {
     try {
       await deleteVaccine(vaccine.id || vaccine.vaccine_id);
-      message.success("Vaccine deleted successfully");
+      toast.success("Vaccine deleted successfully");
       fetchVaccines(pagination.current, pagination.pageSize);
     } catch (err) {
-      message.error("Failed to delete vaccine");
+      toast.error("Failed to delete vaccine");
     }
   };
 

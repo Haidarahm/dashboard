@@ -74,8 +74,11 @@ export const editVaccin = async ({
 
 // Remove a vaccine (expects vaccine_id in body)
 export const removeVaccin = async (vaccine_id) => {
+  console.log(vaccine_id);
   try {
-    const response = await api.post("/api/admin/remove", { vaccine_id });
+    const response = await api.delete("/api/admin/remove", {
+      params: {vaccine_id},
+    });
     return response.data;
   } catch (error) {
     console.error("Remove vaccine error:", error);

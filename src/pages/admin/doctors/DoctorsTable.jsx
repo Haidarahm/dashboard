@@ -443,7 +443,7 @@ function DoctorsTable({ onShowReviews }) {
       </Card>
 
       {/* Table Section */}
-      <Card>
+      
         <Spin spinning={loading}>
           <Table
             columns={columns}
@@ -461,7 +461,6 @@ function DoctorsTable({ onShowReviews }) {
             size="middle"
           />
         </Spin>
-      </Card>
 
       {/* Modal for View/Create */}
       <Modal
@@ -546,19 +545,24 @@ function DoctorsTable({ onShowReviews }) {
                 <Col span={12}>
                   <Form.Item
                     name="average_visit_duration"
-                    label="Avg. Visit Duration (min)"
+                    label="Visit Duration"
                     rules={[
                       {
                         required: true,
-                        message: "Please enter average visit duration",
+                        message: "Please select visit duration",
                       },
                     ]}
                   >
-                    <InputNumber
-                      min={1}
-                      placeholder="Enter duration"
+                    <Select
+                      placeholder="Select visit duration"
                       style={{ width: "100%" }}
-                    />
+                    >
+                      <Option value={10}>10 minutes</Option>
+                      <Option value={20}>20 minutes</Option>
+                      <Option value={30}>30 minutes</Option>
+                      <Option value={45}>45 minutes</Option>
+                      <Option value={60}>60 minutes</Option>
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>

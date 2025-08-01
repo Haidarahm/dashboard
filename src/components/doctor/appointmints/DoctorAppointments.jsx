@@ -16,14 +16,12 @@ import { Select } from "antd";
 const DoctorAppointments = () => {
   const {
     appointments,
-    filteredAppointments,
     loading,
     error,
     filters,
     setFilters,
     clearFilters,
     fetchAllAppointments,
-    applyFilters,
   } = useDoctorAppointmentsStore();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -35,13 +33,9 @@ const DoctorAppointments = () => {
     fetchAllAppointments();
   }, [fetchAllAppointments]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [filters.status, filters.type, appointments, applyFilters]);
-
   const getAppointmentsForDate = (date) => {
     const dateStr = date.toISOString().split("T")[0];
-    return filteredAppointments.filter(
+    return appointments.filter(
       (appointment) => appointment.reservation_date === dateStr
     );
   };
@@ -51,7 +45,6 @@ const DoctorAppointments = () => {
     const month = currentDate.getMonth();
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -295,8 +288,8 @@ const DoctorAppointments = () => {
                 )}
 
                 <div className="text-sm text-gray-600">
-                  Showing {filteredAppointments.length} appointment
-                  {filteredAppointments.length !== 1 ? "s" : ""}
+                  Showing {appointments.length} appointment
+                  {appointments.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>

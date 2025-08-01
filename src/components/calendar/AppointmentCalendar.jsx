@@ -20,17 +20,15 @@ const AppointmentCalendar = () => {
 
   const {
     appointments,
-    filteredAppointments,
     loading,
-    error,
     filters,
     setFilters,
     clearFilters,
     fetchAppointmentsByMonth,
-    applyFilters,
+    fetchAllAppointments,
   } = useAppointmentStore();
 
-  const { doctors, fetchDoctors, loading: doctorsLoading } = useDoctorsStore();
+  const { doctors, fetchDoctors } = useDoctorsStore();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -43,20 +41,16 @@ const AppointmentCalendar = () => {
     return `${month}-${year}`;
   };
 
-  // Fetch appointments for the current month
+  // Fetch appointments for the current month only when no filters are active
   useEffect(() => {
-    fetchAppointmentsByMonth(getMonthYearString(currentDate));
-    // eslint-disable-next-line
-  }, [currentDate, fetchAppointmentsByMonth]);
-
-  useEffect(() => {
-    applyFilters(getMonthYearString(currentDate));
+    if (!filters.doctor_id && !filters.status) {
+      fetchAppointmentsByMonth(getMonthYearString(currentDate));
+    }
   }, [
+    currentDate,
+    fetchAppointmentsByMonth,
     filters.doctor_id,
     filters.status,
-    appointments,
-    applyFilters,
-    currentDate,
   ]);
 
   useEffect(() => {
@@ -64,18 +58,21 @@ const AppointmentCalendar = () => {
   }, [fetchDoctors]);
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(filterType, value);
-    // Apply filters immediately when filter changes
-    setTimeout(() => {
-      applyFilters(getMonthYearString(currentDate));
-    }, 0);
+    // Get current month date for filtering
+    const currentMonthDate = getMonthYearString(currentDate);
+
+    // Clear the current month filter when applying status or doctor filters
+    if ((filterType === "status" || filterType === "doctor_id") && value) {
+      // The setFilters function will automatically trigger the appropriate API call with date
+      setFilters(filterType, value, currentMonthDate);
+    } else {
+      setFilters(filterType, value, currentMonthDate);
+    }
   };
 
   const getAppointmentsForDate = (date) => {
     const dateStr = date.toISOString().split("T")[0];
-    return filteredAppointments.filter(
-      (apt) => apt.reservation_date === dateStr
-    );
+    return appointments.filter((apt) => apt.reservation_date === dateStr);
   };
 
   const generateCalendarDays = () => {
@@ -83,7 +80,6 @@ const AppointmentCalendar = () => {
     const month = currentDate.getMonth();
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -107,10 +103,6 @@ const AppointmentCalendar = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + direction);
-      // Apply filters with new date after navigation
-      setTimeout(() => {
-        applyFilters(getMonthYearString(newDate));
-      }, 0);
       return newDate;
     });
   };
@@ -284,10 +276,12 @@ const AppointmentCalendar = () => {
                   <button
                     onClick={() => {
                       clearFilters();
-                      // Apply filters after clearing to refresh the view
+                      // After clearing filters, fetch appointments for current month
                       setTimeout(() => {
-                        applyFilters(getMonthYearString(currentDate));
-                      }, 0);
+                        fetchAppointmentsByMonth(
+                          getMonthYearString(currentDate)
+                        );
+                      }, 100);
                     }}
                     className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
@@ -297,8 +291,8 @@ const AppointmentCalendar = () => {
                 )}
 
                 <div className="text-sm text-gray-600">
-                  Showing {filteredAppointments.length} appointment
-                  {filteredAppointments.length !== 1 ? "s" : ""}
+                  Showing {appointments.length} appointment
+                  {appointments.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
