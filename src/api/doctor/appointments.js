@@ -1,12 +1,12 @@
 import api from "./doctorConfig";
 
-// Show all appointments
 export const showAllAppointments = async () => {
   const response = await api.get("/api/doctor/showAllAppointments");
+  console.log(response)
   return response.data;
 };
 
-// Show appointment details
+
 export const showAppointmentDetails = async (appointment_id) => {
   const response = await api.get("/api/doctor/showAppointmentDetails", {
     params: { appointment_id },

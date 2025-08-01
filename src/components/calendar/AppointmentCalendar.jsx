@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAppointmentStore } from "../../store/admin/appointmentStore";
 import { useDoctorsStore } from "../../store/admin/doctorsStore";
-import { Select } from "antd";
+import { Select, DatePicker } from "antd";
 const { Option } = Select;
 
 const AppointmentCalendar = () => {
@@ -206,6 +206,20 @@ const AppointmentCalendar = () => {
                   </span>
                 )}
               </button>
+              <DatePicker
+                placeholder="Select Date"
+                onChange={(date) => {
+                  if (date) {
+                    setCurrentDate(date.toDate());
+                  }
+                }}
+                format="YYYY-MM-DD"
+                style={{ width: 140 }}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                suffixIcon={
+                  <Calendar className="w-4 h-4" style={{ color: "#6B7280" }} />
+                }
+              />
             </div>
             <div className="flex gap-2">
               <button
