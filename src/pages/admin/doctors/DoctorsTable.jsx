@@ -443,24 +443,24 @@ function DoctorsTable({ onShowReviews }) {
       </Card>
 
       {/* Table Section */}
-      
-        <Spin spinning={loading}>
-          <Table
-            columns={columns}
-            dataSource={doctors}
-            rowKey="id"
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} doctors`,
-            }}
-            onChange={handleTableChange}
-            scroll={{ x: 1400 }}
-            size="middle"
-          />
-        </Spin>
+
+      <Spin spinning={loading}>
+        <Table
+          columns={columns}
+          dataSource={doctors}
+          rowKey="id"
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} doctors`,
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: 1400 }}
+          size="middle"
+        />
+      </Spin>
 
       {/* Modal for View/Create */}
       <Modal
@@ -558,9 +558,9 @@ function DoctorsTable({ onShowReviews }) {
                       style={{ width: "100%" }}
                     >
                       <Option value={10}>10 minutes</Option>
-                      <Option value={20}>20 minutes</Option>
-                      <Option value={30}>30 minutes</Option>
-                      <Option value={45}>45 minutes</Option>
+                      <Option value={15}>20 minutes</Option>
+                      <Option value={20}>30 minutes</Option>
+                      <Option value={30}>45 minutes</Option>
                       <Option value={60}>60 minutes</Option>
                     </Select>
                   </Form.Item>
