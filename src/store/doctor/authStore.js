@@ -22,7 +22,7 @@ export const useDoctorAuthStore = create((set, get) => ({
       const data = await doctorLogin(phone, password);
 
       if (data && data.token && data.user) {
-        storeAuthData(data.token, data.user, rememberMe, data.user.role);
+        storeAuthData(data.token, data.user, rememberMe, data.user.role,data.user.first_name);
         console.log("Hello man");
         set({
           user: data.user,

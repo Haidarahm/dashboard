@@ -211,6 +211,14 @@ const AppointmentCalendar = () => {
                 onChange={(date) => {
                   if (date) {
                     setCurrentDate(date.toDate());
+                    setSelectedDate(date.toDate());
+                    // Get appointments for the selected date
+                    const dateStr = date.toDate().toISOString().split("T")[0];
+                    const dayAppointments = appointments.filter(
+                      (apt) => apt.reservation_date === dateStr
+                    );
+                    setSelectedAppointments(dayAppointments);
+                    setSidebarOpen(true);
                   }
                 }}
                 format="YYYY-MM-DD"

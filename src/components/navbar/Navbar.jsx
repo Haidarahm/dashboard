@@ -27,27 +27,6 @@ const Navbar = ({ collapsed, setCollapsed }) => {
 
   const userMenuItems = [
     {
-      key: "profile",
-      label: (
-        <div className="flex items-center space-x-2 py-1">
-          <FiUser className="w-4 h-4" />
-          <span>Profile</span>
-        </div>
-      ),
-    },
-    {
-      key: "settings",
-      label: (
-        <div className="flex items-center space-x-2 py-1">
-          <FiSettings className="w-4 h-4" />
-          <span>Settings</span>
-        </div>
-      ),
-    },
-    {
-      type: "divider",
-    },
-    {
       key: "logout",
       label: (
         <div className="flex items-center space-x-2 py-1 text-red-600">
@@ -65,7 +44,17 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     }
     // Add other menu item handlers here as needed
   };
+  // Get user name from localStorage first, then sessionStorage as fallback
+  const getUserName = () => {
+    const localName = localStorage.getItem("name");
+    if (localName) {
+      return localName;
+    }
+    const sessionName = sessionStorage.getItem("name");
+    return sessionName || "Administrator"; 
+  };
 
+  const userName = getUserName();
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 h-16 flex items-center">
       <div className="flex items-center justify-between w-full">
@@ -110,7 +99,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
             <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
               <div className="hidden sm:block text-left">
                 <div className="text-sm font-semibold text-gray-900">
-                  Haidar AHmad
+                  {userName}
                 </div>
                 <div className="text-xs text-gray-500">Administrator</div>
               </div>

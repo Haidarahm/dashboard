@@ -93,12 +93,13 @@ export const handleSessionExpired = () => {
  * @param {object} user - User data object
  * @param {boolean} rememberMe - Whether to store in localStorage (true) or sessionStorage (false)
  */
-export const storeAuthData = (token, user = null, rememberMe = false,role) => {
+export const storeAuthData = (token, user = null, rememberMe = false,role,name) => {
   const storage = rememberMe ? localStorage : sessionStorage;
 
   storage.setItem("authToken", token);
   storage.setItem("token", token);
   storage.setItem("role", role);
+  storage.setItem("name", name);
 
   if (user) {
     storage.setItem("user", JSON.stringify(user));
