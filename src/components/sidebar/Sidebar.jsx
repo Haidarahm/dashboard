@@ -39,18 +39,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </div>
           )}
         </div>
-
-        {/* Toggle Button */}
-        <button
-          onClick={onToggle}
-          className="p-1.5 rounded-md hover:bg-gray-100 transition-colors duration-200 text-gray-400 hover:text-gray-600"
-        >
-          {collapsed ? (
-            <FaChevronRight size={12} />
-          ) : (
-            <FaChevronLeft size={12} />
-          )}
-        </button>
       </div>
 
       {/* Navigation Menu */}
