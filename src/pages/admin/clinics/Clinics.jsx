@@ -259,7 +259,7 @@ function Clinics() {
                     // border: "1px solid rgba(255, 255, 255, 0.2)",
                   }}
                 >
-                  <EyeIcon width={16} height={16}/>
+                  <EyeIcon width={16} height={16} />
                 </div>
               ),
               maskClassName: "custom-image-mask",
