@@ -89,7 +89,10 @@ function Vaccine() {
         await addVaccine(values);
         toast.success("Vaccine added successfully");
       } else if (modalType === "edit" && selectedVaccine) {
-        await updateVaccine({ ...selectedVaccine, ...values });
+        await updateVaccine({
+          vaccine_id: selectedVaccine.id,
+          ...values,
+        });
         toast.success("Vaccine updated successfully");
       }
       fetchVaccines(pagination.current, pagination.pageSize);

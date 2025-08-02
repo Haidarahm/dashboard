@@ -10,7 +10,7 @@ export const doctorLogin = async (phone, password) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error
   }
 };
 

@@ -51,6 +51,7 @@ export const createVaccin = async ({
 
 // Edit a vaccine
 export const editVaccin = async ({
+  vaccine_id,
   name,
   description,
   age_group,
@@ -59,6 +60,7 @@ export const editVaccin = async ({
 }) => {
   try {
     const response = await api.post("/api/admin/edit", {
+      vaccine_id,
       name,
       description,
       age_group,
@@ -77,7 +79,7 @@ export const removeVaccin = async (vaccine_id) => {
   console.log(vaccine_id);
   try {
     const response = await api.delete("/api/admin/remove", {
-      params: {vaccine_id},
+      params: { vaccine_id },
     });
     return response.data;
   } catch (error) {
