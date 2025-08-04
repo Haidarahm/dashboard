@@ -145,13 +145,14 @@ const Profile = () => {
             uid: file.uid,
             name: file.name,
             status: "done",
-            url: reader.result, // base64 for preview
+            url: reader.result,
+            originFileObj: file, // ✅ add this
           },
         ]);
       };
       reader.readAsDataURL(file);
 
-      return false; // prevent automatic upload
+      return false;
     },
     onChange: ({ fileList: newFileList }) => {
       setSignatureList(newFileList);
@@ -337,7 +338,7 @@ const Profile = () => {
               {profile?.sign ? (
                 <div className="w-48 h-24 mx-auto mb-3 flex items-center justify-center">
                   <img
-                    src={profile.sign}
+                    src={`http://127.0.0.1:8000${profile.sign}`}
                     alt="Signature"
                     className="max-w-full max-h-full"
                   />
