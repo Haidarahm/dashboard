@@ -44,7 +44,6 @@ const Profile = () => {
   const {
     profile,
     loading,
-    error,
     fetchProfile,
     updateProfile,
     getInitialFormValues,
@@ -52,14 +51,16 @@ const Profile = () => {
 
   // Initialize form with profile data
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    const init = async () => {
+      await fetchProfile(); // Wait for profile to be fetched
+      const initialValues = getInitialFormValues(); // Now has correct data
+      form.setFieldsValue(initialValues); // Set form fields correctly
+    };
+    init();
+  }, []);
 
   useEffect(() => {
     if (profile) {
-      const initialValues = getInitialFormValues();
-      form.setFieldsValue(initialValues);
-
       if (profile.photo) {
         setFileList([
           {
@@ -81,7 +82,7 @@ const Profile = () => {
         ]);
       }
     }
-  }, [profile, form, getInitialFormValues]);
+  }, [profile, form]);
 
   const handleSubmit = async (values) => {
     try {

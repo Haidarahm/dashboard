@@ -88,7 +88,7 @@ export const useProfileStore = create(
         getInitialFormValues: () => {
           const { profile } = get();
           if (!profile) return {};
-          
+          console.log(parseInt(profile.average_visit_duration))
           return {
             firstName: profile.first_name || '',
             lastName: profile.last_name || '',
@@ -100,8 +100,9 @@ export const useProfileStore = create(
             bookType: profile.booking_type || 'auto',
             status: profile.status || 'available',
             visitFee: profile.visit_fee || '',
+           
             visitDuration: parseInt(profile.average_visit_duration),
-            // Note: File upload fields (photo, sign) are handled separately
+            
           };
         }
       }),
