@@ -21,7 +21,16 @@ export const showAppointmentsByStatus = async (status,date) => {
     status,
     date
   });
-  console.log(response.data,date);
+ 
+  return response.data;
+};
+export const cancelAppointments = async (reservation_id) => {
+  const response = await api.get("/api/doctor/showAppointmentsByStatus", {
+    params:{
+      reservation_id
+    }
+  });
+
   return response.data;
 };
 export const showAppointmentsByType = async (status, type,date) => {

@@ -7,6 +7,7 @@ import {
   User,
   DollarSign,
   UserCheck,
+  Filter,
   X,
 } from "lucide-react";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
@@ -15,6 +16,7 @@ const { Option } = Select;
 
 const DoctorAppointments = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const {
     allAppointments,
@@ -32,8 +34,8 @@ const DoctorAppointments = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedAppointments, setSelectedAppointments] = useState([]);
-  const [activeFilter, setActiveFilter] = useState(null); // 'status' or 'type'
-  const [filterValue, setFilterValue] = useState(null); // The selected filter value
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [typeFilter, setTypeFilter] = useState(null);
 
   // Helper to format date as MM-YYYY
   const getMonthYearString = (date) => {
@@ -42,24 +44,26 @@ const DoctorAppointments = () => {
     return `${month}-${year}`;
   };
 
-  // Fetch appointments when month changes
+  // Fetch appointments when month or filters change
   useEffect(() => {
     const monthYear = getMonthYearString(currentDate);
     
-    if (activeFilter === "status" && filterValue) {
-      fetchByStatus(filterValue, monthYear);
-    } else if (activeFilter === "type" && filterValue) {
-      fetchByType(filterValue, monthYear);
+    if (statusFilter && typeFilter) {
+      fetchByType(statusFilter, typeFilter, monthYear);
+    } else if (statusFilter) {
+      fetchByStatus(statusFilter, monthYear);
+    } else if (typeFilter) {
+      fetchByType('pending', typeFilter, monthYear); // Default status if only type is selected
     } else {
       fetchAllByDate(monthYear);
     }
     
     setCurrentMonthYear(monthYear);
-  }, [currentDate, activeFilter, filterValue, fetchAllByDate, fetchByStatus, fetchByType, setCurrentMonthYear]);
+  }, [currentDate, statusFilter, typeFilter, fetchAllByDate, fetchByStatus, fetchByType, setCurrentMonthYear]);
 
   // Get the appointments to display (filtered or all)
   const getDisplayAppointments = () => {
-    return filterValue && filteredAppointments.length > 0
+    return (statusFilter || typeFilter) && filteredAppointments.length > 0
       ? filteredAppointments
       : allAppointments;
   };
@@ -137,6 +141,7 @@ const DoctorAppointments = () => {
   };
 
   const getTypeColor = (type) => {
+    console.log(type)
     switch (type?.toLowerCase()) {
       case "first time":
         return "bg-purple-100 text-purple-800 border-purple-200";
@@ -148,38 +153,17 @@ const DoctorAppointments = () => {
   };
 
   const handleStatusFilterChange = (value) => {
-    const monthYear = getMonthYearString(currentDate);
-    
-    if (!value) {
-      clearFilters();
-      setActiveFilter(null);
-      setFilterValue(null);
-      return;
-    }
-
-    setActiveFilter("status");
-    setFilterValue(value);
-    fetchByStatus(value, monthYear);
+    setStatusFilter(value);
   };
 
   const handleTypeFilterChange = (value) => {
-    const monthYear = getMonthYearString(currentDate);
-    
-    if (!value) {
-      // If clearing type filter but status is still active
-      if (activeFilter === "status" && filterValue) {
-        fetchByStatus(filterValue, monthYear);
-      } else {
-        clearFilters();
-      }
-      setActiveFilter("status"); // Revert to status filter if it exists
-      setFilterValue(filterValue); // Keep the status filter value
-      return;
-    }
+    setTypeFilter(value);
+  };
 
-    setActiveFilter("type");
-    setFilterValue(value);
-    fetchByType(value, monthYear);
+  const handleClearFilters = () => {
+    setStatusFilter(null);
+    setTypeFilter(null);
+    clearFilters();
   };
 
   const monthNames = [
@@ -226,6 +210,18 @@ const DoctorAppointments = () => {
               <h2 className="text-xl font-semibold text-gray-800">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+                {(statusFilter || typeFilter) && (
+                  <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    {[statusFilter, typeFilter].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
               <DatePicker
                 placeholder="Select Date"
                 onChange={(date) => {
@@ -266,61 +262,66 @@ const DoctorAppointments = () => {
           </div>
 
           {/* Filter Panel */}
-          <div className="p-4 border-b bg-gray-50">
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Status Filter */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Status:
-                </label>
-                <Select
-                  value={activeFilter === "status" ? filterValue : undefined}
-                  onChange={handleStatusFilterChange}
-                  style={{ width: 150 }}
-                  allowClear
-                  placeholder="Filter by status"
-                >
-                  <Option value="today">Today</Option>
-                  <Option value="pending">Pending</Option>
-                  <Option value="visited">Visited</Option>
-                </Select>
-              </div>
+          <div
+            style={{
+              transition: "max-height 0.3s ease, opacity 0.3s ease",
+              overflow: "hidden",
+              maxHeight: showFilters ? "200px" : "0",
+              opacity: showFilters ? 1 : 0,
+            }}
+          >
+            <div className="p-4 border-b bg-gray-50">
+              <div className="flex items-center gap-4 flex-wrap">
+                {/* Status Filter */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Status:
+                  </label>
+                  <Select
+                    value={statusFilter}
+                    onChange={handleStatusFilterChange}
+                    style={{ width: 150 }}
+                    allowClear
+                    placeholder="Filter by status"
+                  >
+                    <Option value="today">Today</Option>
+                    <Option value="pending">Pending</Option>
+                    <Option value="visited">Visited</Option>
+                  </Select>
+                </div>
 
-              {/* Type Filter */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Type:
-                </label>
-                <Select
-                  value={activeFilter === "type" ? filterValue : undefined}
-                  onChange={handleTypeFilterChange}
-                  style={{ width: 150 }}
-                  allowClear
-                  placeholder="Filter by type"
-                  disabled={!filterValue || activeFilter !== "status"}
-                >
-                  <Option value="first time">First Time</Option>
-                  <Option value="check up">Check Up</Option>
-                </Select>
-              </div>
+                {/* Type Filter */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Type:
+                  </label>
+                  <Select
+                    value={typeFilter}
+                    onChange={handleTypeFilterChange}
+                    style={{ width: 150 }}
+                    allowClear
+                    placeholder="Filter by type"
+                    disabled={!statusFilter}
+                  >
+                    <Option value="first time">First Time</Option>
+                    <Option value="check up">Check Up</Option>
+                  </Select>
+                </div>
 
-              {(activeFilter && filterValue) && (
-                <button
-                  onClick={() => {
-                    clearFilters();
-                    setActiveFilter(null);
-                    setFilterValue(null);
-                  }}
-                  className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                  Clear Filters
-                </button>
-              )}
+                {(statusFilter || typeFilter) && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear Filters
+                  </button>
+                )}
 
-              <div className="text-sm text-gray-600">
-                Showing {getDisplayAppointments().length} appointment
-                {getDisplayAppointments().length !== 1 ? "s" : ""}
+                <div className="text-sm text-gray-600">
+                  Showing {getDisplayAppointments().length} appointment
+                  {getDisplayAppointments().length !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
           </div>
@@ -370,7 +371,7 @@ const DoctorAppointments = () => {
                         <div
                           key={apt?.id}
                           className={`text-xs px-2 py-1 rounded-full text-center truncate ${
-                            activeFilter === "type"
+                            typeFilter
                               ? getTypeColor(apt?.appointment_type)
                               : getStatusColor(apt?.status)
                           }`}
