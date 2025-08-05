@@ -10,9 +10,12 @@ import {
 import { Avatar, Badge, Dropdown } from "antd";
 import { logoutUser } from "../../utils/auth";
 import { logout } from "../../api/admin/auth";
+import { User } from "lucide-react";
+import { useNavigate } from "react-router";
 
 // Navbar Component
 const Navbar = ({ collapsed, setCollapsed }) => {
+  const navigate =useNavigate()
   // Handle logout
   const handleLogout = async () => {
     try {
@@ -35,6 +38,15 @@ const Navbar = ({ collapsed, setCollapsed }) => {
         </div>
       ),
     },
+    {
+      key: "profile",
+      label: (
+        <div className="flex items-center space-x-2 py-1 text-gray-600">
+          <User className="w-4 h-4" />
+          <span>Profile</span>
+        </div>
+      ),
+    },
   ];
 
   // Handle menu item clicks
@@ -42,7 +54,10 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     if (key === "logout") {
       handleLogout();
     }
-    // Add other menu item handlers here as needed
+    else{
+      console.log(key)
+      navigate(key)
+    }
   };
   // Get user name from localStorage first, then sessionStorage as fallback
   const getUserName = () => {
