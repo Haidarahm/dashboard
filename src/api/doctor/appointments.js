@@ -16,28 +16,28 @@ export const showAllAppointmentsByDate = async (date) => {
 // };
 
 // Show appointments by type
-export const showAppointmentsByStatus = async (status,date) => {
+export const showAppointmentsByStatus = async (status, date) => {
   const response = await api.post("/api/doctor/showAppointmentsByStatus", {
     status,
-    date
-  });
- 
-  return response.data;
-};
-export const cancelAppointments = async (reservation_id) => {
-  const response = await api.get("/api/doctor/showAppointmentsByStatus", {
-    params:{
-      reservation_id
-    }
+    date,
   });
 
   return response.data;
 };
-export const showAppointmentsByType = async (status, type,date) => {
+export const cancelAppointment = async (reservation_id) => {
+  const response = await api.get("/api/doctor/showAppointmentsByStatus", {
+    params: {
+      reservation_id,
+    },
+  });
+
+  return response.data;
+};
+export const showAppointmentsByType = async (status, type, date) => {
   const response = await api.post("/api/doctor/showAppointmentsByType", {
     status,
     type,
-    date
+    date,
   });
   return response.data;
 };

@@ -47,35 +47,42 @@ const DoctorAppointments = () => {
   // Fetch appointments when month or filters change
   useEffect(() => {
     const monthYear = getMonthYearString(currentDate);
-    
+
+    // Clear filters if both are null
+    if (!statusFilter && !typeFilter) {
+      fetchAllByDate(monthYear);
+      return;
+    }
+
+    // Apply filters
     if (statusFilter && typeFilter) {
       fetchByType(statusFilter, typeFilter, monthYear);
     } else if (statusFilter) {
       fetchByStatus(statusFilter, monthYear);
     } else if (typeFilter) {
-      fetchByType('pending', typeFilter, monthYear); // Default status if only type is selected
-    } else {
-      fetchAllByDate(monthYear);
+      // Don't fetch by type alone - or handle differently
+      // fetchAllByDate(monthYear); // Alternative approach
     }
-    
+
     setCurrentMonthYear(monthYear);
-  }, [currentDate, statusFilter, typeFilter, fetchAllByDate, fetchByStatus, fetchByType, setCurrentMonthYear]);
-
+  }, [currentDate, statusFilter, typeFilter]);
   // Get the appointments to display (filtered or all)
-  const getDisplayAppointments = () => {
-    return (statusFilter || typeFilter) && filteredAppointments.length > 0
-      ? filteredAppointments
-      : allAppointments;
-  };
+ const getDisplayAppointments = () => {
+  // If filters are active, always return filteredAppointments (even if empty)
+  if (statusFilter || typeFilter) {
+    return filteredAppointments || [];
+  }
+  return allAppointments;
+};
 
-  const getAppointmentsForDate = (date) => {
-    const dateStr = date.toISOString().split("T")[0];
-    const appointments = getDisplayAppointments();
-    return Array.isArray(appointments)
-      ? appointments.filter((apt) => apt?.reservation_date === dateStr)
-      : [];
-  };
-
+// Update getAppointmentsForDate to use display appointments correctly
+const getAppointmentsForDate = (date) => {
+  const dateStr = date.toISOString().split("T")[0];
+  const appointments = getDisplayAppointments();
+  return Array.isArray(appointments)
+    ? appointments.filter((apt) => apt?.reservation_date === dateStr)
+    : [];
+};
   const generateCalendarDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -141,7 +148,7 @@ const DoctorAppointments = () => {
   };
 
   const getTypeColor = (type) => {
-    console.log(type)
+    console.log(type);
     switch (type?.toLowerCase()) {
       case "first time":
         return "bg-purple-100 text-purple-800 border-purple-200";
@@ -159,11 +166,13 @@ const DoctorAppointments = () => {
   const handleTypeFilterChange = (value) => {
     setTypeFilter(value);
   };
-
   const handleClearFilters = () => {
     setStatusFilter(null);
     setTypeFilter(null);
     clearFilters();
+    // Force refetch of all appointments for current month
+    const monthYear = getMonthYearString(currentDate);
+    fetchAllByDate(monthYear);
   };
 
   const monthNames = [
