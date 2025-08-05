@@ -5,7 +5,6 @@ import {
   Calendar,
   Clock,
   User,
-  DollarSign,
   UserCheck,
   Filter,
   X,
@@ -17,16 +16,18 @@ const { Option } = Select;
 const DoctorAppointments = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const {
     allAppointments,
     filteredAppointments,
     loading,
-    error,
-    currentMonthYear,
     fetchAllByDate,
     fetchByStatus,
     fetchByType,
+    cancelAppointment,
     clearFilters,
     setCurrentMonthYear,
   } = useAppointmentsStore();
@@ -48,41 +49,46 @@ const DoctorAppointments = () => {
   useEffect(() => {
     const monthYear = getMonthYearString(currentDate);
 
-    // Clear filters if both are null
     if (!statusFilter && !typeFilter) {
       fetchAllByDate(monthYear);
       return;
     }
 
-    // Apply filters
     if (statusFilter && typeFilter) {
       fetchByType(statusFilter, typeFilter, monthYear);
     } else if (statusFilter) {
       fetchByStatus(statusFilter, monthYear);
     } else if (typeFilter) {
-      // Don't fetch by type alone - or handle differently
-      // fetchAllByDate(monthYear); // Alternative approach
+      fetchByType("pending", typeFilter, monthYear);
     }
 
     setCurrentMonthYear(monthYear);
-  }, [currentDate, statusFilter, typeFilter]);
-  // Get the appointments to display (filtered or all)
- const getDisplayAppointments = () => {
-  // If filters are active, always return filteredAppointments (even if empty)
-  if (statusFilter || typeFilter) {
-    return filteredAppointments || [];
-  }
-  return allAppointments;
-};
+  }, [
+    currentDate,
+    statusFilter,
+    typeFilter,
+    fetchAllByDate,
+    fetchByStatus,
+    fetchByType,
+    setCurrentMonthYear,
+  ]);
 
-// Update getAppointmentsForDate to use display appointments correctly
-const getAppointmentsForDate = (date) => {
-  const dateStr = date.toISOString().split("T")[0];
-  const appointments = getDisplayAppointments();
-  return Array.isArray(appointments)
-    ? appointments.filter((apt) => apt?.reservation_date === dateStr)
-    : [];
-};
+  // Get the appointments to display (filtered or all)
+  const getDisplayAppointments = () => {
+    if (statusFilter || typeFilter) {
+      return filteredAppointments || [];
+    }
+    return allAppointments;
+  };
+
+  const getAppointmentsForDate = (date) => {
+    const dateStr = date.toISOString().split("T")[0];
+    const appointments = getDisplayAppointments();
+    return Array.isArray(appointments)
+      ? appointments.filter((apt) => apt?.reservation_date === dateStr)
+      : [];
+  };
+
   const generateCalendarDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -121,6 +127,39 @@ const getAppointmentsForDate = (date) => {
     setSidebarOpen(true);
   };
 
+  const handleCancelClick = (appointment) => {
+    setAppointmentToCancel(appointment);
+    setShowCancelConfirm(true);
+    setSidebarOpen(false);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!appointmentToCancel) return;
+
+    setIsCancelling(true);
+
+    try {
+      const success = await cancelAppointment(appointmentToCancel.id);
+      if (success) {
+        const monthYear = getMonthYearString(currentDate);
+
+        if (statusFilter && typeFilter) {
+          await fetchByType(statusFilter, typeFilter, monthYear);
+        } else if (statusFilter) {
+          await fetchByStatus(statusFilter, monthYear);
+        } else if (typeFilter) {
+          await fetchByType("pending", typeFilter, monthYear);
+        } else {
+          await fetchAllByDate(monthYear);
+        }
+      }
+    } finally {
+      setIsCancelling(false);
+      setShowCancelConfirm(false);
+      setAppointmentToCancel(null);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "visited":
@@ -148,7 +187,6 @@ const getAppointmentsForDate = (date) => {
   };
 
   const getTypeColor = (type) => {
-    console.log(type);
     switch (type?.toLowerCase()) {
       case "first time":
         return "bg-purple-100 text-purple-800 border-purple-200";
@@ -166,11 +204,11 @@ const getAppointmentsForDate = (date) => {
   const handleTypeFilterChange = (value) => {
     setTypeFilter(value);
   };
+
   const handleClearFilters = () => {
     setStatusFilter(null);
     setTypeFilter(null);
     clearFilters();
-    // Force refetch of all appointments for current month
     const monthYear = getMonthYearString(currentDate);
     fetchAllByDate(monthYear);
   };
@@ -192,7 +230,6 @@ const getAppointmentsForDate = (date) => {
 
   const days = generateCalendarDays();
 
-  // Loading placeholder squares for the grid only
   const loadingGridSquares = (
     <div className="grid grid-cols-7 gap-1">
       {Array.from({ length: 42 }).map((_, idx) => (
@@ -206,6 +243,57 @@ const getAppointmentsForDate = (date) => {
 
   return (
     <div className="flex bg-gray-50 relative overflow-hidden">
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Confirm Cancellation</h3>
+            <p className="mb-6">
+              Are you sure you want to cancel this appointment?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                No, Keep It
+              </button>
+              <button
+                onClick={handleConfirmCancel}
+                disabled={isCancelling}
+                className={`px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700 rounded-md flex items-center justify-center gap-2 ${
+                  isCancelling ? "opacity-75" : ""
+                }`}
+              >
+                {isCancelling && (
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+                {isCancelling ? "Cancelling..." : "Yes, Cancel Appointment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Calendar Section */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
@@ -500,6 +588,19 @@ const getAppointmentsForDate = (date) => {
                       <p className="text-sm text-gray-600 mt-1">
                         {appointment.notes}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Cancel Button */}
+                  {(appointment.status === "pending" ||
+                    appointment.status === "today") && (
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={() => handleCancelClick(appointment)}
+                        className="px-3 py-1 text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        Cancel Appointment
+                      </button>
                     </div>
                   )}
                 </div>
