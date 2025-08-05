@@ -21,7 +21,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       const data = await login(phone, password);
       if (data && data.token && data.user) {
-        storeAuthData(data.token, data.user, rememberMe, data.user.role);
+        storeAuthData(data.token, data.user, rememberMe, data.user.role,data.user.first_name);
         set({
           user: data.user,
           token: data.token,

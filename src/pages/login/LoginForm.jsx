@@ -50,7 +50,7 @@ const LoginForm = () => {
     try {
       await login(formData.phone, formData.password, rememberMe);
     } catch (error) {
-      // Error is already handled in the store (toast), but you can add extra handling if needed
+     
     }
   };
 

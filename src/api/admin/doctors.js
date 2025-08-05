@@ -13,10 +13,12 @@ export const createDoctor = async (doctorData) => {
   }
 };
 
-// Function to fetch all doctors
-export const fetchDoctors = async () => {
+// Function to fetch all doctors with pagination
+export const fetchDoctors = async (page, per_page ) => {
   try {
-    const response = await api.get(`/api/admin/showDoctors`);
+    const response = await api.get(`/api/admin/showDoctors`, {
+      params: { page, size:per_page },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching doctors:", error);
@@ -24,14 +26,10 @@ export const fetchDoctors = async () => {
   }
 };
 
-// Function to show doctor reviews
-// NOTE: The endpoint for showing doctor reviews was not provided.
-// Please replace '/admin/showDoctorReviewsEndpoint' with the actual endpoint.
+
 export const showDoctorReviews = async (doctorId) => {
   try {
-    // Assuming the endpoint is something like '/api/admin/doctorReviews/{doctorId}'
-    // Or it could be a GET request to a specific endpoint with doctorId as a query parameter
-    // Example using a placeholder endpoint and query parameter:
+
     const response = await api.get(`/api/admin/showDoctorReviewsEndpoint`, {
       params: { doctor_id: doctorId },
     });

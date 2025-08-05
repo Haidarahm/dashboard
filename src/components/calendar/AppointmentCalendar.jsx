@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAppointmentStore } from "../../store/admin/appointmentStore";
 import { useDoctorsStore } from "../../store/admin/doctorsStore";
-import { Select } from "antd";
+import { Select, DatePicker } from "antd";
 const { Option } = Select;
 
 const AppointmentCalendar = () => {
@@ -20,43 +20,71 @@ const AppointmentCalendar = () => {
 
   const {
     appointments,
-    filteredAppointments,
     loading,
-    error,
     filters,
     setFilters,
     clearFilters,
-    fetchAllAppointments,
-    applyFilters,
+    fetchAppointmentsByMonth,
   } = useAppointmentStore();
 
-  const { doctors, fetchDoctors, loading: doctorsLoading } = useDoctorsStore();
+  const { doctors, fetchDoctors } = useDoctorsStore();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedAppointments, setSelectedAppointments] = useState([]);
 
-  useEffect(() => {
-    fetchAllAppointments();
-  }, [fetchAllAppointments]);
+  // Helper to format date as MM-YYYY
+  const getMonthYearString = (date) => {
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}-${year}`;
+  };
 
+  // Fetch appointments when date changes, considering current filters
   useEffect(() => {
-    applyFilters();
-  }, [filters.doctor_id, filters.status, appointments, applyFilters]);
+    const currentMonthDate = getMonthYearString(currentDate);
+
+    if (filters.doctor_id && filters.status) {
+      // Both filters are active - use combined filter
+      setFilters("status", filters.status, currentMonthDate);
+    } else if (filters.doctor_id) {
+      // Only doctor filter is active
+      setFilters("doctor_id", filters.doctor_id, currentMonthDate);
+    } else if (filters.status) {
+      // Only status filter is active
+      setFilters("status", filters.status, currentMonthDate);
+    } else {
+      // No filters active - fetch appointments for current month
+      fetchAppointmentsByMonth(currentMonthDate);
+    }
+  }, [
+    currentDate,
+    filters.doctor_id,
+    filters.status,
+    fetchAppointmentsByMonth,
+    setFilters,
+  ]);
 
   useEffect(() => {
     fetchDoctors();
   }, [fetchDoctors]);
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(filterType, value);
+    // Get current month date for filtering
+    const currentMonthDate = getMonthYearString(currentDate);
+
+    // Clear the current month filter when applying status or doctor filters
+    if ((filterType === "status" || filterType === "doctor_id") && value) {
+      // The setFilters function will automatically trigger the appropriate API call with date
+      setFilters(filterType, value, currentMonthDate);
+    } else {
+      setFilters(filterType, value, currentMonthDate);
+    }
   };
 
   const getAppointmentsForDate = (date) => {
     const dateStr = date.toISOString().split("T")[0];
-    return filteredAppointments.filter(
-      (apt) => apt.reservation_date === dateStr
-    );
+    return appointments.filter((apt) => apt.reservation_date === dateStr);
   };
 
   const generateCalendarDays = () => {
@@ -64,7 +92,6 @@ const AppointmentCalendar = () => {
     const month = currentDate.getMonth();
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -90,6 +117,7 @@ const AppointmentCalendar = () => {
       newDate.setMonth(prev.getMonth() + direction);
       return newDate;
     });
+    // The useEffect will automatically handle refetching data with the new date
   };
 
   const handleDateClick = (date, dayAppointments) => {
@@ -139,39 +167,24 @@ const AppointmentCalendar = () => {
 
   const days = generateCalendarDays();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading appointments...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={fetchAllAppointments}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Loading placeholder squares for the grid only
+  const loadingGridSquares = (
+    <div className="grid grid-cols-7 gap-1">
+      {Array.from({ length: 42 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="min-h-[100px] p-4 border rounded-lg bg-gray-100 animate-pulse"
+        ></div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="flex  bg-gray-50 relative overflow-hidden">
       {/* Calendar Section */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
-          sidebarOpen ? "mr-96" : "mr-0"
+          sidebarOpen && !loading ? "mr-96" : "mr-0"
         }`}
       >
         <div className="bg-white rounded-lg shadow-sm">
@@ -193,6 +206,28 @@ const AppointmentCalendar = () => {
                   </span>
                 )}
               </button>
+              <DatePicker
+                placeholder="Select Date"
+                onChange={(date) => {
+                  if (date) {
+                    setCurrentDate(date.toDate());
+                    setSelectedDate(date.toDate());
+                    // Get appointments for the selected date
+                    const dateStr = date.toDate().toISOString().split("T")[0];
+                    const dayAppointments = appointments.filter(
+                      (apt) => apt.reservation_date === dateStr
+                    );
+                    setSelectedAppointments(dayAppointments);
+                    setSidebarOpen(true);
+                  }
+                }}
+                format="YYYY-MM-DD"
+                style={{ width: 140 }}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                suffixIcon={
+                  <Calendar className="w-4 h-4" style={{ color: "#6B7280" }} />
+                }
+              />
             </div>
             <div className="flex gap-2">
               <button
@@ -211,7 +246,17 @@ const AppointmentCalendar = () => {
           </div>
 
           {/* Filter Panel */}
-          {filters.showFilters && (
+          <div
+            style={{
+              transition:
+                "max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1)",
+              overflow: "hidden",
+              maxHeight: filters.showFilters ? 500 : 0,
+              opacity: filters.showFilters ? 1 : 0,
+              pointerEvents: filters.showFilters ? "auto" : "none",
+              visibility: filters.showFilters ? "visible" : "hidden",
+            }}
+          >
             <div className="p-4 border-b bg-gray-50">
               <div className="flex items-center gap-4 flex-wrap">
                 {/* Doctor Filter Dropdown */}
@@ -264,7 +309,11 @@ const AppointmentCalendar = () => {
 
                 {(filters.doctor_id || filters.status) && (
                   <button
-                    onClick={clearFilters}
+                    onClick={() => {
+                      clearFilters();
+                      // After clearing filters, fetch appointments for current month
+                      fetchAppointmentsByMonth(getMonthYearString(currentDate));
+                    }}
                     className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
                     <X className="w-4 h-4" />
@@ -273,12 +322,12 @@ const AppointmentCalendar = () => {
                 )}
 
                 <div className="text-sm text-gray-600">
-                  Showing {filteredAppointments.length} appointment
-                  {filteredAppointments.length !== 1 ? "s" : ""}
+                  Showing {appointments.length} appointment
+                  {appointments.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Calendar Grid */}
           <div className="p-4">
@@ -293,179 +342,184 @@ const AppointmentCalendar = () => {
                 </div>
               ))}
             </div>
-
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-1">
-              {days.map((day, index) => (
-                <div
-                  key={index}
-                  className={`min-h-[100px]  p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                    day.isCurrentMonth ? "bg-white" : "bg-gray-50"
-                  } ${
-                    selectedDate &&
-                    selectedDate.toDateString() === day.date.toDateString()
-                      ? "ring-2 ring-blue-500 bg-blue-50"
-                      : ""
-                  }`}
-                  onClick={() => handleDateClick(day.date, day.appointments)}
-                >
+            {/* Calendar Days or Loading Placeholders */}
+            {loading ? (
+              loadingGridSquares
+            ) : (
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, index) => (
                   <div
-                    className={`text-sm font-medium ${
-                      day.isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                    key={index}
+                    className={`min-h-[100px]  p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                      day.isCurrentMonth ? "bg-white" : "bg-gray-50"
+                    } ${
+                      selectedDate &&
+                      selectedDate.toDateString() === day.date.toDateString()
+                        ? "ring-2 ring-blue-500 bg-blue-50"
+                        : ""
                     }`}
+                    onClick={() => handleDateClick(day.date, day.appointments)}
                   >
-                    {day.date.getDate()}
-                  </div>
+                    <div
+                      className={`text-sm font-medium ${
+                        day.isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                      }`}
+                    >
+                      {day.date.getDate()}
+                    </div>
 
-                  {/* Appointment Indicators */}
-                  <div className="mt-1 space-y-1">
-                    {day.appointments.slice(0, 2).map((apt) => (
-                      <div
-                        key={apt.id}
-                        className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
-                          apt.status
-                        )}`}
-                      >
-                        {apt.timeSelected.substring(0, 5)}
-                      </div>
-                    ))}
-                    {day.appointments.length > 2 && (
-                      <div className="text-xs text-gray-500 text-center">
-                        +{day.appointments.length - 2} more
-                      </div>
-                    )}
+                    {/* Appointment Indicators */}
+                    <div className="mt-1 space-y-1">
+                      {day.appointments.slice(0, 2).map((apt) => (
+                        <div
+                          key={apt.id}
+                          className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
+                            apt.status
+                          )}`}
+                        >
+                          {apt.timeSelected.substring(0, 5)}
+                        </div>
+                      ))}
+                      {day.appointments.length > 2 && (
+                        <div className="text-xs text-gray-500 text-center">
+                          +{day.appointments.length - 2} more
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Sidebar */}
-      <div
-        className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        } shadow-lg z-50`}
-      >
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
-          onClick={() => setSidebarOpen(false)}
+      {!loading && (
+        <div
+          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
+            sidebarOpen ? "translate-x-0" : "translate-x-full"
+          } shadow-lg z-50`}
         >
-          <X className="w-6 h-6" />
-        </button>
-        <h3 className="text-lg font-semibold mb-4">
-          {selectedDate
-            ? `Appointments - ${selectedDate.toLocaleDateString()}`
-            : "Select a date"}
-        </h3>
-
-        {selectedAppointments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <button
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <h3 className="text-lg font-semibold mb-4">
             {selectedDate
-              ? "No appointments for this date"
-              : "Click on a date to view appointments"}
-          </div>
-        ) : (
-          <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
-            {selectedAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                {/* Status Badge */}
+              ? `Appointments - ${selectedDate.toLocaleDateString()}`
+              : "Select a date"}
+          </h3>
+
+          {selectedAppointments.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {selectedDate
+                ? "No appointments for this date"
+                : "Click on a date to view appointments"}
+            </div>
+          ) : (
+            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+              {selectedAppointments.map((appointment) => (
                 <div
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
-                    appointment.status
-                  )}`}
+                  key={appointment.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  {getStatusIcon(appointment.status)}
-                  {appointment.status.charAt(0).toUpperCase() +
-                    appointment.status.slice(1)}
-                </div>
+                  {/* Status Badge */}
+                  <div
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
+                      appointment.status
+                    )}`}
+                  >
+                    {getStatusIcon(appointment.status)}
+                    {appointment.status.charAt(0).toUpperCase() +
+                      appointment.status.slice(1)}
+                  </div>
 
-                {/* Appointment Details */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.patient}
+                  {/* Appointment Details */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.patient}
+                        </div>
+                        <div className="text-sm text-gray-600">Patient</div>
                       </div>
-                      <div className="text-sm text-gray-600">Patient</div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          Dr. {appointment.doctor}
+                        </div>
+                        <div className="text-sm text-gray-600">Doctor</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.timeSelected}
+                        </div>
+                        <div className="text-sm text-gray-600">Time</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          ${appointment.visit_fee}
+                        </div>
+                        <div className="text-sm text-gray-600">Visit Fee</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {appointment.reservation_date}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Reservation Date
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
+                  {/* Doctor Photo */}
+                  {appointment.doctor_photo ? (
+                    <div className="mt-3 flex items-center gap-2">
+                      <img
+                        src={appointment.doctor_photo}
+                        alt={`Dr. ${appointment.doctor}`}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <span className="text-sm text-gray-600">
                         Dr. {appointment.doctor}
-                      </div>
-                      <div className="text-sm text-gray-600">Doctor</div>
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.timeSelected}
+                  ) : (
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500" />
                       </div>
-                      <div className="text-sm text-gray-600">Time</div>
+                      <span className="text-sm text-gray-600">
+                        Dr. {appointment.doctor}
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        ${appointment.visit_fee}
-                      </div>
-                      <div className="text-sm text-gray-600">Visit Fee</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {appointment.reservation_date}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Reservation Date
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-
-                {/* Doctor Photo */}
-                {appointment.doctor_photo ? (
-                  <div className="mt-3 flex items-center gap-2">
-                    <img
-                      src={appointment.doctor_photo}
-                      alt={`Dr. ${appointment.doctor}`}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Dr. {appointment.doctor}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <span className="text-sm text-gray-600">
-                      Dr. {appointment.doctor}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

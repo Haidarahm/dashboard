@@ -22,8 +22,7 @@ export const useDoctorAuthStore = create((set, get) => ({
       const data = await doctorLogin(phone, password);
 
       if (data && data.token && data.user) {
-        storeAuthData(data.token, data.user, rememberMe, data.user.role);
-        console.log("Hello man");
+        storeAuthData(data.token, data.user, rememberMe, data.user.role,data.user.first_name);
         set({
           user: data.user,
           token: data.token,
@@ -38,8 +37,7 @@ export const useDoctorAuthStore = create((set, get) => ({
       }
     } catch (error) {
       set({ error: error.message || "Login failed" });
-      toast.error(error.message || "Login failed");
-      throw error;
+      toast.error(error.response.data.message[0]);
     } finally {
       set({ loading: false });
     }

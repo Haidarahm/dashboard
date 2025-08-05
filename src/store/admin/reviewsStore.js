@@ -5,14 +5,19 @@ export const useReviewsStore = create((set, get) => ({
   reviews: [],
   loading: false,
   error: null,
+  total: 0,
 
-  // Now accepts doctor_id as parameter
-  fetchReviews: async (doctor_id = null) => {
+  // Now accepts doctor_id, page, and pageSize as parameters
+  fetchReviews: async (doctor_id = null, page = 1, pageSize = 10) => {
     set({ loading: true, error: null });
     try {
-      const data = await showDoctorReviews(doctor_id);
-      // If API returns { data: [...] }, use data.data, else use data
-      set({ reviews: data.data ? data.data : data, loading: false });
+      const data = await showDoctorReviews(doctor_id, page, pageSize);
+      // If API returns { data: [...], meta: { total } }, use data.data and data.data.meta.total
+      set({
+        reviews: data.data ? data.data : data,
+        total: data.meta.total || 0,
+        loading: false,
+      });
     } catch (err) {
       set({ error: "Failed to load reviews", loading: false });
     }

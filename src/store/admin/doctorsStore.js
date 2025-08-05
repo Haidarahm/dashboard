@@ -5,6 +5,7 @@ import {
   showDoctorDetails,
   deleteDoctor,
   showDoctorsByClinic,
+  fetchDoctors as fetchDoctorsApi,
 } from "../../api/admin/doctors";
 import { toast } from "react-toastify";
 
@@ -86,6 +87,22 @@ export const useDoctorsStore = create((set, get) => ({
       set({ error: error.message || "Failed to fetch doctors by clinic" });
     } finally {
       set({ loading: false });
+    }
+  },
+}));
+
+export const useDoctorsTableStore = create((set) => ({
+  doctors: [],
+  meta: { current_page: 1, last_page: 1, total: 0, per_page: 3 },
+  loading: false,
+  error: null,
+  fetchDoctors: async (page = 1, per_page = 3) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await fetchDoctorsApi(page, per_page);
+      set({ doctors: data.data || [], meta: data.meta || {}, loading: false });
+    } catch (error) {
+      set({ error, loading: false });
     }
   },
 }));

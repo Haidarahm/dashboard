@@ -1,24 +1,36 @@
-import React, { useEffect } from "react";
-import { useReviewsStore } from "../../../store/admin/reviewsStore"; // Update the path
-import { Table, Tag, Rate, Button, message, Spin, Alert, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import { useReviewsStore } from "../../../store/admin/reviewsStore";
+import { Table, Tag, Rate, Button, Spin, Alert, Typography } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
 const { Text } = Typography;
 
 const ReviewsTable = ({ doctor_id }) => {
-  const { reviews, loading, error, fetchReviews, deleteReviewById } = useReviewsStore();
+  const { reviews, loading, error, fetchReviews, deleteReviewById, total } =
+    useReviewsStore();
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   useEffect(() => {
-    fetchReviews(doctor_id);
-  }, [doctor_id, fetchReviews]);
+    setPagination((prev) => ({ ...prev, current: 1 })); // Reset to first page on doctor change
+  }, [doctor_id]);
+
+  useEffect(() => {
+    fetchReviews(doctor_id, pagination.current, pagination.pageSize);
+  }, [doctor_id, fetchReviews, pagination.current, pagination.pageSize]);
 
   const handleDelete = async (reviewId) => {
     try {
       await deleteReviewById(reviewId);
-      message.success("Review deleted successfully");
+      toast.success("Review deleted successfully");
+      fetchReviews(doctor_id, pagination.current, pagination.pageSize);
     } catch (err) {
-      message.error("Failed to delete review");
+      toast.error("Failed to delete review");
     }
+  };
+
+  const handleTableChange = (pag) => {
+    setPagination({ current: pag.current, pageSize: pag.pageSize });
   };
 
   const columns = [
@@ -69,10 +81,12 @@ const ReviewsTable = ({ doctor_id }) => {
         dataSource={reviews}
         rowKey="id"
         pagination={{
-          pageSize: 10,
-          showSizeChanger: false,
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: total,
           hideOnSinglePage: true,
         }}
+        onChange={handleTableChange}
       />
     </Spin>
   );

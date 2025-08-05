@@ -45,11 +45,6 @@ const { Option } = Select;
 function Clinics() {
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(""); // 'create', 'edit', 'view'
@@ -242,6 +237,9 @@ function Clinics() {
       render: (photo) =>
         photo ? (
           <Image
+            onMouseEnter={(e) => {
+              Object.assign(e.target.style, imageHoverStyle);
+            }}
             src={`http://127.0.0.1:8000${photo}`}
             alt="clinic"
             style={imageStyle}
@@ -250,7 +248,7 @@ function Clinics() {
                 <div
                   style={{
                     background: "rgba(0, 0, 0, 0.5)",
-                    backdropFilter: "blur(2px)",
+                    // backdropFilter: "blur(2px)",
                     borderRadius: "50%",
                     color: "white",
                     width: "32px",
@@ -258,16 +256,13 @@ function Clinics() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    // border: "1px solid rgba(255, 255, 255, 0.2)",
                   }}
                 >
-                  <EyeIcon width={16} />
+                  <EyeIcon width={16} height={16} />
                 </div>
               ),
               maskClassName: "custom-image-mask",
-            }}
-            onMouseEnter={(e) => {
-              Object.assign(e.target.style, imageHoverStyle);
             }}
             onMouseLeave={(e) => {
               Object.assign(e.target.style, imageStyle);

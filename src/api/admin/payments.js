@@ -4,6 +4,7 @@ import api from "./config";
 export const showPaymentDetails = async () => {
   try {
     const response = await api.get("/api/admin/showAllPayments");
+    console.log("haidar")
     return response.data;
   } catch (error) {
     console.error("Get payment details error:", error);

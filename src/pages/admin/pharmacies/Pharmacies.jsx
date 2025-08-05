@@ -104,26 +104,7 @@ function Pharmacies() {
     } catch (error) {
       console.error("Error fetching pharmacies:", error);
 
-      let errorMessage = "Failed to fetch pharmacies";
-      if (error.message) {
-        errorMessage += `: ${error.message}`;
-      }
-      if (
-        error.code === "NETWORK_ERROR" ||
-        error.message?.includes("Network Error")
-      ) {
-        errorMessage =
-          "Network error: Please check your internet connection and server status";
-      }
-      if (error.response?.status === 404) {
-        errorMessage =
-          "Pharmacies endpoint not found. Please check the API URL";
-      }
-      if (error.response?.status === 401) {
-        errorMessage = "Authentication required. Please login again";
-      }
-
-      toast.error(errorMessage);
+      toast.error(error);
 
       // Reset to empty state on error
       setPharmacies([]);
@@ -271,10 +252,7 @@ function Pharmacies() {
       closeModal();
       fetchPharmacies(pagination.current, pagination.pageSize);
     } catch (error) {
-      console.error(`Error ${modalType}ing pharmacy:`, error);
-      const errorMessage =
-        error.response?.data?.message || `Failed to ${modalType} pharmacy`;
-      toast.error(errorMessage);
+      toast.error(error);
     } finally {
       setLoading(false);
     }

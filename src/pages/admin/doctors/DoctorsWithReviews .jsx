@@ -15,7 +15,6 @@ const DoctorsWithReviews = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2} style={{ marginBottom: '24px' }}>Doctors Management</Title>
       
       {/* Doctors Table with the ability to show reviews */}
       <DoctorsTable onShowReviews={handleShowReviews} />
