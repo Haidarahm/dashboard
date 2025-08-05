@@ -83,31 +83,30 @@ export const useAppointmentsStore = create((set) => ({
     try {
       await cancelAppointment(id);
 
-      // Update the appointments list after cancellation
-      // const state = useAppointmentsStore.getState();
-      // const updatedAllAppointments = state.allAppointments.map((appt) =>
-      //   appt.id === id ? { ...appt, status: "cancelled" } : appt
-      // );
-      // const updatedFilteredAppointments = state.filteredAppointments.map(
-      //   (appt) => (appt.id === id ? { ...appt, status: "cancelled" } : appt)
-      // );
+      // Update both allAppointments and filteredAppointments
+      const state = useAppointmentsStore.getState();
+      const updatedAll = state.allAppointments.map((apt) =>
+        apt.id === id ? { ...apt, status: "cancelled" } : apt
+      );
+      const updatedFiltered = state.filteredAppointments.map((apt) =>
+        apt.id === id ? { ...apt, status: "cancelled" } : apt
+      );
 
       set({
-        // allAppointments: updatedAllAppointments,
-        // filteredAppointments: updatedFilteredAppointments,
+        allAppointments: updatedAll,
+        filteredAppointments: updatedFiltered,
         loading: false,
       });
 
-      return true; // Indicate success
+      return true;
     } catch (error) {
       set({
         error: error.message || "Failed to cancel appointment",
         loading: false,
       });
-      return false; // Indicate failure
+      return false;
     }
   },
-
   // Clear all filters
   clearFilters: () => {
     set({ filteredAppointments: [] });
