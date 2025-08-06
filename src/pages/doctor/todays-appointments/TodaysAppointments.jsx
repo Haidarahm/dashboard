@@ -1,10 +1,17 @@
-import React, { useEffect } from "react";
-import { Card, Table, Spin, Typography, Tag } from "antd";
+import React, { useEffect, useState } from "react";
+import { Card, Table, Spin, Typography, Tag, Button, Tooltip } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
+import usePatientsStore from "../../../store/doctor/patientsStore";
+import PatientDetails from "./PatientDetails";
 
 const { Title } = Typography;
 
 function TodaysAppointments() {
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  const [loadingPatientId, setLoadingPatientId] = useState(null);
+
   const {
     filteredAppointments,
     loading,
@@ -12,6 +19,9 @@ function TodaysAppointments() {
     fetchByStatus,
     setCurrentMonthYear,
   } = useAppointmentsStore();
+
+  const { fetchPatientProfile, patientProfile, profileLoading } =
+    usePatientsStore();
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date();
@@ -26,6 +36,19 @@ function TodaysAppointments() {
     fetchByStatus("today", todayStr);
     // eslint-disable-next-line
   }, []);
+
+  const handleShowProfile = async (patientId) => {
+    setLoadingPatientId(patientId);
+    setSelectedPatientId(patientId);
+    await fetchPatientProfile(patientId);
+    setLoadingPatientId(null);
+    setIsDetailsVisible(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsVisible(false);
+    setSelectedPatientId(null);
+  };
 
   const columns = [
     {
@@ -79,26 +102,63 @@ function TodaysAppointments() {
       key: "is_child",
       render: (is_child) => (is_child ? "Yes" : "No"),
     },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 80,
+      render: (_, record) => (
+        <Tooltip title="Show patient profile">
+          <Button
+            icon={<UserOutlined />}
+            onClick={() => handleShowProfile(record.patient_id)}
+            type={
+              selectedPatientId === record.patient_id ? "primary" : "default"
+            }
+            loading={loadingPatientId === record.patient_id}
+            size="small"
+          />
+        </Tooltip>
+      ),
+    },
   ];
 
   return (
     <div style={{ padding: "24px" }}>
-      <Card style={{ marginBottom: "24px" }}>
-        <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
-          Today's Appointments
-        </Title>
-        <Spin spinning={loading}>
-          <Table
-            columns={columns}
-            dataSource={filteredAppointments}
-            rowKey="id"
-            pagination={false}
-            size="middle"
-            style={{ marginTop: 24 }}
+      <div style={{ display: "flex", gap: 24, flexDirection: "column" }}>
+        <Card style={{ marginBottom: "24px" }}>
+          <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
+            Today's Appointments
+          </Title>
+          <Spin spinning={loading}>
+            <Table
+              columns={columns}
+              dataSource={filteredAppointments}
+              rowKey="id"
+              pagination={false}
+              size="middle"
+              style={{ marginTop: 24 }}
+            />
+          </Spin>
+          {error && <div style={{ color: "red", marginTop: 16 }}>{error}</div>}
+        </Card>
+
+        <div
+          style={{
+            transition: "all 0.3s ease-in-out",
+            transform: isDetailsVisible ? "scale(1)" : "scale(0)",
+            opacity: isDetailsVisible ? 1 : 0,
+            maxHeight: isDetailsVisible ? "1000px" : "0",
+            overflow: "hidden",
+          }}
+        >
+          <PatientDetails
+            profile={patientProfile}
+            onClose={handleCloseDetails}
+            isVisible={isDetailsVisible}
+            loading={profileLoading}
           />
-        </Spin>
-        {error && <div style={{ color: "red", marginTop: 16 }}>{error}</div>}
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
