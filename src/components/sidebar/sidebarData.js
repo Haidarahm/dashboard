@@ -1,6 +1,12 @@
 import { FaRegCalendarCheck } from "react-icons/fa6";
 import { MdOutlinePayments } from "react-icons/md";
-import { FaChartBar,FaUserMd, FaRegHospital, FaUsers, FaPills } from "react-icons/fa";
+import {
+  FaChartBar,
+  FaUserMd,
+  FaRegHospital,
+  FaUsers,
+  FaPills,
+} from "react-icons/fa";
 import { TbVaccine } from "react-icons/tb";
 import { FaCalendarDay } from "react-icons/fa";
 import { PiUsersThreeFill } from "react-icons/pi";
@@ -52,7 +58,7 @@ export const adminRoutes = [
 
 export const doctorRoutes = [
   {
-    key: "/appointments",
+    key: "/todays-appointments",
     icon: FaCalendarDay,
     label: "Todays Appointments",
     path: "/todays-appointments",
