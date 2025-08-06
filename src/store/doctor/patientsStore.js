@@ -6,23 +6,30 @@ import {
   addPrescription,
   addMedicine,
 } from "../../api/doctor/patients";
+import { showPatientAppointments } from "../../api/doctor/appointments";
 
 const usePatientsStore = create((set, get) => ({
   // State
   patients: [],
   patientProfile: null,
+  patientAppointments: null,
   loading: false,
   profileLoading: false,
+  appointmentsLoading: false,
   error: null,
   currentPage: 1,
   total: 0,
   perPage: 10,
   searchQuery: "",
+  // Patient appointments pagination
+  appointmentsCurrentPage: 1,
+  appointmentsPerPage: 5,
+  appointmentsTotal: 0,
 
   // Actions
 
   // Fetch all patients with pagination (resets search)
-  fetchPatients: async (page = 1, perPage = 10) => {
+  fetchPatients: async (page = 1, perPage = 5) => {
     set({ loading: true, error: null, searchQuery: "" });
     try {
       const res = await getPatientsRecord(page, perPage);
@@ -30,7 +37,7 @@ const usePatientsStore = create((set, get) => ({
         patients: res.data,
         total: res.meta?.total || 0,
         currentPage: res.meta?.current_page || 1,
-        perPage: res.meta?.per_page || 10,
+        perPage: res.meta?.per_page || 5,
         loading: false,
       });
     } catch (err) {
@@ -65,6 +72,26 @@ const usePatientsStore = create((set, get) => ({
       set({ patientProfile: res, profileLoading: false });
     } catch (err) {
       set({ error: err?.message || err.toString(), profileLoading: false });
+    }
+  },
+
+  // Get patient appointments
+  fetchPatientAppointments: async (patient_id, page = 1, size = 5) => {
+    set({ appointmentsLoading: true, error: null });
+    try {
+      const res = await showPatientAppointments(patient_id, page, size);
+      set({
+        patientAppointments: res,
+        appointmentsLoading: false,
+        appointmentsCurrentPage: res.meta?.current_page || 1,
+        appointmentsPerPage: res.meta?.per_page || size,
+        appointmentsTotal: res.meta?.total || 0,
+      });
+    } catch (err) {
+      set({
+        error: err?.message || err.toString(),
+        appointmentsLoading: false,
+      });
     }
   },
 

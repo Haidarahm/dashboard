@@ -41,11 +41,6 @@ function TodaysAppointments() {
         `${record.patient_first_name || ""} ${record.patient_last_name || ""}`,
     },
     {
-      title: "Reservation Date",
-      dataIndex: "reservation_date",
-      key: "reservation_date",
-    },
-    {
       title: "Reservation Hour",
       dataIndex: "reservation_hour",
       key: "reservation_hour",

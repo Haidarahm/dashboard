@@ -10,9 +10,15 @@ import {
   Button,
   Tooltip,
 } from "antd";
-import { SearchOutlined, UserOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  UserOutlined,
+  CloseOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
+import PatientAppointments from "./PatientAppointments";
 
 const { Title, Text } = Typography;
 
@@ -21,6 +27,7 @@ function Patients() {
     patients,
     loading,
     profileLoading,
+    appointmentsLoading,
     error,
     fetchPatients,
     searchForPatient,
@@ -29,12 +36,18 @@ function Patients() {
     perPage,
     searchQuery,
     fetchPatientProfile,
+    fetchPatientAppointments,
     patientProfile,
+    patientAppointments,
+    appointmentsCurrentPage,
+    appointmentsPerPage,
+    appointmentsTotal,
   } = usePatientsStore();
 
   const [searchValue, setSearchValue] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  const [showAppointments, setShowAppointments] = useState(false);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -48,6 +61,16 @@ function Patients() {
       searchForPatient(searchQuery, pagination.current, pagination.pageSize);
     } else {
       fetchPatients(pagination.current, pagination.pageSize);
+    }
+  };
+
+  const handleAppointmentsTableChange = (pagination) => {
+    if (selectedPatientId) {
+      fetchPatientAppointments(
+        selectedPatientId,
+        pagination.current,
+        pagination.pageSize
+      );
     }
   };
 
@@ -74,11 +97,20 @@ function Patients() {
     setSelectedPatientId(patientId);
     fetchPatientProfile(patientId);
     setIsDetailsVisible(true);
+    setShowAppointments(false);
+  };
+
+  const handleShowAppointments = (patientId) => {
+    setSelectedPatientId(patientId);
+    fetchPatientAppointments(patientId, 1, appointmentsPerPage);
+    setIsDetailsVisible(true);
+    setShowAppointments(true);
   };
 
   const handleCloseDetails = () => {
     setIsDetailsVisible(false);
     setSelectedPatientId(null);
+    setShowAppointments(false);
   };
 
   const columns = [
@@ -121,16 +153,42 @@ function Patients() {
     {
       title: "Actions",
       key: "actions",
-      width: 80,
+      width: 120,
       render: (_, record) => (
-        <Tooltip title="Show patient details">
-          <Button
-            icon={<UserOutlined />}
-            onClick={() => handleShowDetails(record.id)}
-            type={selectedPatientId === record.id ? "primary" : "default"}
-            loading={profileLoading && selectedPatientId === record.id}
-          />
-        </Tooltip>
+        <Space>
+          <Tooltip title="Patient details">
+            <Button
+              icon={<UserOutlined />}
+              onClick={() => handleShowDetails(record.id)}
+              type={
+                selectedPatientId === record.id && !showAppointments
+                  ? "primary"
+                  : "default"
+              }
+              loading={
+                profileLoading &&
+                selectedPatientId === record.id &&
+                !showAppointments
+              }
+            />
+          </Tooltip>
+          <Tooltip title="Patient appointments">
+            <Button
+              icon={<CalendarOutlined />}
+              onClick={() => handleShowAppointments(record.id)}
+              type={
+                selectedPatientId === record.id && showAppointments
+                  ? "primary"
+                  : "default"
+              }
+              loading={
+                appointmentsLoading &&
+                selectedPatientId === record.id &&
+                showAppointments
+              }
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
@@ -183,8 +241,6 @@ function Patients() {
                   current: currentPage,
                   pageSize: perPage,
                   total: total,
-                  showSizeChanger: true,
-                  pageSizeOptions: ["5", "10", "20", "50"],
                   showTotal: (total, range) =>
                     `${range[0]}-${range[1]} of ${total} patients`,
                 }}
@@ -210,12 +266,25 @@ function Patients() {
             position: "relative",
           }}
         >
-          <PatientDetails
-            profile={patientProfile}
-            onClose={handleCloseDetails}
-            isVisible={isDetailsVisible}
-            loading={profileLoading}
-          />
+          {showAppointments ? (
+            <PatientAppointments
+              appointments={patientAppointments}
+              onClose={handleCloseDetails}
+              isVisible={isDetailsVisible}
+              loading={appointmentsLoading}
+              onTableChange={handleAppointmentsTableChange}
+              currentPage={appointmentsCurrentPage}
+              pageSize={appointmentsPerPage}
+              total={appointmentsTotal}
+            />
+          ) : (
+            <PatientDetails
+              profile={patientProfile}
+              onClose={handleCloseDetails}
+              isVisible={isDetailsVisible}
+              loading={profileLoading}
+            />
+          )}
         </div>
       </div>
     </div>
