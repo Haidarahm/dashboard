@@ -10,7 +10,7 @@ import {
   Button,
   Tooltip,
 } from "antd";
-import { SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { SearchOutlined, UserOutlined, CloseOutlined } from "@ant-design/icons";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 
@@ -33,6 +33,7 @@ function Patients() {
 
   const [searchValue, setSearchValue] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -71,6 +72,12 @@ function Patients() {
   const handleShowDetails = (patientId) => {
     setSelectedPatientId(patientId);
     fetchPatientProfile(patientId);
+    setIsDetailsVisible(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsVisible(false);
+    setSelectedPatientId(null);
   };
 
   const columns = [
@@ -128,8 +135,20 @@ function Patients() {
 
   return (
     <div style={{ padding: "24px" }}>
-      <div style={{ display: "flex", gap: 24 }}>
-        <div style={{ flex: 1 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 24,
+          transition: "all 0.3s ease-in-out",
+        }}
+      >
+        <div
+          style={{
+            flex: isDetailsVisible ? 1 : 1,
+            transition: "all 0.3s ease-in-out",
+            transform: isDetailsVisible ? "scale(1)" : "scale(1)",
+          }}
+        >
           <Card style={{ marginBottom: "24px" }}>
             <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
               Patients
@@ -176,8 +195,23 @@ function Patients() {
             )}
           </Card>
         </div>
-        <div style={{ flex: 1, minWidth: 350 }}>
-          <PatientDetails profile={patientProfile} />
+        <div
+          style={{
+            flex: isDetailsVisible ? 1 : 0,
+            minWidth: isDetailsVisible ? 350 : 0,
+            maxWidth: isDetailsVisible ? "50%" : 0,
+            overflow: "hidden",
+            transition: "all 0.3s ease-in-out",
+            transform: isDetailsVisible ? "scale(1)" : "scale(0)",
+            opacity: isDetailsVisible ? 1 : 0,
+            position: "relative",
+          }}
+        >
+          <PatientDetails
+            profile={patientProfile}
+            onClose={handleCloseDetails}
+            isVisible={isDetailsVisible}
+          />
         </div>
       </div>
     </div>
