@@ -1,9 +1,11 @@
 import api from "./doctorConfig";
 
 // Show patients API
-export const getPatientsRecord = async () => {
+export const getPatientsRecord = async (page = 1, perPage = 10) => {
   try {
-    const response = await api.get("/api/doctor/patientsRecord");
+    const response = await api.get("/api/doctor/patientsRecord", {
+      params: { page, per_page: perPage },
+    });
     return response.data;
   } catch (error) {
     console.error("Get patients record error:", error);
