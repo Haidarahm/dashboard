@@ -2,7 +2,9 @@ import React from 'react'
 
 function Patients() {
   return (
-    <div>Patients</div>
+    <div>
+      Haidar
+    </div>
   )
 }
 

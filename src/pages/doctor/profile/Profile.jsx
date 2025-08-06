@@ -54,6 +54,7 @@ const Profile = () => {
     const init = async () => {
       await fetchProfile(); // Wait for profile to be fetched
       const initialValues = getInitialFormValues(); // Now has correct data
+      console.log("Initial Form Values:", initialValues);
       form.setFieldsValue(initialValues); // Set form fields correctly
     };
     init();
@@ -129,12 +130,12 @@ const Profile = () => {
   const signatureUploadProps = {
     name: "file",
     multiple: false,
-    accept: "image/png",
+    accept: "image/*",
     fileList: signatureList,
     beforeUpload: (file) => {
-      const isPNG = file.type === "image/png";
-      if (!isPNG) {
-        message.error("You can only upload PNG files for signature!");
+      const isImage = file.type.startsWith("image/");
+      if (!isImage) {
+        message.error("You can only upload image files!");
         return Upload.LIST_IGNORE;
       }
 
@@ -241,6 +242,7 @@ const Profile = () => {
                 placeholder="Enter visit fee"
                 prefix="$"
                 min={0}
+                step="0.1"
               />
             </Form.Item>
           </Col>
