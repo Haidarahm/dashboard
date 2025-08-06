@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Spin, Typography, Tag, Input, Space, Button } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Table,
+  Spin,
+  Typography,
+  Tag,
+  Input,
+  Space,
+  Button,
+  Tooltip,
+} from "antd";
+import { SearchOutlined, UserOutlined } from "@ant-design/icons";
 import usePatientsStore from "../../../store/doctor/patientsStore";
+import PatientDetails from "./PatientDetails";
 
 const { Title, Text } = Typography;
 
@@ -16,9 +27,12 @@ function Patients() {
     currentPage,
     perPage,
     searchQuery,
+    fetchPatientProfile,
+    patientProfile,
   } = usePatientsStore();
 
   const [searchValue, setSearchValue] = useState("");
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -52,6 +66,11 @@ function Patients() {
 
   const handleInputPressEnter = (e) => {
     handleSearch();
+  };
+
+  const handleShowDetails = (patientId) => {
+    setSelectedPatientId(patientId);
+    fetchPatientProfile(patientId);
   };
 
   const columns = [
@@ -91,53 +110,76 @@ function Patients() {
       dataIndex: "address",
       key: "address",
     },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 80,
+      render: (_, record) => (
+        <Tooltip title="Show patient details">
+          <Button
+            icon={<UserOutlined />}
+            onClick={() => handleShowDetails(record.id)}
+            type={selectedPatientId === record.id ? "primary" : "default"}
+          />
+        </Tooltip>
+      ),
+    },
   ];
 
   return (
     <div style={{ padding: "24px" }}>
-      <Card style={{ marginBottom: "24px" }}>
-        <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
-          Patients
-        </Title>
-        <Space style={{ marginBottom: 16, marginTop: 16 }}>
-          <Input
-            placeholder="Search by name"
-            value={searchValue}
-            onChange={handleInputChange}
-            onPressEnter={handleInputPressEnter}
-            style={{ width: 240 }}
-            allowClear
-          />
-          <Button
-            type="primary"
-            icon={<SearchOutlined />}
-            onClick={handleSearch}
-            loading={loading}
-          >
-            Search
-          </Button>
-        </Space>
-        <Spin spinning={loading}>
-          <Table
-            columns={columns}
-            dataSource={patients}
-            rowKey="id"
-            pagination={{
-              current: currentPage,
-              pageSize: perPage,
-              total: total,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20", "50"],
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} patients`,
-            }}
-            size="middle"
-            style={{ marginTop: 24 }}
-            onChange={handleTableChange}
-          />
-        </Spin>
-        {error && <div style={{ color: "red", marginTop: 16 }}>{error}</div>}
-      </Card>
+      <div style={{ display: "flex", gap: 24 }}>
+        <div style={{ flex: 1 }}>
+          <Card style={{ marginBottom: "24px" }}>
+            <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
+              Patients
+            </Title>
+            <Space style={{ marginBottom: 16, marginTop: 16 }}>
+              <Input
+                placeholder="Search by name"
+                value={searchValue}
+                onChange={handleInputChange}
+                onPressEnter={handleInputPressEnter}
+                style={{ width: 240 }}
+                allowClear
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={handleSearch}
+                loading={loading}
+              >
+                Search
+              </Button>
+            </Space>
+            <Spin spinning={loading}>
+              <Table
+                columns={columns}
+                dataSource={patients}
+                rowKey="id"
+                pagination={{
+                  current: currentPage,
+                  pageSize: perPage,
+                  total: total,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "20", "50"],
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} of ${total} patients`,
+                }}
+                size="middle"
+                style={{ marginTop: 24 }}
+                onChange={handleTableChange}
+              />
+            </Spin>
+            {error && (
+              <div style={{ color: "red", marginTop: 16 }}>{error}</div>
+            )}
+          </Card>
+        </div>
+        <div style={{ flex: 1, minWidth: 350 }}>
+          <PatientDetails profile={patientProfile} />
+        </div>
+      </div>
     </div>
   );
 }

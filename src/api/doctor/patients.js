@@ -27,9 +27,11 @@ export const searchPatient = async (name) => {
 // Show patient profile API
 export const showPatientProfile = async (patient_id) => {
   try {
-    const response = await api.get(
-      `/api/doctor/showPatientProfile/${patient_id}`
-    );
+    const response = await api.get(`/api/doctor/showPatientProfile`, {
+      params: {
+        patient_id,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Show patient profile error:", error);
