@@ -12,6 +12,7 @@ const usePatientsStore = create((set, get) => ({
   patients: [],
   patientProfile: null,
   loading: false,
+  profileLoading: false,
   error: null,
   currentPage: 1,
   total: 0,
@@ -58,12 +59,12 @@ const usePatientsStore = create((set, get) => ({
 
   // Get individual patient profile
   fetchPatientProfile: async (patient_id) => {
-    set({ loading: true, error: null });
+    set({ profileLoading: true, error: null });
     try {
       const res = await showPatientProfile(patient_id);
-      set({ patientProfile: res, loading: false });
+      set({ patientProfile: res, profileLoading: false });
     } catch (err) {
-      set({ error: err?.message || err.toString(), loading: false });
+      set({ error: err?.message || err.toString(), profileLoading: false });
     }
   },
 

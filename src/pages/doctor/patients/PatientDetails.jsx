@@ -1,11 +1,11 @@
 import React from "react";
-import { Card, Typography, Tag, Descriptions, Button } from "antd";
+import { Card, Typography, Tag, Descriptions, Button, Spin } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
-const PatientDetails = ({ profile, onClose, isVisible }) => {
-  if (!profile) {
+const PatientDetails = ({ profile, onClose, isVisible, loading }) => {
+  if (!profile && !loading) {
     return (
       <Card
         style={{
@@ -21,6 +21,31 @@ const PatientDetails = ({ profile, onClose, isVisible }) => {
         <Title level={4} type="secondary">
           Select a patient to view details
         </Title>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card
+        style={{
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.3s ease-in-out",
+          transform: isVisible ? "scale(1)" : "scale(0)",
+          opacity: isVisible ? 1 : 0,
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16 }}>
+            <Title level={4} type="secondary">
+              Loading patient details...
+            </Title>
+          </div>
+        </div>
       </Card>
     );
   }

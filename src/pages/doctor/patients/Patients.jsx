@@ -20,6 +20,7 @@ function Patients() {
   const {
     patients,
     loading,
+    profileLoading,
     error,
     fetchPatients,
     searchForPatient,
@@ -127,6 +128,7 @@ function Patients() {
             icon={<UserOutlined />}
             onClick={() => handleShowDetails(record.id)}
             type={selectedPatientId === record.id ? "primary" : "default"}
+            loading={profileLoading && selectedPatientId === record.id}
           />
         </Tooltip>
       ),
@@ -167,6 +169,7 @@ function Patients() {
                 icon={<SearchOutlined />}
                 onClick={handleSearch}
                 loading={loading}
+                disabled={!searchValue.trim()}
               >
                 Search
               </Button>
@@ -211,6 +214,7 @@ function Patients() {
             profile={patientProfile}
             onClose={handleCloseDetails}
             isVisible={isDetailsVisible}
+            loading={profileLoading}
           />
         </div>
       </div>
