@@ -12,7 +12,7 @@ export const addPrescription = async (patient_id) => {
 export const addMedicine = async (medicineData) => {
   const response = await api.post("/api/doctor/addMedicine", {
     name: medicineData.name,
-    dose: medicineData.dose,
+    dose: `${medicineData.dose} mg`,
     frequency: medicineData.frequency,
     strength: medicineData.strength,
     until: medicineData.until,

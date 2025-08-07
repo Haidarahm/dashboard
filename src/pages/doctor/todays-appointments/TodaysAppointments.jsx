@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Spin, Typography, Tag, Button, Tooltip } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Table,
+  Spin,
+  Typography,
+  Tag,
+  Button,
+  Tooltip,
+  Popover,
+  Space,
+} from "antd";
+import { UserOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
+import Prescription from "./Prescription";
+import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
 
 const { Title } = Typography;
 
@@ -11,6 +23,10 @@ function TodaysAppointments() {
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [loadingPatientId, setLoadingPatientId] = useState(null);
+  const [prescriptionVisible, setPrescriptionVisible] = useState(false);
+  const [selectedPatientForPrescription, setSelectedPatientForPrescription] =
+    useState(null);
+  const [prescriptionIconLoading, setPrescriptionIconLoading] = useState(false);
 
   const {
     filteredAppointments,
@@ -22,6 +38,9 @@ function TodaysAppointments() {
 
   const { fetchPatientProfile, patientProfile, profileLoading } =
     usePatientsStore();
+
+  const { createPrescription, clearCurrentPrescription } =
+    usePrescriptionStore();
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date();
@@ -48,6 +67,29 @@ function TodaysAppointments() {
   const handleCloseDetails = () => {
     setIsDetailsVisible(false);
     setSelectedPatientId(null);
+  };
+
+  const handleWritePrescription = async (record) => {
+    // Clear any previous prescription state
+    clearCurrentPrescription();
+    setPrescriptionIconLoading(true);
+    // Create prescription before opening modal
+    const result = await createPrescription(record.patient_id);
+    setPrescriptionIconLoading(false);
+    if (result) {
+      setSelectedPatientForPrescription({
+        id: record.patient_id,
+        name: `${record.patient_first_name || ""} ${
+          record.patient_last_name || ""
+        }`.trim(),
+      });
+      setPrescriptionVisible(true);
+    }
+  };
+
+  const handleClosePrescription = () => {
+    setPrescriptionVisible(false);
+    setSelectedPatientForPrescription(null);
   };
 
   const columns = [
@@ -105,19 +147,31 @@ function TodaysAppointments() {
     {
       title: "Actions",
       key: "actions",
-      width: 80,
+      width: 120,
       render: (_, record) => (
-        <Tooltip title="Show patient profile">
-          <Button
-            icon={<UserOutlined />}
-            onClick={() => handleShowProfile(record.patient_id)}
-            type={
-              selectedPatientId === record.patient_id ? "primary" : "default"
-            }
-            loading={loadingPatientId === record.patient_id}
-            size="small"
-          />
-        </Tooltip>
+        <Space>
+          <Tooltip title="Show patient profile">
+            <Button
+              icon={<UserOutlined />}
+              onClick={() => handleShowProfile(record.patient_id)}
+              type={
+                selectedPatientId === record.patient_id ? "primary" : "default"
+              }
+              loading={loadingPatientId === record.patient_id}
+              size="small"
+            />
+          </Tooltip>
+
+          <Tooltip title="Write prescription">
+            <Button
+              icon={<FileTextOutlined />}
+              onClick={() => handleWritePrescription(record)}
+              size="small"
+              loading={prescriptionIconLoading}
+              disabled={prescriptionIconLoading}
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
@@ -159,6 +213,13 @@ function TodaysAppointments() {
           />
         </div>
       </div>
+
+      <Prescription
+        visible={prescriptionVisible}
+        onClose={handleClosePrescription}
+        patientId={selectedPatientForPrescription?.id}
+        patientName={selectedPatientForPrescription?.name}
+      />
     </div>
   );
 }
