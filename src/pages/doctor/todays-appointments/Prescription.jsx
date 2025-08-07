@@ -9,6 +9,7 @@ import {
   Typography,
   message,
   Spin,
+  AutoComplete,
 } from "antd";
 import {
   PlusOutlined,
@@ -28,6 +29,37 @@ import { toast } from "react-toastify";
 const { Panel } = Collapse;
 const { Title } = Typography;
 const { TextArea } = Input;
+
+const frequencyOptions = [
+  "Once a day",
+  "Twice a day",
+  "Three times a day",
+  "Every 4 hours",
+  "Every 6 hours",
+  "Every 8 hours",
+  "As needed (PRN)",
+  "Weekly",
+  "Monthly",
+];
+const untilOptions = [
+  "For 3 days",
+  "For 7 days",
+  "For 10 days",
+  "For 2 weeks",
+  "For 1 month",
+  "Indefinitely",
+  "Until next appointment",
+];
+const whenToTakeOptions = [
+  "Morning",
+  "Afternoon",
+  "Evening",
+  "At bedtime",
+  "Before meals",
+  "After meals",
+  "With food",
+  "On an empty stomach",
+];
 
 const Prescription = ({ visible, onClose, patientId, patientName }) => {
   const [form] = Form.useForm();
@@ -171,7 +203,14 @@ const Prescription = ({ visible, onClose, patientId, patientName }) => {
       name={`frequency_${sectionKey}`}
       rules={[{ required: true, message: "Please enter frequency" }]}
     >
-      <Input placeholder="e.g., Every 6 hours, Twice daily" />
+      <AutoComplete
+        options={frequencyOptions.map((v) => ({ value: v }))}
+        placeholder="Select or type frequency"
+        filterOption={(inputValue, option) =>
+          option.value.toLowerCase().includes(inputValue.toLowerCase())
+        }
+        allowClear
+      />
     </Form.Item>
   );
 
@@ -199,9 +238,18 @@ const Prescription = ({ visible, onClose, patientId, patientName }) => {
         </span>
       }
       name={`until_${sectionKey}`}
-      rules={[{ required: true, message: "Please select until date" }]}
+      rules={[
+        { required: true, message: "Please select until date or period" },
+      ]}
     >
-      <Input type="date" />
+      <AutoComplete
+        options={untilOptions.map((v) => ({ value: v }))}
+        placeholder="Select or type until period"
+        filterOption={(inputValue, option) =>
+          option.value.toLowerCase().includes(inputValue.toLowerCase())
+        }
+        allowClear
+      />
     </Form.Item>
   );
 
@@ -216,7 +264,14 @@ const Prescription = ({ visible, onClose, patientId, patientName }) => {
       name={`whenToTake_${sectionKey}`}
       rules={[{ required: true, message: "Please enter when to take" }]}
     >
-      <Input placeholder="e.g., After meals, Before bedtime" />
+      <AutoComplete
+        options={whenToTakeOptions.map((v) => ({ value: v }))}
+        placeholder="Select or type when to take"
+        filterOption={(inputValue, option) =>
+          option.value.toLowerCase().includes(inputValue.toLowerCase())
+        }
+        allowClear
+      />
     </Form.Item>
   );
 

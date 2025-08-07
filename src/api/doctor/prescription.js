@@ -31,3 +31,16 @@ export const completePrescription = async (prescriptionData) => {
   });
   return response.data;
 };
+
+// Add medical info
+export const addMedicalInfo = async (medicalData) => {
+  const response = await api.post("/api/doctor/addMedicalInfo", {
+    prescription_id: medicalData.prescription_id,
+    appointment_id: medicalData.appointment_id,
+    symptoms: medicalData.symptoms,
+    diagnosis: medicalData.diagnosis,
+    doctorNote: medicalData.doctorNote,
+    patientNote: medicalData.patientNote,
+  });
+  return response.data;
+};

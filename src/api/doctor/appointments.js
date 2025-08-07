@@ -58,13 +58,12 @@ export const showPatientAppointments = async (
   return response.data;
 };
 
-// Show appointment results
-// export const showAppointmentResults = async (appointment_id) => {
-//   const response = await api.get("/api/doctor/showAppointmantResults", {
-//     params: { appointment_id },
-//   });
-//   return response.data;
-// };
+export const showAppointmentResults = async (appointment_id) => {
+  const response = await api.get("/api/doctor/showAppointmantResults", {
+    params: { appointment_id },
+  });
+  return response.data;
+};
 
 // Cancel appointment
 // export const cancelAppointment = async (reservation_id) => {

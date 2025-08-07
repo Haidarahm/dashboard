@@ -3,6 +3,7 @@ import {
   addPrescription,
   addMedicine,
   completePrescription,
+  addMedicalInfo,
 } from "../../api/doctor/prescription";
 
 const usePrescriptionStore = create((set, get) => ({
@@ -14,6 +15,7 @@ const usePrescriptionStore = create((set, get) => ({
   prescriptionLoading: false,
   medicineLoading: false,
   completionLoading: false,
+  medicalInfoLoading: false,
 
   // Actions
 
@@ -75,6 +77,22 @@ const usePrescriptionStore = create((set, get) => ({
     }
   },
 
+  // Add medical info
+  addMedicalInfo: async (medicalData) => {
+    set({ medicalInfoLoading: true, error: null });
+    try {
+      const response = await addMedicalInfo(medicalData);
+      set({ medicalInfoLoading: false });
+      return response;
+    } catch (err) {
+      set({
+        error: err?.message || err.toString(),
+        medicalInfoLoading: false,
+      });
+      return null;
+    }
+  },
+
   // Add medicine to local state (for UI)
   addMedicineToState: (medicine) => {
     const state = get();
@@ -131,6 +149,7 @@ const usePrescriptionStore = create((set, get) => ({
       prescriptionLoading: false,
       medicineLoading: false,
       completionLoading: false,
+      medicalInfoLoading: false,
     });
   },
 }));
