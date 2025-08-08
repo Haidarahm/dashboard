@@ -43,20 +43,27 @@ export const showAppointmentsByType = async (status, type, date) => {
 };
 
 // Show patient appointments
-// export const showPatientAppointments = async (patient_id) => {
-//   const response = await api.get("/api/doctor/showpatientAppointments", {
-//     params: { patient_id },
-//   });
-//   return response.data;
-// };
+export const showPatientAppointments = async (
+  patient_id,
+  page = 1,
+  size = 5
+) => {
+  const response = await api.get("/api/doctor/showpatientAppointments", {
+    params: {
+      patient_id,
+      page,
+      size,
+    },
+  });
+  return response.data;
+};
 
-// Show appointment results
-// export const showAppointmentResults = async (appointment_id) => {
-//   const response = await api.get("/api/doctor/showAppointmantResults", {
-//     params: { appointment_id },
-//   });
-//   return response.data;
-// };
+export const showAppointmentResults = async (appointment_id) => {
+  const response = await api.get("/api/doctor/showAppointmantResults", {
+    params: { appointment_id },
+  });
+  return response.data;
+};
 
 // Cancel appointment
 // export const cancelAppointment = async (reservation_id) => {

@@ -451,8 +451,6 @@ function DoctorsTable({ onShowReviews }) {
           rowKey="id"
           pagination={{
             ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} doctors`,
           }}

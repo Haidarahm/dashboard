@@ -148,8 +148,7 @@ const ReportsCardContainer = () => {
             total={total}
             pageSize={pageSize}
             onChange={setCurrentPage}
-            showSizeChanger={false}
-            showQuickJumper={false}
+          
             showTotal={(total, range) =>
               `${range[0]}-${range[1]} of ${total} reports`
             }

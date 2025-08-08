@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
 import Profile from "../pages/doctor/profile/Profile";
+import TodaysAppointments from "../pages/doctor/todays-appointments/TodaysAppointments";
 function DoctorRoutes() {
     function DashboardLayout() {
         const [collapsed, setCollapsed] = useState(false);
@@ -28,6 +29,7 @@ function DoctorRoutes() {
       <Route path="appointments" element={<Appointments />} />
       <Route path="patients" element={<Patients />} />
       <Route path="profile" element={<Profile />} />
+      <Route path="todays-appointments" element={<TodaysAppointments />} />
       {/* Add more nested routes here */}
     </Route>
   </Routes>

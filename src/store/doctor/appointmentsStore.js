@@ -4,6 +4,7 @@ import {
   showAppointmentsByStatus,
   showAppointmentsByType,
   cancelAppointment,
+  showAppointmentResults,
 } from "../../api/doctor/appointments";
 
 export const useAppointmentsStore = create((set) => ({
@@ -115,5 +116,21 @@ export const useAppointmentsStore = create((set) => ({
   // Change current month-year view
   setCurrentMonthYear: (monthYear) => {
     set({ currentMonthYear: monthYear });
+  },
+
+  // Show appointment results by appointment_id
+  showAppointmentResults: async (appointment_id) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await showAppointmentResults(appointment_id);
+      set({ loading: false });
+      return data;
+    } catch (error) {
+      set({
+        error: error.message || "Failed to fetch appointment results",
+        loading: false,
+      });
+      return null;
+    }
   },
 }));
