@@ -16,10 +16,10 @@ export const showAllAppointmentsByDate = async (date) => {
 // };
 
 // Show appointments by type
-export const showAppointmentsByStatus = async (status, date) => {
+export const showAppointmentsByStatus = async () => {
   const response = await api.post("/api/doctor/showAppointmentsByStatus", {
-    status,
-    date,
+    status:"pending",
+    date:"08-2025",
   });
 
   return response.data;

@@ -162,16 +162,17 @@ function TodaysAppointments() {
               size="small"
             />
           </Tooltip>
-
-          <Tooltip title="Write prescription">
-            <Button
-              icon={<FileTextOutlined />}
-              onClick={() => handleWritePrescription(record)}
-              size="small"
-              loading={prescriptionIconLoading}
-              disabled={prescriptionIconLoading}
-            />
-          </Tooltip>
+          {record.status === "pending" && (
+            <Tooltip title="Write prescription">
+              <Button
+                icon={<FileTextOutlined />}
+                onClick={() => handleWritePrescription(record)}
+                size="small"
+                loading={prescriptionIconLoading}
+                disabled={prescriptionIconLoading}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
