@@ -82,6 +82,7 @@ function TodaysAppointments() {
         name: `${record.patient_first_name || ""} ${
           record.patient_last_name || ""
         }`.trim(),
+        appointment_id: record.id, // Store the appointment ID
       });
       setPrescriptionVisible(true);
     }
@@ -219,6 +220,7 @@ function TodaysAppointments() {
         onClose={handleClosePrescription}
         patientId={selectedPatientForPrescription?.id}
         patientName={selectedPatientForPrescription?.name}
+        appointmentId={selectedPatientForPrescription?.appointment_id}
       />
     </div>
   );
