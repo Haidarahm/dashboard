@@ -138,9 +138,17 @@ function Patients() {
         // Calculate age from birth_date if available
         if (record.birth_date) {
           const birth = new Date(record.birth_date);
-          const ageDifMs = Date.now() - birth.getTime();
-          const ageDate = new Date(ageDifMs);
-          return Math.abs(ageDate.getUTCFullYear() - 1970);
+          const today = new Date();
+          const ageInMonths =
+            (today.getFullYear() - birth.getFullYear()) * 12 +
+            (today.getMonth() - birth.getMonth());
+
+          if (ageInMonths < 12) {
+            return `${ageInMonths} months`;
+          } else {
+            const ageInYears = Math.floor(ageInMonths / 12);
+            return `${ageInYears} years`;
+          }
         }
         return "-";
       },
