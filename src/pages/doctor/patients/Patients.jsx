@@ -19,6 +19,7 @@ import {
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 import PatientAppointments from "./PatientAppointments";
+import Results from "./Results";
 
 const { Title, Text } = Typography;
 
@@ -28,6 +29,7 @@ function Patients() {
     loading,
     profileLoading,
     appointmentsLoading,
+    resultsLoading,
     error,
     fetchPatients,
     searchForPatient,
@@ -37,8 +39,10 @@ function Patients() {
     searchQuery,
     fetchPatientProfile,
     fetchPatientAppointments,
+    fetchAppointmentResults,
     patientProfile,
     patientAppointments,
+    appointmentResults,
     appointmentsCurrentPage,
     appointmentsPerPage,
     appointmentsTotal,
@@ -48,6 +52,7 @@ function Patients() {
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [showAppointments, setShowAppointments] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -105,12 +110,19 @@ function Patients() {
     fetchPatientAppointments(patientId, 1, appointmentsPerPage);
     setIsDetailsVisible(true);
     setShowAppointments(true);
+    setShowResults(false);
   };
 
   const handleCloseDetails = () => {
     setIsDetailsVisible(false);
     setSelectedPatientId(null);
     setShowAppointments(false);
+    setShowResults(false);
+  };
+
+  const handleViewResults = (appointmentId) => {
+    fetchAppointmentResults(appointmentId);
+    setShowResults(true);
   };
 
   const columns = [
@@ -206,94 +218,113 @@ function Patients() {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           gap: 24,
           transition: "all 0.3s ease-in-out",
         }}
       >
         <div
           style={{
-            flex: isDetailsVisible ? 1 : 1,
+            display: "flex",
+            gap: 24,
             transition: "all 0.3s ease-in-out",
-            transform: isDetailsVisible ? "scale(1)" : "scale(1)",
           }}
         >
-          <Card style={{ marginBottom: "24px" }}>
-            <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
-              Patients
-            </Title>
-            <Space style={{ marginBottom: 16, marginTop: 16 }}>
-              <Input
-                placeholder="Search by name"
-                value={searchValue}
-                onChange={handleInputChange}
-                onPressEnter={handleInputPressEnter}
-                style={{ width: 240 }}
-                allowClear
+          <div
+            style={{
+              flex: isDetailsVisible ? 1 : 1,
+              transition: "all 0.3s ease-in-out",
+              transform: isDetailsVisible ? "scale(1)" : "scale(1)",
+            }}
+          >
+            <Card style={{ marginBottom: "24px" }}>
+              <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
+                Patients
+              </Title>
+              <Space style={{ marginBottom: 16, marginTop: 16 }}>
+                <Input
+                  placeholder="Search by name"
+                  value={searchValue}
+                  onChange={handleInputChange}
+                  onPressEnter={handleInputPressEnter}
+                  style={{ width: 240 }}
+                  allowClear
+                />
+                <Button
+                  type="primary"
+                  icon={<SearchOutlined />}
+                  onClick={handleSearch}
+                  loading={loading}
+                  disabled={!searchValue.trim()}
+                >
+                  Search
+                </Button>
+              </Space>
+              <Spin spinning={loading}>
+                <Table
+                  columns={columns}
+                  dataSource={patients}
+                  rowKey="id"
+                  pagination={{
+                    current: currentPage,
+                    pageSize: perPage,
+                    total: total,
+                    showTotal: (total, range) =>
+                      `${range[0]}-${range[1]} of ${total} patients`,
+                  }}
+                  size="middle"
+                  style={{ marginTop: 24 }}
+                  onChange={handleTableChange}
+                />
+              </Spin>
+            </Card>
+          </div>
+          <div
+            style={{
+              flex: isDetailsVisible ? 1 : 0,
+              minWidth: isDetailsVisible ? 350 : 0,
+              maxWidth: isDetailsVisible ? "50%" : 0,
+              overflow: "hidden",
+              transition: "all 0.3s ease-in-out",
+              transform: isDetailsVisible ? "scale(1)" : "scale(0)",
+              opacity: isDetailsVisible ? 1 : 0,
+              position: "relative",
+            }}
+          >
+            {showAppointments ? (
+              <PatientAppointments
+                appointments={patientAppointments}
+                onClose={handleCloseDetails}
+                isVisible={isDetailsVisible}
+                loading={appointmentsLoading}
+                onTableChange={handleAppointmentsTableChange}
+                currentPage={appointmentsCurrentPage}
+                pageSize={appointmentsPerPage}
+                total={appointmentsTotal}
+                onViewResults={handleViewResults}
               />
-              <Button
-                type="primary"
-                icon={<SearchOutlined />}
-                onClick={handleSearch}
-                loading={loading}
-                disabled={!searchValue.trim()}
-              >
-                Search
-              </Button>
-            </Space>
-            <Spin spinning={loading}>
-              <Table
-                columns={columns}
-                dataSource={patients}
-                rowKey="id"
-                pagination={{
-                  current: currentPage,
-                  pageSize: perPage,
-                  total: total,
-                  showTotal: (total, range) =>
-                    `${range[0]}-${range[1]} of ${total} patients`,
-                }}
-                size="middle"
-                style={{ marginTop: 24 }}
-                onChange={handleTableChange}
+            ) : (
+              <PatientDetails
+                profile={patientProfile}
+                onClose={handleCloseDetails}
+                isVisible={isDetailsVisible}
+                loading={profileLoading}
               />
-            </Spin>
-            {error && (
-              <div style={{ color: "red", marginTop: 16 }}>{error}</div>
             )}
-          </Card>
+          </div>
         </div>
-        <div
-          style={{
-            flex: isDetailsVisible ? 1 : 0,
-            minWidth: isDetailsVisible ? 350 : 0,
-            maxWidth: isDetailsVisible ? "50%" : 0,
-            overflow: "hidden",
-            transition: "all 0.3s ease-in-out",
-            transform: isDetailsVisible ? "scale(1)" : "scale(0)",
-            opacity: isDetailsVisible ? 1 : 0,
-            position: "relative",
-          }}
-        >
-          {showAppointments ? (
-            <PatientAppointments
-              appointments={patientAppointments}
+
+        {/* Results Section - Full Width */}
+        {showResults && (
+          <div style={{ width: "100%" }}>
+            <Results
+              results={appointmentResults}
               onClose={handleCloseDetails}
-              isVisible={isDetailsVisible}
-              loading={appointmentsLoading}
-              onTableChange={handleAppointmentsTableChange}
-              currentPage={appointmentsCurrentPage}
-              pageSize={appointmentsPerPage}
-              total={appointmentsTotal}
+              isVisible={showResults}
+              loading={resultsLoading}
             />
-          ) : (
-            <PatientDetails
-              profile={patientProfile}
-              onClose={handleCloseDetails}
-              isVisible={isDetailsVisible}
-              loading={profileLoading}
-            />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

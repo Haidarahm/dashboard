@@ -13,6 +13,7 @@ const PatientAppointments = ({
   currentPage,
   pageSize,
   total,
+  onViewResults,
 }) => {
   if (!appointments && !loading) {
     return (
@@ -98,14 +99,29 @@ const PatientAppointments = ({
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
+      title: "View Results",
+      key: "viewResults",
+      width: 120,
+      render: (_, record) => (
+        <Button
+          type="primary"
+          size="small"
+          onClick={() => onViewResults(record.id)}
+          disabled={record.status !== "visited"}
+          style={{
+            backgroundColor:
+              record.status === "visited" ? "#1890ff" : "#d9d9d9",
+            borderColor: record.status === "visited" ? "#1890ff" : "#d9d9d9",
+          }}
+        >
+          View Results
+        </Button>
+      ),
     },
     {
       title: "Date & Time",
       key: "datetime",
+      width: 120,
       render: (_, record) => (
         <div>
           <div>{record.reservation_date}</div>
@@ -119,7 +135,7 @@ const PatientAppointments = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 100,
+      width: 80,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -127,46 +143,13 @@ const PatientAppointments = ({
       ),
     },
     {
-      title: "Type",
-      dataIndex: "appointment_type",
-      key: "appointment_type",
-      width: 120,
-      render: (type) => (
-        <Tag color="blue">{type.charAt(0).toUpperCase() + type.slice(1)}</Tag>
-      ),
-    },
-    {
-      title: "Info",
-      dataIndex: "appointment_info",
-      key: "appointment_info",
-      width: 100,
-    },
-    {
       title: "Payment",
       dataIndex: "payment_status",
       key: "payment_status",
-      width: 100,
+      width: 80,
       render: (paymentStatus) => (
         <Tag color={getPaymentStatusColor(paymentStatus)}>
           {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
-        </Tag>
-      ),
-    },
-    {
-      title: "Referred By",
-      dataIndex: "referred by",
-      key: "referred_by",
-      width: 120,
-      render: (referredBy) => referredBy || "-",
-    },
-    {
-      title: "Child",
-      dataIndex: "is_child",
-      key: "is_child",
-      width: 80,
-      render: (isChild) => (
-        <Tag color={isChild ? "orange" : "default"}>
-          {isChild ? "Yes" : "No"}
         </Tag>
       ),
     },
@@ -231,9 +214,9 @@ const PatientAppointments = ({
             `${range[0]}-${range[1]} of ${total} appointments`,
         }}
         size="middle"
-        scroll={{ x: 800 }}
         onChange={onTableChange}
         loading={loading}
+        style={{ width: "100%" }}
       />
     </Card>
   );
