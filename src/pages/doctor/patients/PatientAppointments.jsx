@@ -8,11 +8,14 @@ import {
   Spin,
   Tooltip,
   Space,
+  Popover,
+  Descriptions,
 } from "antd";
 import {
   CloseOutlined,
   CalendarOutlined,
   FileTextOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 
 const { Title } = Typography;
@@ -112,19 +115,77 @@ const PatientAppointments = ({
 
   const columns = [
     {
-      title: "View Results",
-      key: "viewResults",
-      width: 50,
+      title: "Actions",
+      key: "actions",
+      width: 120,
       render: (_, record) => (
-        <Tooltip title="View Results">
-          <Button
-            icon={<FileTextOutlined />}
-            onClick={() => onViewResults(record.id)}
-            disabled={record.status !== "visited"}
-            type="default"
-            size="small"
-          />
-        </Tooltip>
+        <Space>
+          <Tooltip title="View Details">
+            <Popover
+              content={
+                <div style={{ maxWidth: "300px" }}>
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="ID">
+                      {record.id}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Patient Name">
+                      {record.patient_first_name} {record.patient_last_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date">
+                      {record.reservation_date}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Time">
+                      {record.reservation_hour.slice(0, 5)}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Status">
+                      <Tag color={getStatusColor(record.status)}>
+                        {record.status.charAt(0).toUpperCase() +
+                          record.status.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Type">
+                      <Tag color="blue">
+                        {record.appointment_type.charAt(0).toUpperCase() +
+                          record.appointment_type.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Info">
+                      {record.appointment_info || "Not specified"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Payment Status">
+                      <Tag color={getPaymentStatusColor(record.payment_status)}>
+                        {record.payment_status.charAt(0).toUpperCase() +
+                          record.payment_status.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Referred By">
+                      {record["referred by"] || "Not specified"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Child Appointment">
+                      <Tag color={record.is_child ? "orange" : "default"}>
+                        {record.is_child ? "Yes" : "No"}
+                      </Tag>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              }
+              title="Appointment Details"
+              trigger="click"
+              placement="left"
+            >
+              <Button icon={<EyeOutlined />} type="default" size="small" />
+            </Popover>
+          </Tooltip>
+          <Tooltip title="View Results">
+            <Button
+              icon={<FileTextOutlined />}
+              onClick={() => onViewResults(record.id)}
+              disabled={record.status !== "visited"}
+              type="default"
+              size="small"
+            />
+          </Tooltip>
+        </Space>
       ),
     },
     {
