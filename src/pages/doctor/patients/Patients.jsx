@@ -117,6 +117,9 @@ function Patients() {
     setIsDetailsVisible(false);
     setSelectedPatientId(null);
     setShowAppointments(false);
+  };
+
+  const handleCloseResults = () => {
     setShowResults(false);
   };
 
@@ -319,7 +322,7 @@ function Patients() {
           <div style={{ width: "100%" }}>
             <Results
               results={appointmentResults}
-              onClose={handleCloseDetails}
+              onClose={handleCloseResults}
               isVisible={showResults}
               loading={resultsLoading}
             />

@@ -1,6 +1,19 @@
 import React from "react";
-import { Card, Typography, Tag, Table, Button, Spin } from "antd";
-import { CloseOutlined, CalendarOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Typography,
+  Tag,
+  Table,
+  Button,
+  Spin,
+  Tooltip,
+  Space,
+} from "antd";
+import {
+  CloseOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -101,21 +114,17 @@ const PatientAppointments = ({
     {
       title: "View Results",
       key: "viewResults",
-      width: 120,
+      width: 50,
       render: (_, record) => (
-        <Button
-          type="primary"
-          size="small"
-          onClick={() => onViewResults(record.id)}
-          disabled={record.status !== "visited"}
-          style={{
-            backgroundColor:
-              record.status === "visited" ? "#1890ff" : "#d9d9d9",
-            borderColor: record.status === "visited" ? "#1890ff" : "#d9d9d9",
-          }}
-        >
-          View Results
-        </Button>
+        <Tooltip title="View Results">
+          <Button
+            icon={<FileTextOutlined />}
+            onClick={() => onViewResults(record.id)}
+            disabled={record.status !== "visited"}
+            type="default"
+            size="small"
+          />
+        </Tooltip>
       ),
     },
     {
