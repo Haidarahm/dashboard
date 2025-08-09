@@ -110,7 +110,7 @@ const PatientAppointments = ({
         <div>
           <div>{record.reservation_date}</div>
           <div style={{ fontSize: "12px", color: "#666" }}>
-            {record.reservation_hour}
+            {record.reservation_hour.slice(0, 5)}
           </div>
         </div>
       ),
