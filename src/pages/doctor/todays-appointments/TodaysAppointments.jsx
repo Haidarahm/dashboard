@@ -10,12 +10,17 @@ import {
   Popover,
   Space,
 } from "antd";
-import { UserOutlined, FileTextOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  FileTextOutlined,
+  ExperimentOutlined,
+} from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 import Prescription from "./Prescription";
 import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
+import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
 
 const { Title } = Typography;
 
@@ -27,6 +32,9 @@ function TodaysAppointments() {
   const [selectedPatientForPrescription, setSelectedPatientForPrescription] =
     useState(null);
   const [prescriptionIconLoading, setPrescriptionIconLoading] = useState(false);
+  const [analysisVisible, setAnalysisVisible] = useState(false);
+  const [selectedPatientForAnalysis, setSelectedPatientForAnalysis] =
+    useState(null);
 
   const {
     filteredAppointments,
@@ -91,6 +99,21 @@ function TodaysAppointments() {
   const handleClosePrescription = () => {
     setPrescriptionVisible(false);
     setSelectedPatientForPrescription(null);
+  };
+
+  const handleShowAnalysis = (record) => {
+    setSelectedPatientForAnalysis({
+      id: record.patient_id,
+      name: `${record.patient_first_name || ""} ${
+        record.patient_last_name || ""
+      }`.trim(),
+    });
+    setAnalysisVisible(true);
+  };
+
+  const handleCloseAnalysis = () => {
+    setAnalysisVisible(false);
+    setSelectedPatientForAnalysis(null);
   };
 
   const columns = [
@@ -173,6 +196,13 @@ function TodaysAppointments() {
               />
             </Tooltip>
           )}
+          <Tooltip title="Request Analysis">
+            <Button
+              icon={<ExperimentOutlined />}
+              onClick={() => handleShowAnalysis(record)}
+              size="small"
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -222,6 +252,13 @@ function TodaysAppointments() {
         patientId={selectedPatientForPrescription?.id}
         patientName={selectedPatientForPrescription?.name}
         appointmentId={selectedPatientForPrescription?.appointment_id}
+      />
+
+      <Analysis
+        visible={analysisVisible}
+        onClose={handleCloseAnalysis}
+        patientId={selectedPatientForAnalysis?.id}
+        patientName={selectedPatientForAnalysis?.name}
       />
     </div>
   );
