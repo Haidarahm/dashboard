@@ -122,6 +122,7 @@ const DoctorAppointments = () => {
   };
 
   const handleDateClick = (date, dayAppointments) => {
+    console.log(date, dayAppointments);
     setSelectedDate(date);
     setSelectedAppointments(dayAppointments);
     setSidebarOpen(true);

@@ -52,7 +52,7 @@ function TodaysAppointments() {
 
   useEffect(() => {
     setCurrentMonthYear(monthYear);
-    fetchByStatus("today", todayStr);
+    fetchByStatus("today");
     // eslint-disable-next-line
   }, []);
 
@@ -163,7 +163,7 @@ function TodaysAppointments() {
             />
           </Tooltip>
           {record.status === "pending" && (
-            <Tooltip title="Write prescription">
+            <Tooltip title="Add Info">
               <Button
                 icon={<FileTextOutlined />}
                 onClick={() => handleWritePrescription(record)}
