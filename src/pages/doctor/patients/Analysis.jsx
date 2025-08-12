@@ -13,30 +13,27 @@ import useAnalyzeStore from "../../../store/doctor/analyzeStore";
 
 const { Title, Text } = Typography;
 
-function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
-  const [status, setStatus] = useState(initialStatus);
+function Analysis({ open, onClose, patientId }) {
+  const [status, setStatus] = useState(null);
   const [clinicId, setClinicId] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [analysisResponse, setAnalysisResponse] = useState(null);
-  const [activeMode, setActiveMode] = useState("status"); // "status" | "clinic"
 
   const {
     showPatientAnalysisAction,
     showPatientAnalysisByClinicAction,
     showClinicsAction,
+    showAllAnalysisAction,
     clinics,
     clinicsLoading,
     patientAnalysisLoading,
     clinicAnalysisLoading,
+    allAnalysisLoading,
   } = useAnalyzeStore();
 
-  const loading = patientAnalysisLoading || clinicAnalysisLoading;
-
-  useEffect(() => {
-    if (!open) return;
-    setActiveMode("status");
-  }, [open]);
+  const loading =
+    patientAnalysisLoading || clinicAnalysisLoading || allAnalysisLoading;
 
   useEffect(() => {
     if (!open || !patientId) return;
@@ -46,8 +43,18 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
 
   const fetchData = async () => {
     if (!patientId) return;
+
+    // If no filters are applied, use showAllAnalysisAction
+    if (!status && !clinicId) {
+      const response = await showAllAnalysisAction(patientId);
+      if (response) setAnalysisResponse(response);
+      return;
+    }
+
     const payloadBase = { patient_id: patientId, page, per_page: pageSize };
-    if (activeMode === "clinic" && clinicId) {
+
+    // If clinic is selected, filter by clinic (prioritize clinic over status)
+    if (clinicId && clinicId !== "all") {
       const response = await showPatientAnalysisByClinicAction({
         ...payloadBase,
         clinic_id: clinicId,
@@ -55,22 +62,42 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
       if (response) setAnalysisResponse(response);
       return;
     }
-    const response = await showPatientAnalysisAction({
-      ...payloadBase,
-      status,
-    });
-    if (response) setAnalysisResponse(response);
+
+    // If only status is selected, filter by status
+    if (status) {
+      const response = await showPatientAnalysisAction({
+        ...payloadBase,
+        status,
+      });
+      if (response) setAnalysisResponse(response);
+    }
+  };
+
+  const handleRefresh = () => {
+    setStatus(null);
+    setClinicId(null);
+    setPage(1);
+    fetchData();
+  };
+
+  const handleStatusChange = (val) => {
+    setStatus(val);
+    setClinicId(null); // Clear clinic filter when status is selected
+    setPage(1);
+  };
+
+  const handleClinicChange = (val) => {
+    const next = val ?? null;
+    setClinicId(next);
+    setStatus(null); // Clear status filter when clinic is selected
+    setPage(1);
   };
 
   useEffect(() => {
     if (!open) return;
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, activeMode, status, clinicId, page, pageSize, patientId]);
-
-  useEffect(() => {
-    if (open) setStatus(initialStatus || "pending");
-  }, [initialStatus, open]);
+  }, [open, status, clinicId, page, pageSize, patientId]);
 
   const dataSource = useMemo(
     () => analysisResponse?.data || [],
@@ -137,7 +164,7 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
 
   const handleClose = () => {
     setClinicId(null);
-    setStatus(initialStatus || "pending");
+    setStatus(null);
     setPage(1);
     setPageSize(10);
     setAnalysisResponse(null);
@@ -149,6 +176,7 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
       open={open}
       onCancel={handleClose}
       footer={null}
+      width={900}
       title={
         <Space direction="vertical" style={{ width: "100%" }}>
           <Title level={4} style={{ margin: 0 }}>
@@ -159,11 +187,9 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
               <Text type="secondary">Status:</Text>
               <Select
                 value={status}
-                onChange={(val) => {
-                  setStatus(val);
-                  setActiveMode("status");
-                  setPage(1);
-                }}
+                onChange={handleStatusChange}
+                placeholder="Select status"
+                allowClear
                 options={[
                   { label: "Pending", value: "pending" },
                   { label: "Finished", value: "finished" },
@@ -177,12 +203,7 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
                 allowClear
                 placeholder="All clinics"
                 value={clinicId ?? undefined}
-                onChange={(val) => {
-                  const next = val ?? null;
-                  setClinicId(next);
-                  setActiveMode(next ? "clinic" : "status");
-                  setPage(1);
-                }}
+                onChange={handleClinicChange}
                 loading={clinicsLoading}
                 options={(clinics || []).map((c) => ({
                   label: c.name,
@@ -190,14 +211,13 @@ function Analysis({ open, onClose, patientId, initialStatus = "pending" }) {
                 }))}
                 style={{ width: 200 }}
               />
-              <Button onClick={fetchData} disabled={loading}>
+              <Button onClick={handleRefresh} disabled={loading}>
                 Refresh
               </Button>
             </Space>
           </Space>
         </Space>
       }
-      width={900}
     >
       <Spin spinning={loading}>
         <Table
