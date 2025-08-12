@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import {
   requestAnalyze,
-  showPatientAnalysis,
+  showPatientAnalysisByStatus,
   showPatientAnalysisByClinic,
   showClinics,
+  showAllAnalysis,
 } from "../../api/doctor/analyze";
 
 const useAnalyzeStore = create((set, get) => ({
@@ -12,12 +13,14 @@ const useAnalyzeStore = create((set, get) => ({
   patientAnalysis: [],
   clinicAnalysis: [],
   clinics: [],
+  allAnalysis: [],
   loading: false,
   error: null,
   requestLoading: false,
   patientAnalysisLoading: false,
   clinicAnalysisLoading: false,
   clinicsLoading: false,
+  allAnalysisLoading: false,
 
   // Actions
 
@@ -45,7 +48,7 @@ const useAnalyzeStore = create((set, get) => ({
   showPatientAnalysisAction: async (data) => {
     set({ patientAnalysisLoading: true, error: null });
     try {
-      const response = await showPatientAnalysis(data);
+      const response = await showPatientAnalysisByStatus(data);
       set({
         patientAnalysis: response,
         patientAnalysisLoading: false,
@@ -55,6 +58,25 @@ const useAnalyzeStore = create((set, get) => ({
       set({
         error: err?.message || err.toString(),
         patientAnalysisLoading: false,
+      });
+      return null;
+    }
+  },
+
+  // Show all patient analysis
+  showAllAnalysisAction: async (patient_id) => {
+    set({ allAnalysisLoading: true, error: null });
+    try {
+      const response = await showAllAnalysis(patient_id);
+      set({
+        allAnalysis: response.data,
+        allAnalysisLoading: false,
+      });
+      return response;
+    } catch (err) {
+      set({
+        error: err?.message || err.toString(),
+        allAnalysisLoading: false,
       });
       return null;
     }
@@ -139,6 +161,11 @@ const useAnalyzeStore = create((set, get) => ({
     set({ clinicAnalysis: analysis });
   },
 
+  // Set all analysis
+  setAllAnalysis: (analysis) => {
+    set({ allAnalysis: analysis });
+  },
+
   // Set clinics
   setClinics: (clinics) => {
     set({ clinics });
@@ -154,12 +181,14 @@ const useAnalyzeStore = create((set, get) => ({
       patientAnalysis: [],
       clinicAnalysis: [],
       clinics: [],
+      allAnalysis: [],
       loading: false,
       error: null,
       requestLoading: false,
       patientAnalysisLoading: false,
       clinicAnalysisLoading: false,
       clinicsLoading: false,
+      allAnalysisLoading: false,
     });
   },
 
@@ -168,6 +197,7 @@ const useAnalyzeStore = create((set, get) => ({
   clearClinicAnalysis: () => set({ clinicAnalysis: [] }),
   clearAnalysisRequests: () => set({ analysisRequests: [] }),
   clearClinics: () => set({ clinics: [] }),
+  clearAllAnalysis: () => set({ allAnalysis: [] }),
 }));
 
 export default useAnalyzeStore;

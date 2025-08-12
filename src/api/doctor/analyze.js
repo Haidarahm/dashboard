@@ -10,10 +10,25 @@ export const requestAnalyze = async (data) => {
   }
 };
 
-// Show patient analysis
-export const showPatientAnalysis = async (data) => {
+// Show patient analysis by status
+export const showPatientAnalysisByStatus = async (data) => {
   try {
-    const response = await api.post("/api/doctor/showPatientAnalysis", data);
+    const response = await api.post(
+      "/api/doctor/showPatientAnalysisByStatus",
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+// Show all patient analysis
+export const showAllAnalysis = async (patient_id) => {
+  try {
+    const response = await api.get("/api/doctor/showPatientAnalysis", {
+      params: { patient_id },
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
