@@ -14,6 +14,7 @@ import {
   UserOutlined,
   FileTextOutlined,
   ExperimentOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
@@ -21,6 +22,7 @@ import PatientDetails from "./PatientDetails";
 import Prescription from "./Prescription";
 import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
 import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
+import CheckUp from "./CheckUp";
 
 const { Title } = Typography;
 
@@ -35,6 +37,8 @@ function TodaysAppointments() {
   const [analysisVisible, setAnalysisVisible] = useState(false);
   const [selectedPatientForAnalysis, setSelectedPatientForAnalysis] =
     useState(null);
+  const [checkupVisible, setCheckupVisible] = useState(false);
+  const [selectedForCheckup, setSelectedForCheckup] = useState(null);
 
   const {
     filteredAppointments,
@@ -116,6 +120,22 @@ function TodaysAppointments() {
     setSelectedPatientForAnalysis(null);
   };
 
+  const handleOpenCheckup = (record) => {
+    setSelectedForCheckup({
+      patient_id: record.patient_id,
+      appointment_id: record.id,
+      name: `${record.patient_first_name || ""} ${
+        record.patient_last_name || ""
+      }`.trim(),
+    });
+    setCheckupVisible(true);
+  };
+
+  const handleCloseCheckup = () => {
+    setCheckupVisible(false);
+    setSelectedForCheckup(null);
+  };
+
   const columns = [
     {
       title: "ID",
@@ -133,6 +153,8 @@ function TodaysAppointments() {
       title: "Reservation Hour",
       dataIndex: "reservation_hour",
       key: "reservation_hour",
+      render: (_, record) =>
+        `${record.reservation_hour.slice(0, 5)}`,
     },
     {
       title: "Status",
@@ -203,6 +225,13 @@ function TodaysAppointments() {
               size="small"
             />
           </Tooltip>
+          <Tooltip title="Add checkup">
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => handleOpenCheckup(record)}
+              size="small"
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -259,6 +288,13 @@ function TodaysAppointments() {
         onClose={handleCloseAnalysis}
         patientId={selectedPatientForAnalysis?.id}
         patientName={selectedPatientForAnalysis?.name}
+      />
+
+      <CheckUp
+        open={checkupVisible}
+        onClose={handleCloseCheckup}
+        patientId={selectedForCheckup?.patient_id}
+        appointmentId={selectedForCheckup?.appointment_id}
       />
     </div>
   );

@@ -21,7 +21,8 @@ const useCheckupStore = create((set, get) => ({
     try {
       const response = await showDoctorWorkDays();
       // Assuming API returns an array or { data: [] }
-      const days = Array.isArray(response) ? response : response?.data || [];
+      const days = response.available_dates;
+      console.log(days)
       set({ workDays: days, loadingWorkDays: false });
       return response;
     } catch (err) {
