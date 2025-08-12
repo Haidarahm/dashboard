@@ -9,6 +9,7 @@ import {
   Space,
   Button,
   Tooltip,
+  Popover,
 } from "antd";
 import {
   SearchOutlined,
@@ -16,6 +17,7 @@ import {
   CloseOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
+import Analysis from "./Analysis";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 import PatientAppointments from "./PatientAppointments";
@@ -53,6 +55,11 @@ function Patients() {
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [showAppointments, setShowAppointments] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisPatientId, setAnalysisPatientId] = useState(null);
+  const [analysisInitialStatus, setAnalysisInitialStatus] = useState("pending");
+  const [analysisPopoverVisibleId, setAnalysisPopoverVisibleId] =
+    useState(null);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -176,43 +183,83 @@ function Patients() {
     {
       title: "Actions",
       key: "actions",
-      width: 120,
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Patient details">
+      width: 260,
+      render: (_, record) => {
+        const popoverContent = (
+          <Space direction="vertical">
             <Button
-              icon={<UserOutlined />}
-              onClick={() => handleShowDetails(record.id)}
-              type={
-                selectedPatientId === record.id && !showAppointments
-                  ? "primary"
-                  : "default"
-              }
-              loading={
-                profileLoading &&
-                selectedPatientId === record.id &&
-                !showAppointments
-              }
-            />
-          </Tooltip>
-          <Tooltip title="Patient appointments">
+              size="small"
+              onClick={() => {
+                setAnalysisPatientId(record.id);
+                setAnalysisInitialStatus("pending");
+                setShowAnalysisModal(true);
+                setAnalysisPopoverVisibleId(null);
+              }}
+            >
+              Pending
+            </Button>
             <Button
-              icon={<CalendarOutlined />}
-              onClick={() => handleShowAppointments(record.id)}
-              type={
-                selectedPatientId === record.id && showAppointments
-                  ? "primary"
-                  : "default"
+              size="small"
+              onClick={() => {
+                setAnalysisPatientId(record.id);
+                setAnalysisInitialStatus("finished");
+                setShowAnalysisModal(true);
+                setAnalysisPopoverVisibleId(null);
+              }}
+            >
+              Finished
+            </Button>
+          </Space>
+        );
+
+        return (
+          <Space>
+            <Tooltip title="Patient details">
+              <Button
+                icon={<UserOutlined />}
+                onClick={() => handleShowDetails(record.id)}
+                type={
+                  selectedPatientId === record.id && !showAppointments
+                    ? "primary"
+                    : "default"
+                }
+                loading={
+                  profileLoading &&
+                  selectedPatientId === record.id &&
+                  !showAppointments
+                }
+              />
+            </Tooltip>
+            <Tooltip title="Patient appointments">
+              <Button
+                icon={<CalendarOutlined />}
+                onClick={() => handleShowAppointments(record.id)}
+                type={
+                  selectedPatientId === record.id && showAppointments
+                    ? "primary"
+                    : "default"
+                }
+                loading={
+                  appointmentsLoading &&
+                  selectedPatientId === record.id &&
+                  showAppointments
+                }
+              />
+            </Tooltip>
+            <Popover
+              title="Show analysis"
+              trigger="click"
+              open={analysisPopoverVisibleId === record.id}
+              onOpenChange={(visible) =>
+                setAnalysisPopoverVisibleId(visible ? record.id : null)
               }
-              loading={
-                appointmentsLoading &&
-                selectedPatientId === record.id &&
-                showAppointments
-              }
-            />
-          </Tooltip>
-        </Space>
-      ),
+              content={popoverContent}
+            >
+              <Button>Show analysis</Button>
+            </Popover>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -327,6 +374,14 @@ function Patients() {
               loading={resultsLoading}
             />
           </div>
+        )}
+        {showAnalysisModal && (
+          <Analysis
+            open={showAnalysisModal}
+            onClose={() => setShowAnalysisModal(false)}
+            patientId={analysisPatientId}
+            initialStatus={analysisInitialStatus}
+          />
         )}
       </div>
     </div>
