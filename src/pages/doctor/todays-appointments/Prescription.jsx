@@ -131,8 +131,12 @@ const Prescription = ({
         until: values[`until_${sectionKey}`],
         whenToTake: values[`whenToTake_${sectionKey}`],
         prescription_id: currentPrescription?.data?.prescription_id,
-        note: values[`note_${sectionKey}`] || "",
       };
+
+      // Only add note if it has a value
+      if (values[`note_${sectionKey}`]) {
+        medicineData.note = values[`note_${sectionKey}`];
+      }
       const result = await addMedicineToPrescription(medicineData);
       setSavingSectionKey(null);
       if (result) {

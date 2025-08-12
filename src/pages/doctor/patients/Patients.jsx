@@ -15,11 +15,13 @@ import {
   UserOutlined,
   CloseOutlined,
   CalendarOutlined,
+  ExperimentOutlined,
 } from "@ant-design/icons";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 import PatientAppointments from "./PatientAppointments";
 import Results from "./Results";
+import Analysis from "./Analysis";
 
 const { Title, Text } = Typography;
 
@@ -53,6 +55,8 @@ function Patients() {
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [showAppointments, setShowAppointments] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisPatientId, setAnalysisPatientId] = useState(null);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -126,6 +130,11 @@ function Patients() {
   const handleViewResults = (appointmentId) => {
     fetchAppointmentResults(appointmentId);
     setShowResults(true);
+  };
+
+  const handleShowAnalysis = (patientId) => {
+    setAnalysisPatientId(patientId);
+    setShowAnalysisModal(true);
   };
 
   const columns = [
@@ -209,6 +218,13 @@ function Patients() {
                 selectedPatientId === record.id &&
                 showAppointments
               }
+            />
+          </Tooltip>
+          <Tooltip title="Show analysis">
+            <Button
+              icon={<ExperimentOutlined />}
+              onClick={() => handleShowAnalysis(record.id)}
+              size="small"
             />
           </Tooltip>
         </Space>
@@ -329,6 +345,14 @@ function Patients() {
           </div>
         )}
       </div>
+
+      {showAnalysisModal && (
+        <Analysis
+          open={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)}
+          patientId={analysisPatientId}
+        />
+      )}
     </div>
   );
 }

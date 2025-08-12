@@ -10,12 +10,19 @@ import {
   Popover,
   Space,
 } from "antd";
-import { UserOutlined, FileTextOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  FileTextOutlined,
+  ExperimentOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
 import Prescription from "./Prescription";
 import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
+import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
+import CheckUp from "./CheckUp";
 
 const { Title } = Typography;
 
@@ -27,6 +34,11 @@ function TodaysAppointments() {
   const [selectedPatientForPrescription, setSelectedPatientForPrescription] =
     useState(null);
   const [prescriptionIconLoading, setPrescriptionIconLoading] = useState(false);
+  const [analysisVisible, setAnalysisVisible] = useState(false);
+  const [selectedPatientForAnalysis, setSelectedPatientForAnalysis] =
+    useState(null);
+  const [checkupVisible, setCheckupVisible] = useState(false);
+  const [selectedForCheckup, setSelectedForCheckup] = useState(null);
 
   const {
     filteredAppointments,
@@ -52,7 +64,7 @@ function TodaysAppointments() {
 
   useEffect(() => {
     setCurrentMonthYear(monthYear);
-    fetchByStatus("today", todayStr);
+    fetchByStatus("today");
     // eslint-disable-next-line
   }, []);
 
@@ -93,6 +105,37 @@ function TodaysAppointments() {
     setSelectedPatientForPrescription(null);
   };
 
+  const handleShowAnalysis = (record) => {
+    setSelectedPatientForAnalysis({
+      id: record.patient_id,
+      name: `${record.patient_first_name || ""} ${
+        record.patient_last_name || ""
+      }`.trim(),
+    });
+    setAnalysisVisible(true);
+  };
+
+  const handleCloseAnalysis = () => {
+    setAnalysisVisible(false);
+    setSelectedPatientForAnalysis(null);
+  };
+
+  const handleOpenCheckup = (record) => {
+    setSelectedForCheckup({
+      patient_id: record.patient_id,
+      appointment_id: record.id,
+      name: `${record.patient_first_name || ""} ${
+        record.patient_last_name || ""
+      }`.trim(),
+    });
+    setCheckupVisible(true);
+  };
+
+  const handleCloseCheckup = () => {
+    setCheckupVisible(false);
+    setSelectedForCheckup(null);
+  };
+
   const columns = [
     {
       title: "ID",
@@ -110,6 +153,8 @@ function TodaysAppointments() {
       title: "Reservation Hour",
       dataIndex: "reservation_hour",
       key: "reservation_hour",
+      render: (_, record) =>
+        `${record.reservation_hour.slice(0, 5)}`,
     },
     {
       title: "Status",
@@ -163,7 +208,7 @@ function TodaysAppointments() {
             />
           </Tooltip>
           {record.status === "pending" && (
-            <Tooltip title="Write prescription">
+            <Tooltip title="Add Info">
               <Button
                 icon={<FileTextOutlined />}
                 onClick={() => handleWritePrescription(record)}
@@ -173,6 +218,20 @@ function TodaysAppointments() {
               />
             </Tooltip>
           )}
+          <Tooltip title="Request Analysis">
+            <Button
+              icon={<ExperimentOutlined />}
+              onClick={() => handleShowAnalysis(record)}
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Add checkup">
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => handleOpenCheckup(record)}
+              size="small"
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -222,6 +281,20 @@ function TodaysAppointments() {
         patientId={selectedPatientForPrescription?.id}
         patientName={selectedPatientForPrescription?.name}
         appointmentId={selectedPatientForPrescription?.appointment_id}
+      />
+
+      <Analysis
+        visible={analysisVisible}
+        onClose={handleCloseAnalysis}
+        patientId={selectedPatientForAnalysis?.id}
+        patientName={selectedPatientForAnalysis?.name}
+      />
+
+      <CheckUp
+        open={checkupVisible}
+        onClose={handleCloseCheckup}
+        patientId={selectedForCheckup?.patient_id}
+        appointmentId={selectedForCheckup?.appointment_id}
       />
     </div>
   );
