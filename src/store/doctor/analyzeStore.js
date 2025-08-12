@@ -3,6 +3,7 @@ import {
   requestAnalyze,
   showPatientAnalysis,
   showPatientAnalysisByClinic,
+  showClinics,
 } from "../../api/doctor/analyze";
 
 const useAnalyzeStore = create((set, get) => ({
@@ -10,11 +11,13 @@ const useAnalyzeStore = create((set, get) => ({
   analysisRequests: [],
   patientAnalysis: [],
   clinicAnalysis: [],
+  clinics: [],
   loading: false,
   error: null,
   requestLoading: false,
   patientAnalysisLoading: false,
   clinicAnalysisLoading: false,
+  clinicsLoading: false,
 
   // Actions
 
@@ -76,6 +79,25 @@ const useAnalyzeStore = create((set, get) => ({
     }
   },
 
+  // Show clinics
+  showClinicsAction: async () => {
+    set({ clinicsLoading: true, error: null });
+    try {
+      const response = await showClinics();
+      set({
+        clinics: response,
+        clinicsLoading: false,
+      });
+      return response;
+    } catch (err) {
+      set({
+        error: err?.message || err.toString(),
+        clinicsLoading: false,
+      });
+      return null;
+    }
+  },
+
   // Add analysis request to local state (for UI)
   addAnalysisRequestToState: (analysisRequest) => {
     const state = get();
@@ -117,6 +139,11 @@ const useAnalyzeStore = create((set, get) => ({
     set({ clinicAnalysis: analysis });
   },
 
+  // Set clinics
+  setClinics: (clinics) => {
+    set({ clinics });
+  },
+
   // Clear error
   clearError: () => set({ error: null }),
 
@@ -126,11 +153,13 @@ const useAnalyzeStore = create((set, get) => ({
       analysisRequests: [],
       patientAnalysis: [],
       clinicAnalysis: [],
+      clinics: [],
       loading: false,
       error: null,
       requestLoading: false,
       patientAnalysisLoading: false,
       clinicAnalysisLoading: false,
+      clinicsLoading: false,
     });
   },
 
@@ -138,6 +167,7 @@ const useAnalyzeStore = create((set, get) => ({
   clearPatientAnalysis: () => set({ patientAnalysis: [] }),
   clearClinicAnalysis: () => set({ clinicAnalysis: [] }),
   clearAnalysisRequests: () => set({ analysisRequests: [] }),
+  clearClinics: () => set({ clinics: [] }),
 }));
 
 export default useAnalyzeStore;
