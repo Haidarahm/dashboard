@@ -8,6 +8,7 @@ import {
   Typography,
   Spin,
   Button,
+  Image,
 } from "antd";
 import useAnalyzeStore from "../../../store/doctor/analyzeStore";
 
@@ -34,6 +35,19 @@ function Analysis({ open, onClose, patientId }) {
 
   const loading =
     patientAnalysisLoading || clinicAnalysisLoading || allAnalysisLoading;
+
+  const buildAssetUrl = (path) => {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path;
+    const base = import.meta.env.VITE_BASE_URL || "";
+    try {
+      return new URL(path, base).toString();
+    } catch (e) {
+      if (base.endsWith("/") && path.startsWith("/"))
+        return base + path.slice(1);
+      return base + path;
+    }
+  };
 
   useEffect(() => {
     if (!open || !patientId) return;
@@ -127,8 +141,12 @@ function Analysis({ open, onClose, patientId }) {
       key: "result_file",
       render: (val) =>
         val ? (
-          <a href={val} target="_blank" rel="noreferrer">
-            Open
+          <a
+            href={buildAssetUrl(val)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open PDF
           </a>
         ) : (
           "-"
@@ -140,9 +158,12 @@ function Analysis({ open, onClose, patientId }) {
       key: "result_photo",
       render: (val) =>
         val ? (
-          <a href={val} target="_blank" rel="noreferrer">
-            Open
-          </a>
+          <Image
+            src={buildAssetUrl(val)}
+            alt="Analysis Result"
+            width={80}
+            style={{ objectFit: "cover", borderRadius: 4 }}
+          />
         ) : (
           "-"
         ),
