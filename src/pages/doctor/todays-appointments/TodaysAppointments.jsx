@@ -24,6 +24,7 @@ import Prescription from "./Prescription";
 import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
 import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
 import Refferal from "./Refferal";
+import CheckUp from "./CheckUp";
 
 const { Title } = Typography;
 
@@ -312,6 +313,13 @@ function TodaysAppointments() {
         onClose={() => setReferralVisible(false)}
         patientId={selectedForReferral?.patient_id}
         patientName={selectedForReferral?.name}
+      />
+
+      <CheckUp
+        open={checkupVisible}
+        onClose={handleCloseCheckup}
+        patientId={selectedForCheckup?.patient_id}
+        appointmentId={selectedForCheckup?.appointment_id}
       />
     </div>
   );
