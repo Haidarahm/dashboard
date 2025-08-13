@@ -45,10 +45,9 @@ const useReferredStore = create((set, get) => ({
     set({ loadingWorkDays: true, error: null });
     try {
       const response = await showReferralDoctorWorkDays(doctor_id);
-      const workDays = Array.isArray(response)
-        ? response
-        : response?.data || [];
-      set({ doctorWorkDays: workDays, loadingWorkDays: false });
+      // The API can return either an array of dates or an object like { available_dates: [...] }.
+      // Preserve the response so the UI can interpret both shapes reliably.
+      set({ doctorWorkDays: response, loadingWorkDays: false });
       return response;
     } catch (err) {
       set({ error: err?.message || err.toString(), loadingWorkDays: false });
