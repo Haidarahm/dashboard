@@ -33,11 +33,12 @@ export const useDoctorAuthStore = create((set, get) => ({
 
         toast.success("Login successful");
       } else {
+        
         throw new Error("Invalid login response");
       }
     } catch (error) {
+      toast.error(error.response.data.error);
       set({ error: error.message || "Login failed" });
-      toast.error(error.response.data.message[0]);
     } finally {
       set({ loading: false });
     }

@@ -4,6 +4,7 @@ import {
   showTimes,
   addCheckup,
 } from "../../api/doctor/checkup";
+import { toast } from "react-toastify";
 
 const useCheckupStore = create((set, get) => ({
   // State
@@ -22,7 +23,7 @@ const useCheckupStore = create((set, get) => ({
       const response = await showDoctorWorkDays();
       // Assuming API returns an array or { data: [] }
       const days = response.available_dates;
-      console.log(days)
+      console.log(days);
       set({ workDays: days, loadingWorkDays: false });
       return response;
     } catch (err) {
@@ -51,6 +52,7 @@ const useCheckupStore = create((set, get) => ({
       set({ lastCheckup: response, addingCheckup: false });
       return response;
     } catch (err) {
+      toast.error(err.message)
       set({ error: err?.message || err.toString(), addingCheckup: false });
       return null;
     }

@@ -56,3 +56,13 @@ export const addReferralReservation = async ({
     throw error.response?.data || error.message;
   }
 };
+
+// Show clinics
+export const showClinics = async () => {
+  try {
+    const response = await api.get("/api/doctor/showClinics");
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

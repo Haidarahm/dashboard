@@ -15,6 +15,7 @@ import {
   FileTextOutlined,
   ExperimentOutlined,
   PlusOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
@@ -22,6 +23,7 @@ import PatientDetails from "./PatientDetails";
 import Prescription from "./Prescription";
 import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
 import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
+import Refferal from "./Refferal";
 import CheckUp from "./CheckUp";
 
 const { Title } = Typography;
@@ -39,6 +41,8 @@ function TodaysAppointments() {
     useState(null);
   const [checkupVisible, setCheckupVisible] = useState(false);
   const [selectedForCheckup, setSelectedForCheckup] = useState(null);
+  const [referralVisible, setReferralVisible] = useState(false);
+  const [selectedForReferral, setSelectedForReferral] = useState(null);
 
   const {
     filteredAppointments,
@@ -153,8 +157,7 @@ function TodaysAppointments() {
       title: "Reservation Hour",
       dataIndex: "reservation_hour",
       key: "reservation_hour",
-      render: (_, record) =>
-        `${record.reservation_hour.slice(0, 5)}`,
+      render: (_, record) => `${record.reservation_hour.slice(0, 5)}`,
     },
     {
       title: "Status",
@@ -232,6 +235,21 @@ function TodaysAppointments() {
               size="small"
             />
           </Tooltip>
+          <Tooltip title="Refer patient">
+            <Button
+              icon={<ShareAltOutlined />}
+              onClick={() => {
+                setSelectedForReferral({
+                  patient_id: record.patient_id,
+                  name: `${record.patient_first_name || ""} ${
+                    record.patient_last_name || ""
+                  }`.trim(),
+                });
+                setReferralVisible(true);
+              }}
+              size="small"
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -288,6 +306,13 @@ function TodaysAppointments() {
         onClose={handleCloseAnalysis}
         patientId={selectedPatientForAnalysis?.id}
         patientName={selectedPatientForAnalysis?.name}
+      />
+
+      <Refferal
+        open={referralVisible}
+        onClose={() => setReferralVisible(false)}
+        patientId={selectedForReferral?.patient_id}
+        patientName={selectedForReferral?.name}
       />
 
       <CheckUp

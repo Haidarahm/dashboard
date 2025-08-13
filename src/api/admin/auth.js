@@ -12,7 +12,6 @@ export const login = async (phone, password) => {
     });
     return response.data;
   } catch (error) {
-    console.log("Haidar")
     throw error.response?.data || error;
   }
 };
