@@ -4,6 +4,7 @@ import {
   showReferralDoctorWorkDays,
   showReferralTimes,
   addReferralReservation,
+  showClinics,
 } from "../../api/doctor/referred";
 
 const useReferredStore = create((set, get) => ({
@@ -11,10 +12,12 @@ const useReferredStore = create((set, get) => ({
   clinicDoctors: [],
   doctorWorkDays: [],
   referralTimes: [],
+  clinics: [],
   lastReferralReservation: null,
   loadingClinicDoctors: false,
   loadingWorkDays: false,
   loadingReferralTimes: false,
+  loadingClinics: false,
   addingReferralReservation: false,
   error: null,
 
@@ -70,6 +73,20 @@ const useReferredStore = create((set, get) => ({
     }
   },
 
+  // Show clinics
+  showClinicsAction: async () => {
+    set({ loadingClinics: true, error: null });
+    try {
+      const response = await showClinics();
+      const clinics = Array.isArray(response) ? response : response?.data || [];
+      set({ clinics, loadingClinics: false });
+      return response;
+    } catch (err) {
+      set({ error: err?.message || err.toString(), loadingClinics: false });
+      return null;
+    }
+  },
+
   // Add referral reservation
   addReferralReservationAction: async (payload) => {
     set({ addingReferralReservation: true, error: null });
@@ -93,18 +110,22 @@ const useReferredStore = create((set, get) => ({
   setClinicDoctors: (doctors) => set({ clinicDoctors: doctors }),
   setDoctorWorkDays: (workDays) => set({ doctorWorkDays: workDays }),
   setReferralTimes: (times) => set({ referralTimes: times }),
+  setClinics: (clinics) => set({ clinics }),
   clearReferralTimes: () => set({ referralTimes: [] }),
   clearLastReferralReservation: () => set({ lastReferralReservation: null }),
+  clearClinics: () => set({ clinics: [] }),
   clearError: () => set({ error: null }),
   resetReferredState: () =>
     set({
       clinicDoctors: [],
       doctorWorkDays: [],
       referralTimes: [],
+      clinics: [],
       lastReferralReservation: null,
       loadingClinicDoctors: false,
       loadingWorkDays: false,
       loadingReferralTimes: false,
+      loadingClinics: false,
       addingReferralReservation: false,
       error: null,
     }),
