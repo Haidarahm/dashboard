@@ -6,6 +6,7 @@ import {
   addReferralReservation,
   showClinics,
 } from "../../api/doctor/referred";
+import { toast } from "react-toastify";
 
 const useReferredStore = create((set, get) => ({
   // State
@@ -97,6 +98,7 @@ const useReferredStore = create((set, get) => ({
       });
       return response;
     } catch (err) {
+      toast.error(err?.message || err.toString());
       set({
         error: err?.message || err.toString(),
         addingReferralReservation: false,
