@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { login, logout } from "../../api/secretary/auth";
+import { storeAuthData, clearAuthData } from "../../utils/auth";
+import { toast } from "react-toastify";
 
 const useSecretaryAuthStore = create((set, get) => ({
   // State
@@ -10,7 +12,7 @@ const useSecretaryAuthStore = create((set, get) => ({
   error: null,
 
   // Actions
-  loginAction: async (phone, password) => {
+  loginAction: async (phone, password, rememberMe = false) => {
     set({ loading: true, error: null });
     try {
       const response = await login(phone, password);
@@ -19,11 +21,14 @@ const useSecretaryAuthStore = create((set, get) => ({
       const userData = response.user || response;
       const token = response.token || response.access_token;
 
-      // Save to localStorage and sessionStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(userData));
+      // Store auth data using utility function (includes role)
+      storeAuthData(
+        token,
+        userData,
+        rememberMe,
+        "secretary",
+        userData?.name || userData?.first_name
+      );
 
       set({
         user: userData,
@@ -31,6 +36,9 @@ const useSecretaryAuthStore = create((set, get) => ({
         isAuthenticated: true,
         loading: false,
       });
+
+      toast.success("Login successful");
+      window.location.href = "/";
 
       return response;
     } catch (err) {
@@ -40,6 +48,7 @@ const useSecretaryAuthStore = create((set, get) => ({
         loading: false,
         isAuthenticated: false,
       });
+      toast.error(errorMsg || "Login failed");
       return null;
     }
   },
@@ -54,6 +63,7 @@ const useSecretaryAuthStore = create((set, get) => ({
         isAuthenticated: false,
         loading: false,
       });
+      toast.success("Logged out successfully");
       return true;
     } catch (err) {
       // Even if logout fails, clear local state
@@ -65,6 +75,7 @@ const useSecretaryAuthStore = create((set, get) => ({
       });
       const errorMsg = err?.message || err.toString();
       set({ error: errorMsg });
+      toast.error(errorMsg || "Logout failed");
       return false;
     }
   },
@@ -91,10 +102,7 @@ const useSecretaryAuthStore = create((set, get) => ({
     } catch (error) {
       console.error("Error initializing auth:", error);
       // Clear corrupted data
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
+      clearAuthData();
     }
   },
 
@@ -109,10 +117,7 @@ const useSecretaryAuthStore = create((set, get) => ({
 
   // Reset auth state
   resetAuth: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
+    clearAuthData();
     set({
       user: null,
       token: null,

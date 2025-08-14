@@ -76,3 +76,11 @@ export const doctorRoutes = [
     path: "/patients",
   },
 ];
+export const secretaryRoutes = [
+  {
+    key: "/appointments",
+    icon: FaCalendarDay,
+    label: "Appointments",
+    path: "/appointments",
+  },
+];

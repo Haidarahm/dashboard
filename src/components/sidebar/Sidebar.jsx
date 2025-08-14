@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { FaClinicMedical, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-import { adminRoutes, doctorRoutes } from "./sidebarData";
+import { adminRoutes, doctorRoutes, secretaryRoutes } from "./sidebarData";
 
 function getRoleFromStorage() {
   return (
@@ -16,7 +16,21 @@ function getRoleFromStorage() {
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const role = getRoleFromStorage();
-  const routes = role === "doctor" ? doctorRoutes : adminRoutes;
+
+  // Get routes based on role
+  const getRoutes = () => {
+    switch (role) {
+      case "doctor":
+        return doctorRoutes;
+      case "secretary":
+        return secretaryRoutes;
+      case "admin":
+      default:
+        return adminRoutes;
+    }
+  };
+
+  const routes = getRoutes();
 
   const isActive = (path) => location.pathname === path;
 
