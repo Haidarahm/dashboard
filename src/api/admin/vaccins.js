@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "../../config/config";
 
 // Get all vaccines with pagination (page, per_page in params)
 export const getAllVaccins = async (page = 1, per_page = 10) => {

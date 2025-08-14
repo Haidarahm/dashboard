@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 export const showAllAppointmentsByDate = async (date) => {
   const response = await api.post("/api/doctor/filteringAppointmentsByDate", {

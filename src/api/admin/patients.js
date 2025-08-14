@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "../../config/config";
 
 export const fetchPatients = async ({ size = 10, page = 1 }) => {
   try {

@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "../../config/config";
 
 export const showAllReports = async ({ size = 10, page = 1 }) => {
   try {

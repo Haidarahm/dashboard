@@ -1,4 +1,4 @@
-import api from "../admin/config";
+import api from "../../config/config";
 
 // Get all doctor reviews
 export const showDoctorReviews = async (doctor_id, page, pageSize) => {

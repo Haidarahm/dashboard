@@ -1,10 +1,10 @@
-import api from "./config";
+import api from "../../config/config";
 
 // Get all payment details
 export const showPaymentDetails = async () => {
   try {
     const response = await api.get("/api/admin/showAllPayments");
-    console.log("haidar")
+    console.log("haidar");
     return response.data;
   } catch (error) {
     console.error("Get payment details error:", error);

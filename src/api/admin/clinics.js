@@ -1,5 +1,5 @@
 // src/api/clinics.js
-import api from "./config";
+import api from "../../config/config";
 
 /**
  * Create a new clinic

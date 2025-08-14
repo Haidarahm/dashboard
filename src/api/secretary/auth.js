@@ -1,11 +1,10 @@
-// auth.js
 import api from "../../config/config";
 import { clearAuthData } from "../../utils/auth";
 
-// Login API
+// Secretary Login API
 export const login = async (phone, password) => {
   try {
-    const response = await api.post("/api/admin/adminLogin", {
+    const response = await api.post("/api/secretary/secretaryLogin", {
       phone,
       password,
     });
@@ -15,17 +14,15 @@ export const login = async (phone, password) => {
   }
 };
 
-// Logout API
+// Secretary Logout API
 export const logout = async () => {
   try {
-    const response = await api.post("/api/logout");
-
-    // Clear local auth data regardless of API response
+    const response = await api.post("/api/secretary/secretaryLogout");
+    // Clear authentication data after successful logout
     clearAuthData();
-
     return response.data;
   } catch (error) {
-    // Even if logout API fails, clear local data
+    // Even if logout fails, clear local auth data
     clearAuthData();
     throw error.response?.data || error;
   }

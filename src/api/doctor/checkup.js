@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Fetch doctor's work days
 export const showDoctorWorkDays = async () => {
