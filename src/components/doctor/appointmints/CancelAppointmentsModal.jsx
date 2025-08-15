@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Modal, DatePicker, TimePicker, Form, Button, message } from "antd";
+import { toast } from "react-toastify";
 
 const CancelAppointmentsModal = ({ visible, onCancel, onSubmit, loading }) => {
   const [form] = Form.useForm();
@@ -8,7 +9,7 @@ const CancelAppointmentsModal = ({ visible, onCancel, onSubmit, loading }) => {
     try {
       const values = await form.validateFields();
       if (!values.dates || !values.times) {
-        message.error("Please select both date and time ranges.");
+        toast.error("Please select both date and time ranges.");
         return;
       }
       const [startDate, endDate] = values.dates;
@@ -19,8 +20,9 @@ const CancelAppointmentsModal = ({ visible, onCancel, onSubmit, loading }) => {
         start_leave_time: startTime.format("HH:mm"),
         end_leave_time: endTime.format("HH:mm"),
       });
+      toast.success("Appointments cancelled successfully.");
     } catch (err) {
-      // Validation error
+      toast.error(err);
     }
   };
 

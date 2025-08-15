@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
-import { Select, DatePicker } from "antd";
+import { Select, DatePicker, message } from "antd";
 import CancelAppointmentsModal from "./CancelAppointmentsModal";
 const { Option } = Select;
 
@@ -172,7 +172,7 @@ const DoctorAppointments = () => {
       if (success) {
         message.success("Appointments cancelled successfully.");
         setShowCancelModal(false);
-        // Optionally refresh appointments here
+        // Refresh appointments after closing modal
         const monthYear = getMonthYearString(currentDate);
         fetchAllByDate(monthYear);
       } else {

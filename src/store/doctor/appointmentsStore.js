@@ -122,6 +122,7 @@ export const useAppointmentsStore = create((set) => ({
       set({ loading: false });
       return true;
     } catch (error) {
+      
       set({
         error: error.message || "Failed to cancel appointments",
         loading: false,
