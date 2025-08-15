@@ -4,6 +4,7 @@ import {
   showAppointmentsByStatus,
   showAppointmentsByType,
   cancelAppointment,
+  cancelAppointments, // <-- import new API
   showAppointmentResults,
 } from "../../api/doctor/appointments";
 
@@ -31,7 +32,6 @@ export const useAppointmentsStore = create((set) => ({
     }
   },
 
-  // Filter appointments by status for the current month-year
   fetchByStatus: async (status, date) => {
     const state = useAppointmentsStore.getState();
     if (!state.currentMonthYear) {
@@ -54,7 +54,6 @@ export const useAppointmentsStore = create((set) => ({
     }
   },
 
-  // Filter appointments by type for the current month-year
   fetchByType: async (status, type, date) => {
     const state = useAppointmentsStore.getState();
     if (!state.currentMonthYear) {
@@ -77,13 +76,11 @@ export const useAppointmentsStore = create((set) => ({
     }
   },
 
-  // Cancel an appointment
   cancelAppointment: async (id) => {
     set({ loading: true, error: null });
     try {
       await cancelAppointment(id);
 
-      // Update both allAppointments and filteredAppointments
       const state = useAppointmentsStore.getState();
       const updatedAll = state.allAppointments.map((apt) =>
         apt.id === id ? { ...apt, status: "cancelled" } : apt
@@ -107,17 +104,40 @@ export const useAppointmentsStore = create((set) => ({
       return false;
     }
   },
-  // Clear all filters
+
+  /**
+   * Cancel multiple appointments in a date/time range
+   * @param {Object} payload
+   * @param {string} payload.start_leave_date
+   * @param {string} payload.end_leave_date
+   * @param {string} payload.start_leave_time
+   * @param {string} payload.end_leave_time
+   */
+  cancelAppointments: async (payload) => {
+    set({ loading: true, error: null });
+    try {
+      await cancelAppointments(payload);
+
+      // Optionally, you could also update state to mark affected appointments cancelled
+      set({ loading: false });
+      return true;
+    } catch (error) {
+      set({
+        error: error.message || "Failed to cancel appointments",
+        loading: false,
+      });
+      return false;
+    }
+  },
+
   clearFilters: () => {
     set({ filteredAppointments: [] });
   },
 
-  // Change current month-year view
   setCurrentMonthYear: (monthYear) => {
     set({ currentMonthYear: monthYear });
   },
 
-  // Show appointment results by appointment_id
   showAppointmentResults: async (appointment_id) => {
     set({ loading: true, error: null });
     try {

@@ -88,3 +88,19 @@ export const showAppointmentResults = async (appointment_id) => {
 //   });
 //   return response.data;
 // };
+
+export const cancelAppointments = async ({
+ start_leave_date,
+ end_leave_date,
+ start_leave_time,
+ end_leave_time,
+}) => {
+ const response = await api.post("/api/doctor/cancelAppointments", {
+   start_leave_date,
+   end_leave_date,
+   start_leave_time,
+   end_leave_time,
+ });
+
+ return response.data;
+};
