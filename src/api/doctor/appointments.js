@@ -95,7 +95,7 @@ export const cancelAppointments = async ({
  start_leave_time,
  end_leave_time,
 }) => {
- const response = await api.post("/api/doctor/cancelAppointments", {
+ const response = await api.post("/api/doctor/editSchedule", {
    start_leave_date,
    end_leave_date,
    start_leave_time,

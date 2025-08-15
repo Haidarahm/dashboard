@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import { Select, DatePicker } from "antd";
+import CancelAppointmentsModal from "./CancelAppointmentsModal";
 const { Option } = Select;
 
 const DoctorAppointments = () => {
@@ -19,6 +20,8 @@ const DoctorAppointments = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   const {
     allAppointments,
@@ -30,6 +33,7 @@ const DoctorAppointments = () => {
     cancelAppointment,
     clearFilters,
     setCurrentMonthYear,
+    cancelAppointments,
   } = useAppointmentsStore();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -158,6 +162,24 @@ const DoctorAppointments = () => {
       setIsCancelling(false);
       setShowCancelConfirm(false);
       setAppointmentToCancel(null);
+    }
+  };
+
+  const handleBulkCancel = async (payload) => {
+    setCancelLoading(true);
+    try {
+      const success = await cancelAppointments(payload);
+      if (success) {
+        message.success("Appointments cancelled successfully.");
+        setShowCancelModal(false);
+        // Optionally refresh appointments here
+        const monthYear = getMonthYearString(currentDate);
+        fetchAllByDate(monthYear);
+      } else {
+        message.error("Failed to cancel appointments.");
+      }
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -295,6 +317,14 @@ const DoctorAppointments = () => {
         </div>
       )}
 
+      {/* Cancel Appointments Modal */}
+      <CancelAppointmentsModal
+        visible={showCancelModal}
+        onCancel={() => setShowCancelModal(false)}
+        onSubmit={handleBulkCancel}
+        loading={cancelLoading}
+      />
+
       {/* Calendar Section */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
@@ -319,6 +349,15 @@ const DoctorAppointments = () => {
                     {[statusFilter, typeFilter].filter(Boolean).length}
                   </span>
                 )}
+              </button>
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
+                title="Cancel appointments in a date/time range"
+                style={{ marginLeft: 8 }}
+              >
+                <X className="w-4 h-4" />
+                Cancel Appointments
               </button>
               <DatePicker
                 placeholder="Select Date"
