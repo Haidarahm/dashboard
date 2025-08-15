@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Show doctors by clinic
 export const showClinicDoctors = async (clinic_id) => {

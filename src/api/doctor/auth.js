@@ -1,5 +1,5 @@
 import { clearAuthData } from "../../utils/auth";
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Doctor Login API
 export const doctorLogin = async (phone, password) => {
@@ -10,7 +10,7 @@ export const doctorLogin = async (phone, password) => {
     });
     return response.data;
   } catch (error) {
-    throw error
+    throw error;
   }
 };
 

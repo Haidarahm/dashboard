@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Base URL for doctor APIs
 const endpoint = "/api/doctor";
@@ -39,15 +39,11 @@ export const showDoctorReviews = async () => {
 // Edit doctor profile
 export const editProfile = async (formData) => {
   try {
-    const response = await api.post(
-      `${endpoint}/editProfile`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const response = await api.post(`${endpoint}/editProfile`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Edit profile error:", error);

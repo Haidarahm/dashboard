@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Add prescription
 export const addPrescription = async (patient_id) => {

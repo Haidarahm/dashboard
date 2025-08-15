@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 // Show patients API
 export const getPatientsRecord = async (page = 1, perPage = 10) => {

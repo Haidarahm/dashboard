@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "../../config/config";
 
 /**
  * Fetch all employees
@@ -6,14 +6,14 @@ import api from "./config";
  * @param {number|null} params.is_secretary - 1 for secretaries, 0 for employees, null for all
  */
 export const fetchEmployees = async (is_secretary) => {
-  console.log(is_secretary)
+  console.log(is_secretary);
   try {
-    const response = await api.get("/api/admin/showEmployee",{
-      params:{
-        is_secretary:is_secretary
-      }
+    const response = await api.get("/api/admin/showEmployee", {
+      params: {
+        is_secretary: is_secretary,
+      },
     });
-    console.log(response.data)
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching employees:", error);

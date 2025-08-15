@@ -1,5 +1,5 @@
 // pharmacies.js - API functions for pharmacy management
-import api from "./config";
+import api from "../../config/config";
 
 /**
  * Create a new pharmacy
@@ -26,7 +26,7 @@ export const createPharmacy = async (pharmacyData) => {
     });
     return response.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error.response?.data.message[0] || error;
   }
 };
@@ -85,7 +85,6 @@ export const deletePharmacy = async (pharmacyId) => {
  * @returns {Promise<Object>} - List of all pharmacies
  */
 export const fetchAllPharmacies = async (page, pageSize) => {
-
   try {
     const response = await api.get("/api/admin/showAllPharmacies", {
       params: {
@@ -108,11 +107,10 @@ export const fetchAllPharmacies = async (page, pageSize) => {
  * @returns {Promise<Object>} - Search results with matching pharmacies
  */
 export const searchPharmacies = async (name) => {
-  console.log(name)
+  console.log(name);
   try {
     const response = await api.post("/api/admin/searchPharmacy", {
       name,
-     
     });
     return response.data;
   } catch (error) {

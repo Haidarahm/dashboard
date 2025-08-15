@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import "leaflet/dist/leaflet.css";
 
 import { ToastContainer } from "react-toastify";
@@ -11,19 +6,16 @@ import "react-toastify/dist/ReactToastify.css";
 import Login from "./pages/login/Login";
 import AdminRoutes from "./routes/AdminRoutes";
 import DoctorRoutes from "./routes/DoctorRoutes";
+import SecretaryRoutes from "./routes/SecretaryRoutes";
 
 function getRoleFromStorage() {
   // Try both localStorage and sessionStorage
-  return (
-    localStorage.getItem("role") || 
-    sessionStorage.getItem("role") || 
-    null
-  );
+  return localStorage.getItem("role") || sessionStorage.getItem("role") || null;
 }
 
 function App() {
   const role = getRoleFromStorage();
-  
+
   return (
     <Router>
       <Routes>
@@ -35,6 +27,8 @@ function App() {
               <DoctorRoutes />
             ) : role === "admin" ? (
               <AdminRoutes />
+            ) : role === "secretary" ? (
+              <SecretaryRoutes />
             ) : (
               <Navigate to="/login" replace />
             )

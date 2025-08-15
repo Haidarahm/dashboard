@@ -1,4 +1,4 @@
-import api from "./config";
+import api from "../../config/config";
 
 export const getAllAppointments = async () => {
   try {
@@ -45,14 +45,11 @@ export const getAllAppointmentsByStatusAndDoctors = async (
   date
 ) => {
   try {
-    const response = await api.post(
-      "/api/admin/filterByDoctorStatus",
-      {
-        status,
-        doctor_id,
-        date,
-      }
-    );
+    const response = await api.post("/api/admin/filterByDoctorStatus", {
+      status,
+      doctor_id,
+      date,
+    });
     return response.data;
   } catch (error) {
     console.error("Get appointments by status and doctor error:", error);

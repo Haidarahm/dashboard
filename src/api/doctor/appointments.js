@@ -1,4 +1,4 @@
-import api from "./doctorConfig";
+import api from "../../config/config";
 
 export const showAllAppointmentsByDate = async (date) => {
   const response = await api.post("/api/doctor/filteringAppointmentsByDate", {
@@ -88,3 +88,19 @@ export const showAppointmentResults = async (appointment_id) => {
 //   });
 //   return response.data;
 // };
+
+export const cancelAppointments = async ({
+ start_leave_date,
+ end_leave_date,
+ start_leave_time,
+ end_leave_time,
+}) => {
+ const response = await api.post("/api/doctor/editSchedule", {
+   start_leave_date,
+   end_leave_date,
+   start_leave_time,
+   end_leave_time,
+ });
+
+ return response.data;
+};

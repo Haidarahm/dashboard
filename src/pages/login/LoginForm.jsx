@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../store/admin/authStore";
 import { useDoctorAuthStore } from "../../store/doctor/authStore";
+import useSecretaryAuthStore from "../../store/secretary/authStore";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ phone: "", password: "" });
@@ -17,9 +18,37 @@ const LoginForm = () => {
   const adminLoading = useAuthStore((state) => state.loading);
   const doctorLogin = useDoctorAuthStore((state) => state.login);
   const doctorLoading = useDoctorAuthStore((state) => state.loading);
+  const secretaryLogin = useSecretaryAuthStore((state) => state.loginAction);
+  const secretaryLoading = useSecretaryAuthStore((state) => state.loading);
 
-  const login = role === "admin" ? adminLogin : doctorLogin;
-  const loading = role === "admin" ? adminLoading : doctorLoading;
+  const getLoginFunction = () => {
+    switch (role) {
+      case "admin":
+        return adminLogin;
+      case "doctor":
+        return doctorLogin;
+      case "secretary":
+        return secretaryLogin;
+      default:
+        return adminLogin;
+    }
+  };
+
+  const getLoadingState = () => {
+    switch (role) {
+      case "admin":
+        return adminLoading;
+      case "doctor":
+        return doctorLoading;
+      case "secretary":
+        return secretaryLoading;
+      default:
+        return adminLoading;
+    }
+  };
+
+  const login = getLoginFunction();
+  const loading = getLoadingState();
 
   const handleLogin = async () => {
     if (!formData.phone || !formData.password) {
@@ -49,9 +78,7 @@ const LoginForm = () => {
 
     try {
       await login(formData.phone, formData.password, rememberMe);
-    } catch (error) {
-     
-    }
+    } catch (error) {}
   };
 
   // Phone number formatter - only allows digits, +, -, (, ), and spaces
@@ -148,6 +175,7 @@ const LoginForm = () => {
             options={[
               { label: "Admin", value: "admin" },
               { label: "Doctor", value: "doctor" },
+              { label: "Secretary", value: "secretary" },
             ]}
           />
         </div>

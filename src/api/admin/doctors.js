@@ -1,6 +1,6 @@
 // File: src/api/doctors.js
 import axios from "axios";
-import api from "./config";
+import api from "../../config/config";
 
 // Function to create a new doctor
 export const createDoctor = async (doctorData) => {
@@ -14,10 +14,10 @@ export const createDoctor = async (doctorData) => {
 };
 
 // Function to fetch all doctors with pagination
-export const fetchDoctors = async (page, per_page ) => {
+export const fetchDoctors = async (page, per_page) => {
   try {
     const response = await api.get(`/api/admin/showDoctors`, {
-      params: { page, size:per_page },
+      params: { page, size: per_page },
     });
     return response.data;
   } catch (error) {
@@ -26,10 +26,8 @@ export const fetchDoctors = async (page, per_page ) => {
   }
 };
 
-
 export const showDoctorReviews = async (doctorId) => {
   try {
-
     const response = await api.get(`/api/admin/showDoctorReviewsEndpoint`, {
       params: { doctor_id: doctorId },
     });
