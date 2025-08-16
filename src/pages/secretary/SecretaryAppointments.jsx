@@ -10,10 +10,36 @@ import {
   X,
 } from "lucide-react";
 import useSecretaryAppointmentsStore from "../../store/secretary/appointmentsStore";
-import { Select, DatePicker, message } from "antd";
-// You may need to create a CancelAppointmentsModal for secretary or reuse the doctor's one if generic
-// import CancelAppointmentsModal from "../doctor/appointmints/CancelAppointmentsModal";
+import {
+  Select,
+  DatePicker,
+  message,
+  Modal,
+  Card,
+  Descriptions,
+  Avatar,
+  Tag,
+  Button,
+  Space,
+  Divider,
+  Row,
+  Col,
+  Typography,
+} from "antd";
+import {
+  UserOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  DollarOutlined,
+  IdcardOutlined,
+  FileTextOutlined,
+  CloseOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
+
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const SecretaryAppointments = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,6 +49,9 @@ const SecretaryAppointments = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [selectedAppointmentModal, setSelectedAppointmentModal] =
+    useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const {
     allAppointments,
@@ -45,7 +74,7 @@ const SecretaryAppointments = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [doctorFilter, setDoctorFilter] = useState(null);
   const [clinicFilter, setClinicFilter] = useState(null);
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState(null); // NEW
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState(null);
 
   // Helper to format date as MM-YYYY
   const getMonthYearString = (date) => {
@@ -141,6 +170,11 @@ const SecretaryAppointments = () => {
     setSidebarOpen(true);
   };
 
+  const handleCardClick = (appointment) => {
+    setSelectedAppointmentModal(appointment);
+    setModalVisible(true);
+  };
+
   const handleCancelClick = (appointment) => {
     setAppointmentToCancel(appointment);
     setShowCancelConfirm(true);
@@ -151,7 +185,7 @@ const SecretaryAppointments = () => {
     if (!appointmentToCancel) return;
     setIsCancelling(true);
     try {
-      const success = await cancelAppointment(appointmentToCancel.id); // use id
+      const success = await cancelAppointment(appointmentToCancel.id);
       if (success) {
         const monthYear = getMonthYearString(currentDate);
         if (doctorFilter && statusFilter) {
@@ -193,6 +227,19 @@ const SecretaryAppointments = () => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "visited":
+        return "success";
+      case "pending":
+        return "warning";
+      case "cancelled":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusColorClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case "visited":
         return "bg-green-100 text-green-800 border-green-200";
       case "pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
@@ -218,6 +265,19 @@ const SecretaryAppointments = () => {
 
   // Payment status badge color
   const getPaymentStatusColor = (paymentStatus) => {
+    switch (paymentStatus?.toLowerCase()) {
+      case "paid":
+        return "success";
+      case "pending":
+        return "warning";
+      case "cancelled":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getPaymentStatusColorClass = (paymentStatus) => {
     switch (paymentStatus?.toLowerCase()) {
       case "paid":
         return "bg-green-100 text-green-800 border-green-200";
@@ -274,34 +334,242 @@ const SecretaryAppointments = () => {
       {Array.from({ length: 42 }).map((_, idx) => (
         <div
           key={idx}
-          className="min-h-[100px] p-4 border rounded-lg bg-gray-100 animate-pulse"
+          className="min-h-[100px] p-2 lg:p-4 border rounded-lg bg-gray-100 animate-pulse"
         ></div>
       ))}
     </div>
   );
 
   return (
-    <div className="flex bg-gray-50 relative overflow-hidden">
+    <div className="flex bg-gray-50 relative overflow-hidden min-h-screen">
+      {/* Appointment Details Modal */}
+      <Modal
+        title={
+          <div className="flex items-center justify-between">
+            <Title level={4} style={{ margin: 0 }}>
+              Appointment Details
+            </Title>
+        
+          </div>
+        }
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        width={800}
+        centered
+        destroyOnClose
+      >
+        {selectedAppointmentModal && (
+          <Card>
+            <Row gutter={[16, 16]}>
+              {/* Header with Status Badges */}
+              <Col span={24}>
+                <div className="flex items-center justify-between mb-4">
+                  <Space>
+                    <Tag
+                      color={getStatusColor(selectedAppointmentModal.status)}
+                    >
+                      {getStatusIcon(selectedAppointmentModal.status)}
+                      {selectedAppointmentModal.status
+                        ?.charAt(0)
+                        ?.toUpperCase() +
+                        selectedAppointmentModal.status?.slice(1)}
+                    </Tag>
+                    <Tag
+                      color={getPaymentStatusColor(
+                        selectedAppointmentModal.payment_status
+                      )}
+                    >
+                      {selectedAppointmentModal.payment_status
+                        ?.charAt(0)
+                        ?.toUpperCase() +
+                        selectedAppointmentModal.payment_status?.slice(1)}
+                    </Tag>
+                  </Space>
+                
+                </div>
+              </Col>
+
+              {/* Patient Information */}
+              <Col span={12}>
+                <Card
+                  size="small"
+                  title="Patient Information"
+                  className="h-full"
+                >
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="Name">
+                      <Space>
+                        <UserOutlined />
+                        {selectedAppointmentModal.patient}
+                      </Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Phone">
+                      <Space>
+                        <PhoneOutlined />
+                        {selectedAppointmentModal.patient_phone}
+                      </Space>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+
+              {/* Doctor Information */}
+              <Col span={12}>
+                <Card
+                  size="small"
+                  title="Doctor Information"
+                  className="h-full"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    {selectedAppointmentModal.doctor_photo ? (
+                      <Avatar
+                        size={64}
+                        src={selectedAppointmentModal.doctor_photo}
+                        icon={<UserOutlined />}
+                      />
+                    ) : (
+                      <Avatar size={64} icon={<UserOutlined />} />
+                    )}
+                    <div>
+                      <Text strong>{selectedAppointmentModal.doctor}</Text>
+                    </div>
+                  </div>
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="Phone">
+                      <Space>
+                        <PhoneOutlined />
+                        {selectedAppointmentModal.doctor_phone}
+                      </Space>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+
+              {/* Appointment Details */}
+              <Col span={24}>
+                <Card size="small" title="Appointment Details">
+                  <Row gutter={[16, 16]}>
+                    <Col span={8}>
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label="Date">
+                          <Space>
+                            <CalendarOutlined />
+                            {selectedAppointmentModal.reservation_date}
+                          </Space>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Time">
+                          <Space>
+                            <ClockCircleOutlined />
+                            {selectedAppointmentModal.reservation_hour}
+                          </Space>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Col>
+                    <Col span={8}>
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label="Visit Fee">
+                          <Space>
+                            <DollarOutlined />$
+                            {selectedAppointmentModal.visit_fee}
+                          </Space>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Expected Price">
+                          <Space>
+                            <DollarOutlined />
+                            {selectedAppointmentModal.expected_price
+                              ? `$${selectedAppointmentModal.expected_price}`
+                              : "N/A"}
+                          </Space>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Col>
+                    <Col span={8}>
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label="Paid Price">
+                          <Space>
+                            <DollarOutlined />
+                            {selectedAppointmentModal.paid_price
+                              ? `$${selectedAppointmentModal.paid_price}`
+                              : "N/A"}
+                          </Space>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Queue Number">
+                          <Space>
+                            <IdcardOutlined />
+                            {selectedAppointmentModal.queue_number || "N/A"}
+                          </Space>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+
+              {/* Additional Information */}
+              <Col span={24}>
+                <Card size="small" title="Additional Information">
+                  <Descriptions column={2} size="small">
+                    <Descriptions.Item label="Discount Points">
+                      {selectedAppointmentModal.discount_points || "N/A"}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+
+              {/* Action Buttons */}
+              <Col span={24}>
+                <div className="flex justify-end gap-2">
+                  {(selectedAppointmentModal.status === "pending" ||
+                    selectedAppointmentModal.status === "today") && (
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<ExclamationCircleOutlined />}
+                      onClick={() => {
+                        setModalVisible(false);
+                        handleCancelClick(selectedAppointmentModal);
+                      }}
+                    >
+                      Cancel Appointment
+                    </Button>
+                  )}
+                  <Button onClick={() => setModalVisible(false)}>Close</Button>
+                </div>
+              </Col>
+            </Row>
+          </Card>
+        )}
+      </Modal>
+
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Cancellation</h3>
-            <p className="mb-6">
-              Are you sure you want to cancel this appointment?
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0">
+                <ExclamationCircleOutlined className="text-red-500 text-xl" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirm Cancellation
+              </h3>
+            </div>
+            <p className="mb-6 text-gray-600 leading-relaxed">
+              Are you sure you want to cancel this appointment? This action
+              cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors font-medium"
               >
                 No, Keep It
               </button>
               <button
                 onClick={handleConfirmCancel}
                 disabled={isCancelling}
-                className={`px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700 rounded-md flex items-center justify-center gap-2 ${
-                  isCancelling ? "opacity-75" : ""
+                className={`px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700 rounded-md flex items-center justify-center gap-2 transition-colors font-medium ${
+                  isCancelling ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
                 {isCancelling ? (
@@ -334,15 +602,15 @@ const SecretaryAppointments = () => {
       )}
       {/* Calendar Section */}
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
-          sidebarOpen && !loading ? "mr-96" : "mr-0"
+        className={`flex-1 transition-all duration-300 ease-in-out p-4 lg:p-6 ${
+          sidebarOpen && !loading ? "mr-80 lg:mr-96" : "mr-0"
         }`}
       >
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Calendar Header with Filters */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold text-gray-800">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border-b gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <h2 className="text-lg lg:text-xl font-semibold text-gray-800">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
               <button
@@ -394,12 +662,14 @@ const SecretaryAppointments = () => {
               <button
                 onClick={() => navigateMonth(-1)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Previous month"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => navigateMonth(1)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Next month"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -410,7 +680,7 @@ const SecretaryAppointments = () => {
             style={{
               transition: "max-height 0.3s ease, opacity 0.3s ease",
               overflow: "hidden",
-              maxHeight: showFilters ? "250px" : "0",
+              maxHeight: showFilters ? "300px" : "0",
               opacity: showFilters ? 1 : 0,
             }}
           >
@@ -506,7 +776,7 @@ const SecretaryAppointments = () => {
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
                   key={day}
-                  className="p-2 text-center text-sm font-medium text-gray-600"
+                  className="p-2 text-center text-sm font-semibold text-gray-700 bg-gray-50 rounded-t-lg"
                 >
                   {day}
                 </div>
@@ -520,7 +790,7 @@ const SecretaryAppointments = () => {
                 {days.map((day, index) => (
                   <div
                     key={index}
-                    className={`min-h-[100px] p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                    className={`min-h-[100px] p-2 lg:p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
                       day.isCurrentMonth ? "bg-white" : "bg-gray-50"
                     } ${
                       selectedDate &&
@@ -529,6 +799,14 @@ const SecretaryAppointments = () => {
                         : ""
                     }`}
                     onClick={() => handleDateClick(day.date, day.appointments)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleDateClick(day.date, day.appointments);
+                      }
+                    }}
                   >
                     <div
                       className={`text-sm font-medium ${
@@ -542,7 +820,7 @@ const SecretaryAppointments = () => {
                       {day.appointments?.slice(0, 2).map((apt) => (
                         <div
                           key={apt?.id}
-                          className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
+                          className={`text-xs px-2 py-1 rounded-full text-center truncate border ${getStatusColorClass(
                             apt?.status
                           )}`}
                         >
@@ -565,17 +843,18 @@ const SecretaryAppointments = () => {
       {/* Sidebar */}
       {!loading && (
         <div
-          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
+          className={`fixed top-0 right-0 h-full w-80 lg:w-96 bg-white border-l border-gray-200 p-4 lg:p-6 transition-all duration-300 ease-in-out transform ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           } shadow-lg z-50`}
         >
           <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors p-1"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">
             {selectedDate
               ? `Appointments - ${selectedDate.toLocaleDateString()}`
               : "Select a date"}
@@ -591,59 +870,77 @@ const SecretaryAppointments = () => {
               {selectedAppointments?.map((appointment) => (
                 <div
                   key={appointment?.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
+                  onClick={() => handleCardClick(appointment)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleCardClick(appointment);
+                    }
+                  }}
                 >
-                  {/* Status Badge */}
-                  <div
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
-                      appointment?.status
-                    )}`}
-                  >
-                    {getStatusIcon(appointment?.status)}
-                    {appointment?.status?.charAt(0)?.toUpperCase() +
-                      appointment?.status?.slice(1)}
-                  </div>
-                  {/* Payment Status Badge */}
-                  <div
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ml-2 ${getPaymentStatusColor(
-                      appointment?.payment_status
-                    )}`}
-                  >
-                    {appointment?.payment_status?.charAt(0)?.toUpperCase() +
-                      appointment?.payment_status?.slice(1)}
+                  {/* Status Badges */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <div
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColorClass(
+                        appointment?.status
+                      )}`}
+                    >
+                      {getStatusIcon(appointment?.status)}
+                      {appointment?.status?.charAt(0)?.toUpperCase() +
+                        appointment?.status?.slice(1)}
+                    </div>
+                    <div
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColorClass(
+                        appointment?.payment_status
+                      )}`}
+                    >
+                      {appointment?.payment_status?.charAt(0)?.toUpperCase() +
+                        appointment?.payment_status?.slice(1)}
+                    </div>
                   </div>
                   {/* Appointment Details */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate">
                           {appointment?.patient}
                         </div>
                         <div className="text-sm text-gray-600">Patient</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate">
                           {appointment?.doctor}
                         </div>
                         <div className="text-sm text-gray-600">Doctor</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Clock className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           {appointment?.reservation_hour}
                         </div>
                         <div className="text-sm text-gray-600">Time</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           {appointment?.reservation_date}
                         </div>
@@ -655,11 +952,11 @@ const SecretaryAppointments = () => {
                   </div>
                   {/* Patient Notes */}
                   {appointment?.notes && (
-                    <div className="mt-3">
-                      <h4 className="text-sm font-medium text-gray-700">
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-700 mb-1">
                         Notes:
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 leading-relaxed">
                         {appointment.notes}
                       </p>
                     </div>
@@ -669,8 +966,11 @@ const SecretaryAppointments = () => {
                     appointment.status === "today") && (
                     <div className="mt-4 flex justify-end">
                       <button
-                        onClick={() => handleCancelClick(appointment)}
-                        className="px-3 py-1 text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded-md transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelClick(appointment);
+                        }}
+                        className="px-3 py-2 text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded-md transition-colors font-medium"
                       >
                         Cancel Appointment
                       </button>
