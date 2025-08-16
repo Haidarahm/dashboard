@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, Outlet } from "react-router";
 import React, { Suspense, useState } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
-import Appointments from "../pages/secretary/Appointments";
+import Appointments from "../pages/secretary/SecretaryAppointments";
 function SecretaryRoutes() {
   function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false);
