@@ -1,7 +1,7 @@
+/* eslint-disable no-useless-catch */
 import { clearAuthData } from "../../utils/auth";
 import api from "../../config/config";
 
-// Doctor Login API
 export const doctorLogin = async (phone, password) => {
   try {
     const response = await api.post("/api/doctor/doctorLogin", {

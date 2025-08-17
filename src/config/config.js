@@ -1,6 +1,7 @@
 // src/api/axiosConfig.js
 import axios from "axios";
 import { toast } from "react-toastify";
+
 // Function to clear authentication data and redirect to login
 const clearAuthAndRedirect = () => {
   // Clear all authentication related data from both storages
@@ -39,6 +40,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => {

@@ -54,7 +54,7 @@ const SecretaryAppointments = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
   const [isResizing, setIsResizing] = useState(false);
-  const [viewMode, setViewMode] = useState("list"); // 'list' or 'grid'
+  const [viewMode] = useState("grid"); // 'list' or 'grid'
 
   const {
     allAppointments,
@@ -943,53 +943,7 @@ const SecretaryAppointments = () => {
                 ? `Appointments - ${selectedDate.toLocaleDateString()}`
                 : "Select a date"}
             </h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() =>
-                  setViewMode(viewMode === "list" ? "grid" : "list")
-                }
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === "list"
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-                title={
-                  viewMode === "list"
-                    ? "Switch to Grid View"
-                    : "Switch to List View"
-                }
-              >
-                {viewMode === "list" ? (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
+          
           </div>
           {selectedAppointments?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button, Select } from "antd";
 import { MdPhone, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../store/admin/authStore";
 import { useDoctorAuthStore } from "../../store/doctor/authStore";
@@ -12,7 +11,6 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [role, setRole] = useState("admin");
-  const navigate = useNavigate();
 
   const adminLogin = useAuthStore((state) => state.login);
   const adminLoading = useAuthStore((state) => state.loading);

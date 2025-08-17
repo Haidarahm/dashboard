@@ -65,7 +65,7 @@ export const useAppointmentsStore = create((set) => ({
     try {
       const data = await showAppointmentsByType(status, type, date);
       set({
-        filteredAppointments: data,
+        filteredAppointments: data.data,
         loading: false,
       });
     } catch (error) {
