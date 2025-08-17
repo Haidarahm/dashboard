@@ -52,6 +52,9 @@ const SecretaryAppointments = () => {
   const [selectedAppointmentModal, setSelectedAppointmentModal] =
     useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
+  const [isResizing, setIsResizing] = useState(false);
+  const [viewMode, setViewMode] = useState("list"); // 'list' or 'grid'
 
   const {
     allAppointments,
@@ -312,6 +315,61 @@ const SecretaryAppointments = () => {
     fetchAllByDate(monthYear);
   };
 
+  // Handle sidebar resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing) return;
+
+    const newWidth = window.innerWidth - e.clientX;
+    const minWidth = 280; // Minimum width
+    const maxWidth = window.innerWidth * 0.8; // Maximum 80% of screen width
+
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setSidebarWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  // Prevent calendar interaction during resize
+  const handleCalendarMouseDown = (e) => {
+    if (isResizing) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  // Add event listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.body.style.overflow = "hidden"; // Prevent scrolling during resize
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    };
+  }, [isResizing]);
+
   const monthNames = [
     "January",
     "February",
@@ -349,7 +407,6 @@ const SecretaryAppointments = () => {
             <Title level={4} style={{ margin: 0 }}>
               Appointment Details
             </Title>
-        
           </div>
         }
         open={modalVisible}
@@ -386,7 +443,6 @@ const SecretaryAppointments = () => {
                         selectedAppointmentModal.payment_status?.slice(1)}
                     </Tag>
                   </Space>
-                
                 </div>
               </Col>
 
@@ -602,9 +658,12 @@ const SecretaryAppointments = () => {
       )}
       {/* Calendar Section */}
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out p-4 lg:p-6 ${
-          sidebarOpen && !loading ? "mr-80 lg:mr-96" : "mr-0"
-        }`}
+        className={`flex-1 transition-all duration-300 ease-in-out p-4 lg:p-6`}
+        style={{
+          marginRight: sidebarOpen && !loading ? "320px" : "0",
+          pointerEvents: isResizing ? "none" : "auto",
+        }}
+        onMouseDown={handleCalendarMouseDown}
       >
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Calendar Header with Filters */}
@@ -843,9 +902,13 @@ const SecretaryAppointments = () => {
       {/* Sidebar */}
       {!loading && (
         <div
-          className={`fixed top-0 right-0 h-full w-80 lg:w-96 bg-white border-l border-gray-200 p-4 lg:p-6 transition-all duration-300 ease-in-out transform ${
+          className={`fixed top-0 right-0 h-full bg-white border-l border-gray-200 p-4 lg:p-6 transition-transform duration-300 ease-in-out transform ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           } shadow-lg z-50`}
+          style={{
+            width: sidebarOpen ? `${sidebarWidth}px` : "320px",
+            pointerEvents: "auto",
+          }}
         >
           <button
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -854,11 +917,80 @@ const SecretaryAppointments = () => {
           >
             <X className="w-5 h-5" />
           </button>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">
-            {selectedDate
-              ? `Appointments - ${selectedDate.toLocaleDateString()}`
-              : "Select a date"}
-          </h3>
+
+          {/* Resize Handle */}
+          {sidebarOpen && (
+            <div
+              className={`absolute left-0 top-0 bottom-0 w-2 z-10 ${
+                isResizing
+                  ? "bg-blue-500 cursor-col-resize"
+                  : "bg-gray-200 hover:bg-gray-300 cursor-col-resize"
+              }`}
+              onMouseDown={handleMouseDown}
+              title="Drag to resize sidebar"
+            >
+              {/* Resize Handle Grip */}
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-400 rounded-full" />
+            </div>
+          )}
+          {/* Resize Overlay */}
+          {isResizing && (
+            <div className="absolute inset-0 bg-blue-50 bg-opacity-30 pointer-events-none z-5" />
+          )}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {selectedDate
+                ? `Appointments - ${selectedDate.toLocaleDateString()}`
+                : "Select a date"}
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() =>
+                  setViewMode(viewMode === "list" ? "grid" : "list")
+                }
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === "list"
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+                title={
+                  viewMode === "list"
+                    ? "Switch to Grid View"
+                    : "Switch to List View"
+                }
+              >
+                {viewMode === "list" ? (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
           {selectedAppointments?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               {selectedDate
@@ -866,11 +998,25 @@ const SecretaryAppointments = () => {
                 : "Click on a date to view appointments"}
             </div>
           ) : (
-            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+            <div
+              className={`overflow-y-auto max-h-[calc(100vh-120px)] pr-2 ${
+                viewMode === "grid"
+                  ? `grid gap-4 ${
+                      sidebarWidth >= 600
+                        ? "grid-cols-3"
+                        : sidebarWidth >= 450
+                        ? "grid-cols-2"
+                        : "grid-cols-1"
+                    }`
+                  : "space-y-4"
+              }`}
+            >
               {selectedAppointments?.map((appointment) => (
                 <div
                   key={appointment?.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
+                  className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white ${
+                    viewMode === "grid" ? "h-fit" : ""
+                  }`}
                   onClick={() => handleCardClick(appointment)}
                   role="button"
                   tabIndex={0}
@@ -902,7 +1048,11 @@ const SecretaryAppointments = () => {
                     </div>
                   </div>
                   {/* Appointment Details */}
-                  <div className="space-y-3">
+                  <div
+                    className={`space-y-3 ${
+                      viewMode === "grid" ? "text-sm" : ""
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
                         <User className="w-4 h-4 text-gray-600" />
@@ -956,7 +1106,13 @@ const SecretaryAppointments = () => {
                       <h4 className="text-sm font-medium text-gray-700 mb-1">
                         Notes:
                       </h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p
+                        className={`text-gray-600 leading-relaxed ${
+                          viewMode === "grid"
+                            ? "text-xs line-clamp-2"
+                            : "text-sm"
+                        }`}
+                      >
                         {appointment.notes}
                       </p>
                     </div>
