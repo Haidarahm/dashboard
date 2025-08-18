@@ -12,9 +12,8 @@ export const useAppointmentsStore = create((set) => ({
   filteredAppointments: [],
   loading: false,
   error: null,
-  currentMonthYear: null, // To track the currently viewed month-year
+  currentMonthYear: null,
 
-  // Fetch all appointments for a specific month-year (MM-YYYY)
   fetchAllByDate: async (monthYear) => {
     set({ loading: true, error: null });
     try {

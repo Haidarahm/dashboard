@@ -6,7 +6,10 @@ import {
   addPrescription,
   addMedicine,
 } from "../../api/doctor/patients";
-import { showPatientAppointments } from "../../api/doctor/appointments";
+import {
+  showPatientAppointments,
+  showAppointmentResults,
+} from "../../api/doctor/appointments";
 
 const usePatientsStore = create((set, get) => ({
   // State
@@ -25,6 +28,9 @@ const usePatientsStore = create((set, get) => ({
   appointmentsCurrentPage: 1,
   appointmentsPerPage: 5,
   appointmentsTotal: 0,
+  // Appointment results
+  appointmentResults: null,
+  resultsLoading: false,
 
   // Actions
 
@@ -114,6 +120,17 @@ const usePatientsStore = create((set, get) => ({
     } catch (err) {
       set({ error: err?.message || err.toString() });
       return null;
+    }
+  },
+
+  // Fetch appointment results
+  fetchAppointmentResults: async (appointment_id) => {
+    set({ resultsLoading: true, error: null });
+    try {
+      const res = await showAppointmentResults(appointment_id);
+      set({ appointmentResults: res, resultsLoading: false });
+    } catch (err) {
+      set({ error: err?.message || err.toString(), resultsLoading: false });
     }
   },
 

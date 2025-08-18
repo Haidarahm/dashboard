@@ -1,6 +1,22 @@
 import React from "react";
-import { Card, Typography, Tag, Table, Button, Spin } from "antd";
-import { CloseOutlined, CalendarOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Typography,
+  Tag,
+  Table,
+  Button,
+  Spin,
+  Tooltip,
+  Space,
+  Popover,
+  Descriptions,
+} from "antd";
+import {
+  CloseOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -13,6 +29,7 @@ const PatientAppointments = ({
   currentPage,
   pageSize,
   total,
+  onViewResults,
 }) => {
   if (!appointments && !loading) {
     return (
@@ -98,19 +115,88 @@ const PatientAppointments = ({
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 60,
+      title: "Actions",
+      key: "actions",
+      width: 120,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="View Details">
+            <Popover
+              content={
+                <div style={{ maxWidth: "300px" }}>
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="ID">
+                      {record.id}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Patient Name">
+                      {record.patient_first_name} {record.patient_last_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date">
+                      {record.reservation_date}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Time">
+                      {record.reservation_hour.slice(0, 5)}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Status">
+                      <Tag color={getStatusColor(record.status)}>
+                        {record.status.charAt(0).toUpperCase() +
+                          record.status.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Type">
+                      <Tag color="blue">
+                        {record.appointment_type.charAt(0).toUpperCase() +
+                          record.appointment_type.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Info">
+                      {record.appointment_info || "Not specified"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Payment Status">
+                      <Tag color={getPaymentStatusColor(record.payment_status)}>
+                        {record.payment_status.charAt(0).toUpperCase() +
+                          record.payment_status.slice(1)}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Referred By">
+                      {record["referred by"] || "Not specified"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Child Appointment">
+                      <Tag color={record.is_child ? "orange" : "default"}>
+                        {record.is_child ? "Yes" : "No"}
+                      </Tag>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              }
+              title="Appointment Details"
+              trigger="click"
+              placement="left"
+            >
+              <Button icon={<EyeOutlined />} type="default" size="small" />
+            </Popover>
+          </Tooltip>
+          <Tooltip title="View Results">
+            <Button
+              icon={<FileTextOutlined />}
+              onClick={() => onViewResults(record.id)}
+              disabled={record.status !== "visited"}
+              type="default"
+              size="small"
+            />
+          </Tooltip>
+        </Space>
+      ),
     },
     {
       title: "Date & Time",
       key: "datetime",
+      width: 120,
       render: (_, record) => (
         <div>
           <div>{record.reservation_date}</div>
           <div style={{ fontSize: "12px", color: "#666" }}>
-            {record.reservation_hour}
+            {record.reservation_hour.slice(0, 5)}
           </div>
         </div>
       ),
@@ -119,7 +205,7 @@ const PatientAppointments = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 100,
+      width: 80,
       render: (status) => (
         <Tag color={getStatusColor(status)}>
           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -127,46 +213,13 @@ const PatientAppointments = ({
       ),
     },
     {
-      title: "Type",
-      dataIndex: "appointment_type",
-      key: "appointment_type",
-      width: 120,
-      render: (type) => (
-        <Tag color="blue">{type.charAt(0).toUpperCase() + type.slice(1)}</Tag>
-      ),
-    },
-    {
-      title: "Info",
-      dataIndex: "appointment_info",
-      key: "appointment_info",
-      width: 100,
-    },
-    {
       title: "Payment",
       dataIndex: "payment_status",
       key: "payment_status",
-      width: 100,
+      width: 80,
       render: (paymentStatus) => (
         <Tag color={getPaymentStatusColor(paymentStatus)}>
           {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
-        </Tag>
-      ),
-    },
-    {
-      title: "Referred By",
-      dataIndex: "referred by",
-      key: "referred_by",
-      width: 120,
-      render: (referredBy) => referredBy || "-",
-    },
-    {
-      title: "Child",
-      dataIndex: "is_child",
-      key: "is_child",
-      width: 80,
-      render: (isChild) => (
-        <Tag color={isChild ? "orange" : "default"}>
-          {isChild ? "Yes" : "No"}
         </Tag>
       ),
     },
@@ -231,9 +284,9 @@ const PatientAppointments = ({
             `${range[0]}-${range[1]} of ${total} appointments`,
         }}
         size="middle"
-        scroll={{ x: 800 }}
         onChange={onTableChange}
         loading={loading}
+        style={{ width: "100%" }}
       />
     </Card>
   );

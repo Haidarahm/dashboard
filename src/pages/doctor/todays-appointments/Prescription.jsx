@@ -77,7 +77,7 @@ const Prescription = ({
   const [completeNote, setCompleteNote] = useState("");
   const [savingSectionKey, setSavingSectionKey] = useState(null);
   const [formChanged, setFormChanged] = useState(0);
-  const [currentStep, setCurrentStep] = useState(1); // 1: medicines, 2: diagnosis, 3: preview
+  const [currentStep, setCurrentStep] = useState(1); // 1: medical info, 2: prescription
   const [diagnosisForm] = Form.useForm();
   const [diagnosisData, setDiagnosisData] = useState({
     symptoms: "",
@@ -153,14 +153,35 @@ const Prescription = ({
 
   const handleNextStep = async () => {
     if (currentStep === 1) {
-      // Validate that at least one medicine is saved
-      if (!medicineSections.some((section) => section.saved)) {
-        toast.error("Please add at least one medicine before proceeding");
-        return;
-      }
+      // Validate diagnosis form and save medical info
+      try {
+        const values = await diagnosisForm.validateFields();
+        const medicalData = {
+          prescription_id: currentPrescription?.data?.prescription_id,
+          appointment_id: appointmentId,
+          symptoms: values.symptoms,
+          diagnosis: values.diagnosis,
+          doctorNote: values.doctorNote,
+          patientNote: values.patientNote,
+        };
 
-      // Complete prescription before moving to next step
-      setNextButtonLoading(true);
+        setNextButtonLoading(true);
+        const result = await addMedicalInfo(medicalData);
+        setNextButtonLoading(false);
+
+        if (result) {
+          toast.success("Medical info saved successfully");
+          setDiagnosisData(values);
+          setCurrentStep(2);
+        } else {
+          toast.error("Failed to save medical info");
+        }
+      } catch (error) {
+        setNextButtonLoading(false);
+        toast.error("Please fill all required fields");
+      }
+    } else if (currentStep === 2) {
+      // Complete prescription and close modal
       try {
         const result = await completePrescriptionAction({
           id: currentPrescription?.data?.prescription_id,
@@ -168,33 +189,19 @@ const Prescription = ({
         });
         if (result) {
           toast.success("Prescription completed successfully");
-          setCurrentStep(2);
+          handleClose();
         } else {
           toast.error("Failed to complete prescription");
         }
       } catch (error) {
         toast.error("Error completing prescription");
-      } finally {
-        setNextButtonLoading(false);
       }
-    } else if (currentStep === 2) {
-      // Validate diagnosis form
-      diagnosisForm
-        .validateFields()
-        .then(() => {
-          setCurrentStep(3);
-        })
-        .catch(() => {
-          toast.error("Please fill all required fields");
-        });
     }
   };
 
   const handleBackStep = () => {
     if (currentStep === 2) {
       setCurrentStep(1);
-    } else if (currentStep === 3) {
-      setCurrentStep(2);
     }
   };
 
@@ -495,6 +502,8 @@ const Prescription = ({
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
+        return renderDiagnosisStep();
+      case 2:
         return (
           <div>
             <Form
@@ -574,10 +583,6 @@ const Prescription = ({
             </div>
           </div>
         );
-      case 2:
-        return renderDiagnosisStep();
-      case 3:
-        return renderPreviewStep();
       default:
         return null;
     }
@@ -594,7 +599,6 @@ const Prescription = ({
           type="primary"
           loading={nextButtonLoading}
           onClick={handleNextStep}
-          disabled={!medicineSections.some((section) => section.saved)}
         >
           Next
         </Button>,
@@ -605,12 +609,13 @@ const Prescription = ({
           Back
         </Button>,
         <Button
-          key="save"
+          key="complete"
           type="primary"
-          loading={medicalInfoLoading}
-          onClick={handleSaveDiagnosis}
+          loading={completionLoading}
+          onClick={handleNextStep}
+          disabled={!medicineSections.some((section) => section.saved)}
         >
-          Save Diagnosis
+          Complete Prescription
         </Button>,
       ];
     }
