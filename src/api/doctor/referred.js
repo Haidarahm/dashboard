@@ -50,6 +50,7 @@ export const addReferralReservation = async ({
       date,
       time,
       doctor_id,
+      appointment_type:"visit"
     });
     return response.data;
   } catch (error) {

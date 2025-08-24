@@ -34,6 +34,7 @@ export const addCheckup = async ({
       date,
       time,
       this_appointment_id,
+      appointment_type:"visit"
     });
     return response.data;
   } catch (error) {
