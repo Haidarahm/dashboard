@@ -33,8 +33,7 @@ import {
   ClockCircleOutlined,
   DollarOutlined,
   IdcardOutlined,
-  FileTextOutlined,
-  CloseOutlined,
+
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
