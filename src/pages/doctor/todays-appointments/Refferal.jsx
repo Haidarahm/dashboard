@@ -15,13 +15,15 @@ import { toast } from "react-toastify";
 import useReferredStore from "../../../store/doctor/referredStore";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
-function Refferal({ open, onClose, patientId, patientName }) {
+function Refferal({ open, onClose, patientId, patientName, isChild }) {
   const [current, setCurrent] = useState(0);
   const [clinicId, setClinicId] = useState(null);
   const [doctorId, setDoctorId] = useState(null);
   const [selectedDateIso, setSelectedDateIso] = useState(null); // YYYY-MM-DD
   const [selectedTime, setSelectedTime] = useState(null);
+  const [appointmentType, setAppointmentType] = useState("visit");
 
   const {
     clinics,
@@ -47,6 +49,7 @@ function Refferal({ open, onClose, patientId, patientName }) {
       setDoctorId(null);
       setSelectedDateIso(null);
       setSelectedTime(null);
+      setAppointmentType("visit");
       showClinicsAction();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,6 +134,7 @@ function Refferal({ open, onClose, patientId, patientName }) {
       doctor_id: doctorId,
       date: dateShort,
       time: selectedTime,
+      appointment_type: isChild ? appointmentType : "visit",
     });
     if (res) {
       toast.success("Referral reservation added");
@@ -286,6 +290,10 @@ function Refferal({ open, onClose, patientId, patientName }) {
             <div>
               <Text strong>Time:</Text> <Text>{selectedTime}</Text>
             </div>
+            <div>
+              <Text strong>Appointment type:</Text>{" "}
+              <Text>{isChild ? appointmentType : "visit"}</Text>
+            </div>
           </div>
           <Space>
             <Button onClick={() => setCurrent(3)}>Back</Button>
@@ -315,6 +323,23 @@ function Refferal({ open, onClose, patientId, patientName }) {
       }
     >
       <Space direction="vertical" style={{ width: "100%" }} size={16}>
+        {/* Appointment type selection for child appointments */}
+        {isChild ? (
+          <div>
+            <Text type="secondary">Appointment type</Text>
+            <div style={{ marginTop: 8 }}>
+              <Select
+                value={appointmentType}
+                onChange={setAppointmentType}
+                style={{ width: 240 }}
+              >
+                <Option value="vaccination">Vaccination</Option>
+                <Option value="visit">Visit</Option>
+              </Select>
+            </div>
+          </div>
+        ) : null}
+
         <Steps
           current={current}
           items={steps.map((s) => ({ title: s.title }))}

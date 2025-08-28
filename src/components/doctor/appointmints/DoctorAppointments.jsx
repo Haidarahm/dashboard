@@ -12,6 +12,7 @@ import {
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import { Select, DatePicker, message } from "antd";
 import CancelAppointmentsModal from "./CancelAppointmentsModal";
+import { useProfileStore } from "../../../store/doctor/profileStore";
 const { Option } = Select;
 
 const DoctorAppointments = () => {
@@ -25,6 +26,7 @@ const DoctorAppointments = () => {
   const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
   const [isResizing, setIsResizing] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // 'list' or 'grid'
+  const [allowedWeekdays, setAllowedWeekdays] = useState([]);
 
   const {
     allAppointments,
@@ -38,6 +40,36 @@ const DoctorAppointments = () => {
     setCurrentMonthYear,
     cancelAppointments,
   } = useAppointmentsStore();
+
+  const { profile, fetchProfile } = useProfileStore();
+
+  useEffect(() => {
+    const ensureProfile = async () => {
+      try {
+        if (!profile) {
+          await fetchProfile();
+        }
+      } catch {}
+    };
+    ensureProfile();
+  }, [profile, fetchProfile]);
+
+  useEffect(() => {
+    if (!profile || !Array.isArray(profile.schedule)) return;
+    const dayNameToIndex = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6,
+    };
+    const indices = profile.schedule
+      .map((s) => dayNameToIndex[s?.day])
+      .filter((v) => typeof v === "number");
+    setAllowedWeekdays(Array.from(new Set(indices)));
+  }, [profile]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -129,7 +161,6 @@ const DoctorAppointments = () => {
   };
 
   const handleDateClick = (date, dayAppointments) => {
-    console.log(date, dayAppointments);
     setSelectedDate(date);
     setSelectedAppointments(dayAppointments);
     setSidebarOpen(true);
@@ -324,7 +355,6 @@ const DoctorAppointments = () => {
 
   return (
     <div className="flex bg-gray-50 relative overflow-hidden min-h-screen">
-      {console.log(filteredAppointments)}
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -382,6 +412,7 @@ const DoctorAppointments = () => {
         onCancel={() => setShowCancelModal(false)}
         onSubmit={handleBulkCancel}
         loading={cancelLoading}
+        allowedWeekdays={allowedWeekdays}
       />
 
       {/* Calendar Section */}
@@ -636,7 +667,6 @@ const DoctorAppointments = () => {
                 ? `Appointments - ${selectedDate.toLocaleDateString()}`
                 : "Select a date"}
             </h3>
-            
           </div>
 
           {selectedAppointments?.length === 0 ? (
@@ -776,6 +806,8 @@ const DoctorAppointments = () => {
           )}
         </div>
       )}
+
+      {/* Sidebar end */}
     </div>
   );
 };

@@ -52,7 +52,7 @@ const useCheckupStore = create((set, get) => ({
       set({ lastCheckup: response, addingCheckup: false });
       return response;
     } catch (err) {
-      toast.error(err.message)
+      toast.error(err.message);
       set({ error: err?.message || err.toString(), addingCheckup: false });
       return null;
     }

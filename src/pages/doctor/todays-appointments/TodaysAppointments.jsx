@@ -128,6 +128,7 @@ function TodaysAppointments() {
     setSelectedForCheckup({
       patient_id: record.patient_id,
       appointment_id: record.id,
+      is_child: !!record.is_child,
       name: `${record.patient_first_name || ""} ${
         record.patient_last_name || ""
       }`.trim(),
@@ -244,6 +245,7 @@ function TodaysAppointments() {
                   name: `${record.patient_first_name || ""} ${
                     record.patient_last_name || ""
                   }`.trim(),
+                  is_child: !!record.is_child,
                 });
                 setReferralVisible(true);
               }}
@@ -313,6 +315,7 @@ function TodaysAppointments() {
         onClose={() => setReferralVisible(false)}
         patientId={selectedForReferral?.patient_id}
         patientName={selectedForReferral?.name}
+        isChild={selectedForReferral?.is_child}
       />
 
       <CheckUp
@@ -320,6 +323,7 @@ function TodaysAppointments() {
         onClose={handleCloseCheckup}
         patientId={selectedForCheckup?.patient_id}
         appointmentId={selectedForCheckup?.appointment_id}
+        isChild={selectedForCheckup?.is_child}
       />
     </div>
   );
