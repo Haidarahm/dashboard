@@ -15,7 +15,31 @@ import { useNavigate } from "react-router";
 
 // Navbar Component
 const Navbar = ({ collapsed, setCollapsed }) => {
-  const navigate =useNavigate()
+  const navigate = useNavigate();
+
+  // Get user role from localStorage first, then sessionStorage as fallback
+  const getUserRole = () => {
+    const localRole = localStorage.getItem("role");
+    if (localRole) {
+      return localRole;
+    }
+    const sessionRole = sessionStorage.getItem("role");
+    return sessionRole || "admin"; // Default to admin if no role found
+  };
+
+  // Get user name from localStorage first, then sessionStorage as fallback
+  const getUserName = () => {
+    const localName = localStorage.getItem("name");
+    if (localName) {
+      return localName;
+    }
+    const sessionName = sessionStorage.getItem("name");
+    return sessionName || "Administrator";
+  };
+
+  const userRole = getUserRole();
+  const userName = getUserName();
+
   // Handle logout
   const handleLogout = async () => {
     try {
@@ -28,6 +52,7 @@ const Navbar = ({ collapsed, setCollapsed }) => {
     }
   };
 
+  // Conditionally build menu items based on user role
   const userMenuItems = [
     {
       key: "logout",
@@ -38,38 +63,31 @@ const Navbar = ({ collapsed, setCollapsed }) => {
         </div>
       ),
     },
-    {
-      key: "profile",
-      label: (
-        <div className="flex items-center space-x-2 py-1 text-gray-600">
-          <User className="w-4 h-4" />
-          <span>Profile</span>
-        </div>
-      ),
-    },
+    // Only show Profile option for non-secretary and non-admin roles
+    ...(userRole !== "secretary" && userRole !== "admin"
+      ? [
+          {
+            key: "profile",
+            label: (
+              <div className="flex items-center space-x-2 py-1 text-gray-600">
+                <User className="w-4 h-4" />
+                <span>Profile</span>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   // Handle menu item clicks
   const handleMenuClick = ({ key }) => {
     if (key === "logout") {
       handleLogout();
-    }
-    else{
-      console.log(key)
-      navigate(key)
+    } else {
+      console.log(key);
+      navigate(key);
     }
   };
-  // Get user name from localStorage first, then sessionStorage as fallback
-  const getUserName = () => {
-    const localName = localStorage.getItem("name");
-    if (localName) {
-      return localName;
-    }
-    const sessionName = sessionStorage.getItem("name");
-    return sessionName || "Administrator"; 
-  };
-
-  const userName = getUserName();
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 h-16 flex items-center">
       <div className="flex items-center justify-between w-full">
@@ -116,7 +134,9 @@ const Navbar = ({ collapsed, setCollapsed }) => {
                 <div className="text-sm font-semibold text-gray-900">
                   {userName}
                 </div>
-                <div className="text-xs text-gray-500">Administrator</div>
+                <div className="text-xs text-gray-500 capitalize">
+                  {userRole}
+                </div>
               </div>
               <FiChevronDown className="w-4 h-4 text-gray-500 hidden sm:block" />
             </button>

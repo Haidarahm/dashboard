@@ -64,14 +64,15 @@ const initialNewDoctorState = {
 function DoctorsTable({ onShowReviews }) {
   const {
     doctors,
+    meta,
     loading,
     error,
     doctorDetails,
     fetchDoctors,
-    createDoctor: createDoctorAction,
-    showDoctorDetails: showDoctorDetailsAction,
-    deleteDoctor: deleteDoctorAction,
-    showDoctorsByClinic: showDoctorsByClinicAction,
+    createDoctorAction,
+    showDoctorDetailsAction,
+    deleteDoctorAction,
+    showDoctorsByClinicAction,
     setDoctorDetails,
     clearDoctorDetails,
   } = useDoctorsStore();
@@ -95,18 +96,23 @@ function DoctorsTable({ onShowReviews }) {
 
   // Fetch doctors and clinics on mount
   useEffect(() => {
-    fetchDoctors();
+    fetchDoctors(1, 10);
     if (!clinics || clinics.length === 0) {
       fetchClinics();
     }
   }, [fetchDoctors, fetchClinics]);
 
+  // Update pagination state when meta changes
   useEffect(() => {
-    setPagination((prev) => ({
-      ...prev,
-      total: doctors.length,
-    }));
-  }, [doctors]);
+    if (meta) {
+      setPagination((prev) => ({
+        ...prev,
+        current: meta.current_page || 1,
+        pageSize: meta.per_page || 10,
+        total: meta.total || 0,
+      }));
+    }
+  }, [meta]);
 
   const closeModal = () => {
     setShowModal(false);
@@ -147,7 +153,7 @@ function DoctorsTable({ onShowReviews }) {
 
   const handleRefresh = async () => {
     setSelectedClinic("all");
-    await fetchDoctors();
+    await fetchDoctors(1, pagination.pageSize);
   };
 
   const handleViewDoctor = async (doctor) => {
@@ -172,10 +178,6 @@ function DoctorsTable({ onShowReviews }) {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to delete doctor");
     }
-  };
-
-  const handleTableChange = (paginationInfo) => {
-    fetchDoctors(paginationInfo.current, paginationInfo.pageSize);
   };
 
   // Get status color and icon
@@ -227,7 +229,7 @@ function DoctorsTable({ onShowReviews }) {
   const handleClinicFilterChange = async (value) => {
     setSelectedClinic(value);
     if (value === "all") {
-      await fetchDoctors();
+      await fetchDoctors(1, pagination.pageSize);
     } else {
       await showDoctorsByClinicAction(value);
     }
@@ -352,6 +354,32 @@ function DoctorsTable({ onShowReviews }) {
               type="text"
               icon={<StarOutlined style={{ color: "#faad14" }} />}
               onClick={() => onShowReviews(record)}
+              style={{
+                color: "#faad14",
+                transition: "all 0.2s ease",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.backgroundColor =
+                  "rgba(250, 173, 20, 0.1)";
+                // Animate the star icon
+                const starIcon = e.currentTarget.querySelector(".anticon");
+                if (starIcon) {
+                  starIcon.style.transform = "rotate(15deg) scale(1.1)";
+                  starIcon.style.transition = "all 0.2s ease";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "transparent";
+                // Reset star icon animation
+                const starIcon = e.currentTarget.querySelector(".anticon");
+                if (starIcon) {
+                  starIcon.style.transform = "rotate(0deg) scale(1)";
+                }
+              }}
             />
           </Tooltip>
           <Tooltip title="View Details">
@@ -417,7 +445,6 @@ function DoctorsTable({ onShowReviews }) {
               style={{ width: "100%" }}
             >
               <Option value="all">All Clinics</Option>
-              {console.log(clinics)}
               {clinics?.map((clinic) => (
                 <Option key={clinic.id} value={clinic.id}>
                   {clinic.name}
@@ -450,11 +477,21 @@ function DoctorsTable({ onShowReviews }) {
           dataSource={doctors}
           rowKey="id"
           pagination={{
-            ...pagination,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} doctors`,
+            pageSizeOptions: ["10", "20", "50"],
+            onChange: (page, pageSize) => {
+              fetchDoctors(page, pageSize);
+            },
+            onShowSizeChange: (current, size) => {
+              fetchDoctors(1, size);
+            },
           }}
-          onChange={handleTableChange}
           scroll={{ x: 1400 }}
           size="middle"
         />
