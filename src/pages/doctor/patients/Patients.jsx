@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   Table,
@@ -58,12 +58,21 @@ function Patients() {
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [analysisPatientId, setAnalysisPatientId] = useState(null);
 
+  const resultsRef = useRef(null);
+
   useEffect(() => {
     if (!searchQuery) {
       fetchPatients(1, perPage);
     }
     // eslint-disable-next-line
   }, [perPage]);
+
+  // Scroll to results when visible and data is available
+  useEffect(() => {
+    if (showResults && !resultsLoading && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showResults, resultsLoading]);
 
   const handleTableChange = (pagination) => {
     if (searchQuery) {
@@ -130,6 +139,15 @@ function Patients() {
   const handleViewResults = (appointmentId) => {
     fetchAppointmentResults(appointmentId);
     setShowResults(true);
+    // Optimistic scroll soon after showing, final scroll will happen on load
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 0);
   };
 
   const handleShowAnalysis = (patientId) => {
@@ -335,7 +353,7 @@ function Patients() {
 
         {/* Results Section - Full Width */}
         {showResults && (
-          <div style={{ width: "100%" }}>
+          <div style={{ width: "100%" }} ref={resultsRef}>
             <Results
               results={appointmentResults}
               onClose={handleCloseResults}

@@ -17,6 +17,9 @@ const { Option } = Select;
 
 const AppointmentCalendar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
+  const [isResizing, setIsResizing] = useState(false);
+  const [viewMode] = useState("grid"); // 'list' or 'grid'
 
   const {
     appointments,
@@ -68,6 +71,31 @@ const AppointmentCalendar = () => {
   useEffect(() => {
     fetchDoctors();
   }, [fetchDoctors]);
+
+  // Add event listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.body.style.overflow = "hidden"; // Prevent scrolling during resize
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    };
+  }, [isResizing]);
 
   const handleFilterChange = (filterType, value) => {
     // Get current month date for filtering
@@ -126,6 +154,61 @@ const AppointmentCalendar = () => {
     setSidebarOpen(true);
   };
 
+  // Handle sidebar resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing) return;
+
+    const newWidth = window.innerWidth - e.clientX;
+    const minWidth = 280; // Minimum width
+    const maxWidth = window.innerWidth * 0.8; // Maximum 80% of screen width
+
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setSidebarWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  // Prevent calendar interaction during resize
+  const handleCalendarMouseDown = (e) => {
+    if (isResizing) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  // Add event listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.body.style.overflow = "hidden"; // Prevent scrolling during resize
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    };
+  }, [isResizing]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case "visited":
@@ -180,18 +263,21 @@ const AppointmentCalendar = () => {
   );
 
   return (
-    <div className="flex  bg-gray-50 relative overflow-hidden">
+    <div className="flex bg-gray-50 relative overflow-hidden min-h-screen">
       {/* Calendar Section */}
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
-          sidebarOpen && !loading ? "mr-96" : "mr-0"
-        }`}
+        className={`flex-1 transition-all duration-300 ease-in-out p-4 lg:p-6`}
+        style={{
+          marginRight: sidebarOpen && !loading ? "320px" : "0",
+          pointerEvents: isResizing ? "none" : "auto",
+        }}
+        onMouseDown={handleCalendarMouseDown}
       >
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Calendar Header with Filters */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold text-gray-800">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border-b gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <h2 className="text-lg lg:text-xl font-semibold text-gray-800">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
               <button
@@ -336,7 +422,7 @@ const AppointmentCalendar = () => {
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
                   key={day}
-                  className="p-2 text-center text-sm font-medium text-gray-600"
+                  className="p-2 text-center text-sm font-semibold text-gray-700 bg-gray-50 rounded-t-lg"
                 >
                   {day}
                 </div>
@@ -350,7 +436,7 @@ const AppointmentCalendar = () => {
                 {days.map((day, index) => (
                   <div
                     key={index}
-                    className={`min-h-[100px]  p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                    className={`min-h-[100px] p-2 lg:p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
                       day.isCurrentMonth ? "bg-white" : "bg-gray-50"
                     } ${
                       selectedDate &&
@@ -359,6 +445,14 @@ const AppointmentCalendar = () => {
                         : ""
                     }`}
                     onClick={() => handleDateClick(day.date, day.appointments)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleDateClick(day.date, day.appointments);
+                      }
+                    }}
                   >
                     <div
                       className={`text-sm font-medium ${
@@ -373,7 +467,7 @@ const AppointmentCalendar = () => {
                       {day.appointments.slice(0, 2).map((apt) => (
                         <div
                           key={apt.id}
-                          className={`text-xs px-2 py-1 rounded-full text-center truncate ${getStatusColor(
+                          className={`text-xs px-2 py-1 rounded-full text-center truncate border ${getStatusColor(
                             apt.status
                           )}`}
                         >
@@ -397,21 +491,49 @@ const AppointmentCalendar = () => {
       {/* Sidebar */}
       {!loading && (
         <div
-          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
+          className={`fixed top-0 right-0 h-full bg-white border-l border-gray-200 p-4 lg:p-6 transition-transform duration-300 ease-in-out transform ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           } shadow-lg z-50`}
+          style={{
+            width: sidebarOpen ? `${sidebarWidth}px` : "320px",
+            pointerEvents: "auto",
+          }}
         >
           <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors p-1"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
-          <h3 className="text-lg font-semibold mb-4">
-            {selectedDate
-              ? `Appointments - ${selectedDate.toLocaleDateString()}`
-              : "Select a date"}
-          </h3>
+
+          {/* Resize Handle */}
+          {sidebarOpen && (
+            <div
+              className={`absolute left-0 top-0 bottom-0 w-2 z-10 ${
+                isResizing
+                  ? "bg-blue-500 cursor-col-resize"
+                  : "bg-gray-200 hover:bg-gray-300 cursor-col-resize"
+              }`}
+              onMouseDown={handleMouseDown}
+              title="Drag to resize sidebar"
+            >
+              {/* Resize Handle Grip */}
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-400 rounded-full" />
+            </div>
+          )}
+          {/* Resize Overlay */}
+          {isResizing && (
+            <div className="absolute inset-0 bg-blue-50 bg-opacity-30 pointer-events-none z-5" />
+          )}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {selectedDate
+                ? `Appointments - ${selectedDate.toLocaleDateString()}`
+                : "Select a date"}
+            </h3>
+            
+          </div>
 
           {selectedAppointments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -420,15 +542,36 @@ const AppointmentCalendar = () => {
                 : "Click on a date to view appointments"}
             </div>
           ) : (
-            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+            <div
+              className={`overflow-y-auto max-h-[calc(100vh-120px)] pr-2 ${
+                viewMode === "grid"
+                  ? `grid gap-4 ${
+                      sidebarWidth >= 600
+                        ? "grid-cols-3"
+                        : sidebarWidth >= 450
+                        ? "grid-cols-2"
+                        : "grid-cols-1"
+                    }`
+                  : "space-y-4"
+              }`}
+            >
               {selectedAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white ${
+                    viewMode === "grid" ? "h-fit" : ""
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   {/* Status Badge */}
                   <div
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 ${getStatusColor(
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mb-3 border ${getStatusColor(
                       appointment.status
                     )}`}
                   >
@@ -438,30 +581,29 @@ const AppointmentCalendar = () => {
                   </div>
 
                   {/* Appointment Details */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
+                  <div
+                    className={`space-y-3 ${
+                      viewMode === "grid" ? "text-sm" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate">
                           {appointment.patient}
                         </div>
                         <div className="text-sm text-gray-600">Patient</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          Dr. {appointment.doctor}
-                        </div>
-                        <div className="text-sm text-gray-600">Doctor</div>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Clock className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           {appointment.timeSelected}
                         </div>
@@ -469,9 +611,11 @@ const AppointmentCalendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <DollarSign className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           ${appointment.visit_fee}
                         </div>
@@ -479,24 +623,14 @@ const AppointmentCalendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {appointment.reservation_date}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Reservation Date
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Doctor Photo */}
                   {appointment.doctor_photo ? (
                     <div className="mt-3 flex items-center gap-2">
+                    
                       <img
-                        src={appointment.doctor_photo}
+                        src={`http://127.0.0.1:8000${appointment.doctor_photo}`}
                         alt={`Dr. ${appointment.doctor}`}
                         className="w-10 h-10 rounded-full object-cover"
                       />

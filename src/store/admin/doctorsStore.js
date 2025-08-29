@@ -93,13 +93,13 @@ export const useDoctorsStore = create((set, get) => ({
 
 export const useDoctorsTableStore = create((set) => ({
   doctors: [],
-  meta: { current_page: 1, last_page: 1, total: 0, per_page: 3 },
+  meta: { current_page: 1, last_page: 1, total: 0, size: 5 },
   loading: false,
   error: null,
-  fetchDoctors: async (page = 1, per_page = 3) => {
+  fetchDoctors: async (page = 1, size) => {
     set({ loading: true, error: null });
     try {
-      const data = await fetchDoctorsApi(page, per_page);
+      const data = await fetchDoctorsApi(page, size);
       set({ doctors: data.data || [], meta: data.meta || {}, loading: false });
     } catch (error) {
       set({ error, loading: false });

@@ -43,6 +43,7 @@ export const addReferralReservation = async ({
   date,
   time,
   doctor_id,
+  appointment_type,
 }) => {
   try {
     const response = await api.post("/api/doctor/addReferralReservation", {
@@ -50,6 +51,7 @@ export const addReferralReservation = async ({
       date,
       time,
       doctor_id,
+      appointment_type,
     });
     return response.data;
   } catch (error) {

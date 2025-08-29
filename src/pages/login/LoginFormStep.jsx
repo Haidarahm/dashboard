@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { Button, Select } from "antd";
-import { MdPhone, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { Button } from "antd";
+import {
+  MdPhone,
+  MdLock,
+  MdVisibility,
+  MdVisibilityOff,
+  MdArrowBack,
+} from "react-icons/md";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../store/admin/authStore";
 import { useDoctorAuthStore } from "../../store/doctor/authStore";
 import useSecretaryAuthStore from "../../store/secretary/authStore";
 
-const LoginForm = () => {
+const LoginFormStep = ({ selectedRole, onBack }) => {
   const [formData, setFormData] = useState({ phone: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [role, setRole] = useState("admin");
 
   const adminLogin = useAuthStore((state) => state.login);
   const adminLoading = useAuthStore((state) => state.loading);
@@ -20,7 +25,7 @@ const LoginForm = () => {
   const secretaryLoading = useSecretaryAuthStore((state) => state.loading);
 
   const getLoginFunction = () => {
-    switch (role) {
+    switch (selectedRole) {
       case "admin":
         return adminLogin;
       case "doctor":
@@ -33,7 +38,7 @@ const LoginForm = () => {
   };
 
   const getLoadingState = () => {
-    switch (role) {
+    switch (selectedRole) {
       case "admin":
         return adminLoading;
       case "doctor":
@@ -42,6 +47,19 @@ const LoginForm = () => {
         return secretaryLoading;
       default:
         return adminLoading;
+    }
+  };
+
+  const getRoleDisplayName = () => {
+    switch (selectedRole) {
+      case "admin":
+        return "Admin";
+      case "doctor":
+        return "Doctor";
+      case "secretary":
+        return "Secretary";
+      default:
+        return "User";
     }
   };
 
@@ -58,7 +76,6 @@ const LoginForm = () => {
     const cleanedPhone = formData.phone.replace(/[\s\-()]/g, "");
 
     // Check if phone number has valid format and length
-    // Supports: +1234567890, 1234567890, 0936820776, etc.
     const phoneRegex = /^([+]?[1-9]\d{7,15}|0\d{9,10})$/;
     if (!phoneRegex.test(cleanedPhone)) {
       toast.error(
@@ -79,19 +96,15 @@ const LoginForm = () => {
     } catch (error) {}
   };
 
-  // Phone number formatter - only allows digits, +, -, (, ), and spaces
+  // Phone number formatter
   const formatPhoneNumber = (value) => {
-    // Remove all characters except digits, +, -, (, ), and spaces
     const cleaned = value.replace(/[^\d+\-() ]/g, "");
 
-    // Ensure + can only be at the beginning
     if (cleaned.includes("+")) {
       const parts = cleaned.split("+");
       if (parts[0] === "") {
-        // + is at the beginning, keep only the first +
         return "+" + parts.slice(1).join("").replace(/\+/g, "");
       } else {
-        // + is not at the beginning, remove all +
         return cleaned.replace(/\+/g, "");
       }
     }
@@ -101,42 +114,32 @@ const LoginForm = () => {
 
   // Validate phone number format
   const isValidPhoneFormat = (phone) => {
-    // Allow empty string for ongoing typing
     if (!phone) return true;
-
-    // Basic format validation: optional +, followed by digits, spaces, hyphens, parentheses
-    // Allow numbers starting with 0 or + or any digit
     const phoneRegex = /^[+0]?[\d\s\-()]+$/;
     return phoneRegex.test(phone);
   };
 
   // Handle keydown events for phone input
   const handlePhoneKeyDown = (e) => {
-    // Allow: backspace, delete, tab, escape, enter
     if (
       [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-      // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
       (e.keyCode === 65 && e.ctrlKey === true) ||
       (e.keyCode === 67 && e.ctrlKey === true) ||
       (e.keyCode === 86 && e.ctrlKey === true) ||
       (e.keyCode === 88 && e.ctrlKey === true) ||
-      // Allow: home, end, left, right, down, up
       (e.keyCode >= 35 && e.keyCode <= 40)
     ) {
       return;
     }
 
-    // Allow: +, -, (, ), space, and digits
     const allowedChars = /[0-9+\-() ]/;
     const char = String.fromCharCode(e.keyCode);
 
-    // If + is pressed, only allow it at the beginning
     if (char === "+" && e.target.selectionStart !== 0) {
       e.preventDefault();
       return;
     }
 
-    // If character is not allowed, prevent it
     if (!allowedChars.test(char)) {
       e.preventDefault();
     }
@@ -145,85 +148,92 @@ const LoginForm = () => {
   const handleInputChange = (field, value) => {
     if (field === "phone") {
       const formattedPhone = formatPhoneNumber(value);
-
-      // Only update if the formatted value is valid
       if (isValidPhoneFormat(formattedPhone)) {
         setFormData((prev) => ({ ...prev, [field]: formattedPhone }));
       }
-      // If invalid, don't update the state (prevents invalid characters from appearing)
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
     }
   };
 
   return (
-    <div className="login-form">
-      <div className="login-form-header">
-        <h2 className="login-form-title">Welcome Back</h2>
-        <p className="login-form-subtitle">Sign in to your clinic dashboard</p>
-      </div>
-
-      <div className="login-form-fields">
-        <div style={{ marginBottom: 16 }}>
-          <label className="block text-gray-700 font-medium mb-2">Role</label>
-          <Select
-            value={role}
-            onChange={setRole}
-            style={{ width: "100%" }}
-            options={[
-              { label: "Admin", value: "admin" },
-              { label: "Doctor", value: "doctor" },
-              { label: "Secretary", value: "secretary" },
-            ]}
-          />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <MdArrowBack className="mr-2" />
+            Back to role selection
+          </button>
         </div>
-        <FormInput
-          label="Phone Number"
-          type="tel"
-          icon={<MdPhone className="login-input-icon" />}
-          value={formData.phone}
-          onChange={(e) => handleInputChange("phone", e.target.value)}
-          onKeyDown={handlePhoneKeyDown}
-          placeholder="Enter your phone number (e.g., 0936820776)"
-          maxLength="20"
-        />
 
-        <PasswordInput
-          label="Password"
-          value={formData.password}
-          onChange={(e) => handleInputChange("password", e.target.value)}
-          showPassword={showPassword}
-          setShowPassword={setShowPassword}
-          placeholder="Enter your password"
-        />
+        {/* Login Form */}
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-gray-600">Sign in as {getRoleDisplayName()}</p>
+          </div>
 
-        <div className="login-form-options">
-          <label className="login-remember-me">
-            <input
-              type="checkbox"
-              className="login-remember-checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+          {/* Form Fields */}
+          <div className="space-y-6">
+            <FormInput
+              label="Phone Number"
+              type="tel"
+              icon={<MdPhone className="text-gray-400 text-xl" />}
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              onKeyDown={handlePhoneKeyDown}
+              placeholder="Enter your phone number"
+              maxLength="20"
             />
-            <span className="login-remember-text">Remember me</span>
-          </label>
+
+            <PasswordInput
+              label="Password"
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              placeholder="Enter your password"
+            />
+
+            <div className="flex items-center">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+              </label>
+            </div>
+
+            <Button
+              type="primary"
+              loading={loading}
+              onClick={handleLogin}
+              className="w-full h-12 bg-primary hover:bg-primary-dark border-primary hover:border-primary-dark rounded-lg font-medium text-base transition-all duration-200"
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </Button>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600 text-sm">
+              Don't have an account?{" "}
+              <button className="text-primary hover:text-primary-dark font-medium transition-colors">
+                Contact Administrator
+              </button>
+            </p>
+          </div>
         </div>
-
-        <Button
-          type="primary"
-          loading={loading}
-          onClick={handleLogin}
-          className="login-button"
-        >
-          {loading ? "Signing In..." : "Sign In"}
-        </Button>
-      </div>
-
-      <div className="login-signup-prompt">
-        <p className="login-signup-text">
-          Don't have an account?{" "}
-          <button className="login-signup-link">Contact Administrator</button>
-        </p>
       </div>
     </div>
   );
@@ -232,9 +242,14 @@ const LoginForm = () => {
 const FormInput = ({ label, icon, ...props }) => (
   <div>
     <label className="block text-gray-700 font-medium mb-2">{label}</label>
-    <div className="login-input-group">
-      {icon}
-      <input className="login-input-field" {...props} />
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+        {icon}
+      </div>
+      <input
+        className="w-full h-12 pl-12 pr-4 rounded-lg border border-gray-300 hover:border-primary focus:border-primary focus:outline-none transition-colors"
+        {...props}
+      />
     </div>
   </div>
 );
@@ -242,17 +257,17 @@ const FormInput = ({ label, icon, ...props }) => (
 const PasswordInput = ({ label, showPassword, setShowPassword, ...props }) => (
   <div>
     <label className="block text-gray-700 font-medium mb-2">{label}</label>
-    <div className="login-input-group">
-      <MdLock className="login-input-icon" />
+    <div className="relative">
+      <MdLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
       <input
         type={showPassword ? "text" : "password"}
-        className="login-password-input"
+        className="w-full h-12 pl-12 pr-12 rounded-lg border border-gray-300 hover:border-primary focus:border-primary focus:outline-none transition-colors"
         {...props}
       />
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="login-password-toggle"
+        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
       >
         {showPassword ? (
           <MdVisibilityOff className="text-xl" />
@@ -264,4 +279,4 @@ const PasswordInput = ({ label, showPassword, setShowPassword, ...props }) => (
   </div>
 );
 
-export default LoginForm;
+export default LoginFormStep;

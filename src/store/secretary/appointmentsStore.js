@@ -8,6 +8,7 @@ import {
   cancelAppointment,
   cancelDoctorsAppointments,
 } from "../../api/secretary/appointments";
+import { toast } from "react-toastify";
 
 const useSecretaryAppointmentsStore = create((set, get) => ({
   allAppointments: [],
@@ -108,8 +109,10 @@ const useSecretaryAppointmentsStore = create((set, get) => ({
       await cancelAppointment(reservation_id);
       // Optionally update state to reflect cancellation
       set({ loading: false });
+      toast.success("Appointment cancelled successfully");
       return true;
     } catch (error) {
+      toast.error(error.message || "Failed to cancel appointment");
       set({
         error: error.message || "Failed to cancel appointment",
         loading: false,

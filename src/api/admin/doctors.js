@@ -14,10 +14,11 @@ export const createDoctor = async (doctorData) => {
 };
 
 // Function to fetch all doctors with pagination
-export const fetchDoctors = async (page, per_page) => {
+export const fetchDoctors = async (page, size) => {
+
   try {
     const response = await api.get(`/api/admin/showDoctors`, {
-      params: { page, size: per_page },
+      params: { page, size },
     });
     return response.data;
   } catch (error) {

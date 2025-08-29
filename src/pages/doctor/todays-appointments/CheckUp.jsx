@@ -9,16 +9,19 @@ import {
   Divider,
   Tag,
   message,
+  Select,
 } from "antd";
 import dayjs from "dayjs";
 import useCheckupStore from "../../../store/doctor/checkupStore";
 import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 function CheckUp({ open, onClose, patientId, appointmentId }) {
   const [selectedDateIso, setSelectedDateIso] = useState(null); // YYYY-MM-DD
   const [selectedTime, setSelectedTime] = useState(null);
+  const [appointmentType, setAppointmentType] = useState("visit");
 
   const {
     workDays,
@@ -36,6 +39,7 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
     if (open) {
       setSelectedDateIso(null);
       setSelectedTime(null);
+      setAppointmentType("visit");
       clearTimes();
       showDoctorWorkDaysAction();
     }
@@ -74,6 +78,7 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
       date: dateShort,
       time: selectedTime,
       this_appointment_id: appointmentId,
+      appointment_type: appointmentType,
     });
     if (res) {
       toast.success("Checkup added successfully");
@@ -124,6 +129,22 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
       }
     >
       <Space direction="vertical" size={16} style={{ width: "100%" }}>
+        <div>
+          <Text type="secondary">Appointment type</Text>
+          <div style={{ marginTop: 8 }}>
+            <Select
+              value={appointmentType}
+              onChange={setAppointmentType}
+              style={{ width: 240 }}
+            >
+              <Option value="vaccination">Vaccination</Option>
+              <Option value="visit">Visit</Option>
+            </Select>
+          </div>
+        </div>
+
+        <Divider style={{ margin: "12px 0" }} />
+
         <div>
           <Text type="secondary">Select a date</Text>
           <div style={{ marginTop: 8 }}>

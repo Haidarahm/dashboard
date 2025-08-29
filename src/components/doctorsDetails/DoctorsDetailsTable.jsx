@@ -135,6 +135,9 @@ const DoctorsDetailsTable = () => {
     },
   ];
 
+  const handleTableChange = (pagination) => {
+    setPage(pagination.current)
+  }
   return (
     <Card
       title={
@@ -165,11 +168,11 @@ const DoctorsDetailsTable = () => {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        scrollbarWidth:"thin",
-       
+        scrollbarWidth: "thin",
+
         overflow: "auto",
       }}
-      
+
       bordered={false}
     >
       <Table
@@ -198,7 +201,7 @@ const DoctorsDetailsTable = () => {
           borderRadius: "8px",
           fontSize: 14,
         }}
-      
+
         bordered={false}
         showHeader={true}
         rowClassName={() => "doctor-table-row"}

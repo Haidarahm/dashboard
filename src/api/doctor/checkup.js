@@ -21,12 +21,13 @@ export const showTimes = async (date) => {
 };
 
 // Add checkup
-// body: { patient_id, date, time, this_appointment_id }
+// body: { patient_id, date, time, this_appointment_id, appointment_type }
 export const addCheckup = async ({
   patient_id,
   date,
   time,
   this_appointment_id,
+  appointment_type,
 }) => {
   try {
     const response = await api.post("/api/doctor/addCheckup", {
@@ -34,6 +35,7 @@ export const addCheckup = async ({
       date,
       time,
       this_appointment_id,
+      appointment_type,
     });
     return response.data;
   } catch (error) {

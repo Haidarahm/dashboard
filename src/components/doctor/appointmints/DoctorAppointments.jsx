@@ -12,6 +12,7 @@ import {
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import { Select, DatePicker, message } from "antd";
 import CancelAppointmentsModal from "./CancelAppointmentsModal";
+import { useProfileStore } from "../../../store/doctor/profileStore";
 const { Option } = Select;
 
 const DoctorAppointments = () => {
@@ -22,6 +23,10 @@ const DoctorAppointments = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
+  const [isResizing, setIsResizing] = useState(false);
+  const [viewMode, setViewMode] = useState("grid"); // 'list' or 'grid'
+  const [allowedWeekdays, setAllowedWeekdays] = useState([]);
 
   const {
     allAppointments,
@@ -35,6 +40,36 @@ const DoctorAppointments = () => {
     setCurrentMonthYear,
     cancelAppointments,
   } = useAppointmentsStore();
+
+  const { profile, fetchProfile } = useProfileStore();
+
+  useEffect(() => {
+    const ensureProfile = async () => {
+      try {
+        if (!profile) {
+          await fetchProfile();
+        }
+      } catch {}
+    };
+    ensureProfile();
+  }, [profile, fetchProfile]);
+
+  useEffect(() => {
+    if (!profile || !Array.isArray(profile.schedule)) return;
+    const dayNameToIndex = {
+      Sunday: 0,
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6,
+    };
+    const indices = profile.schedule
+      .map((s) => dayNameToIndex[s?.day])
+      .filter((v) => typeof v === "number");
+    setAllowedWeekdays(Array.from(new Set(indices)));
+  }, [profile]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -126,10 +161,39 @@ const DoctorAppointments = () => {
   };
 
   const handleDateClick = (date, dayAppointments) => {
-    console.log(date, dayAppointments);
     setSelectedDate(date);
     setSelectedAppointments(dayAppointments);
     setSidebarOpen(true);
+  };
+
+  // Handle sidebar resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing) return;
+
+    const newWidth = window.innerWidth - e.clientX;
+    const minWidth = 280; // Minimum width
+    const maxWidth = window.innerWidth * 0.8; // Maximum 80% of screen width
+
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setSidebarWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  // Prevent calendar interaction during resize
+  const handleCalendarMouseDown = (e) => {
+    if (isResizing) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   };
 
   const handleCancelClick = (appointment) => {
@@ -236,6 +300,31 @@ const DoctorAppointments = () => {
     fetchAllByDate(monthYear);
   };
 
+  // Add event listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.body.style.overflow = "hidden"; // Prevent scrolling during resize
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.body.style.overflow = "";
+    };
+  }, [isResizing]);
+
   const monthNames = [
     "January",
     "February",
@@ -265,7 +354,7 @@ const DoctorAppointments = () => {
   );
 
   return (
-    <div className="flex bg-gray-50 relative overflow-hidden">
+    <div className="flex bg-gray-50 relative overflow-hidden min-h-screen">
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -323,13 +412,17 @@ const DoctorAppointments = () => {
         onCancel={() => setShowCancelModal(false)}
         onSubmit={handleBulkCancel}
         loading={cancelLoading}
+        allowedWeekdays={allowedWeekdays}
       />
 
       {/* Calendar Section */}
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
-          sidebarOpen && !loading ? "mr-96" : "mr-0"
-        }`}
+        className={`flex-1 transition-all duration-300 ease-in-out p-4 lg:p-6`}
+        style={{
+          marginRight: sidebarOpen && !loading ? "320px" : "0",
+          pointerEvents: isResizing ? "none" : "auto",
+        }}
+        onMouseDown={handleCalendarMouseDown}
       >
         <div className="bg-white rounded-lg shadow-sm">
           {/* Calendar Header with Filters */}
@@ -533,21 +626,48 @@ const DoctorAppointments = () => {
       {/* Sidebar */}
       {!loading && (
         <div
-          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 p-6 transition-all duration-300 ease-in-out transform ${
+          className={`fixed top-0 right-0 h-full bg-white border-l border-gray-200 p-4 lg:p-6 transition-transform duration-300 ease-in-out transform ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           } shadow-lg z-50`}
+          style={{
+            width: sidebarOpen ? `${sidebarWidth}px` : "320px",
+            pointerEvents: "auto",
+          }}
         >
           <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors p-1"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
-          <h3 className="text-lg font-semibold mb-4">
-            {selectedDate
-              ? `Appointments - ${selectedDate.toLocaleDateString()}`
-              : "Select a date"}
-          </h3>
+
+          {/* Resize Handle */}
+          {sidebarOpen && (
+            <div
+              className={`absolute left-0 top-0 bottom-0 w-2 z-10 ${
+                isResizing
+                  ? "bg-blue-500 cursor-col-resize"
+                  : "bg-gray-200 hover:bg-gray-300 cursor-col-resize"
+              }`}
+              onMouseDown={handleMouseDown}
+              title="Drag to resize sidebar"
+            >
+              {/* Resize Handle Grip */}
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-400 rounded-full" />
+            </div>
+          )}
+          {/* Resize Overlay */}
+          {isResizing && (
+            <div className="absolute inset-0 bg-blue-50 bg-opacity-30 pointer-events-none z-5" />
+          )}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {selectedDate
+                ? `Appointments - ${selectedDate.toLocaleDateString()}`
+                : "Select a date"}
+            </h3>
+          </div>
 
           {selectedAppointments?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -556,11 +676,32 @@ const DoctorAppointments = () => {
                 : "Click on a date to view appointments"}
             </div>
           ) : (
-            <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+            <div
+              className={`overflow-y-auto max-h-[calc(100vh-120px)] pr-2 ${
+                viewMode === "grid"
+                  ? `grid gap-4 ${
+                      sidebarWidth >= 600
+                        ? "grid-cols-3"
+                        : sidebarWidth >= 450
+                        ? "grid-cols-2"
+                        : "grid-cols-1"
+                    }`
+                  : "space-y-4"
+              }`}
+            >
               {selectedAppointments?.map((appointment) => (
                 <div
                   key={appointment?.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className={`border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white ${
+                    viewMode === "grid" ? "h-fit" : ""
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   {/* Status Badge */}
                   <div
@@ -584,11 +725,17 @@ const DoctorAppointments = () => {
                   </div>
 
                   {/* Appointment Details */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-gray-900">
+                  <div
+                    className={`space-y-3 ${
+                      viewMode === "grid" ? "text-sm" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <User className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate">
                           {appointment?.patient_first_name}{" "}
                           {appointment.patient_last_name}
                         </div>
@@ -596,9 +743,11 @@ const DoctorAppointments = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Clock className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           {appointment?.reservation_hour}
                         </div>
@@ -606,9 +755,11 @@ const DoctorAppointments = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-600" />
-                      <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
                         <div className="font-medium text-gray-900">
                           {appointment?.reservation_date}
                         </div>
@@ -621,11 +772,17 @@ const DoctorAppointments = () => {
 
                   {/* Patient Notes */}
                   {appointment?.notes && (
-                    <div className="mt-3">
-                      <h4 className="text-sm font-medium text-gray-700">
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-700 mb-1">
                         Notes:
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p
+                        className={`text-gray-600 leading-relaxed ${
+                          viewMode === "grid"
+                            ? "text-xs line-clamp-2"
+                            : "text-sm"
+                        }`}
+                      >
                         {appointment.notes}
                       </p>
                     </div>
@@ -649,6 +806,8 @@ const DoctorAppointments = () => {
           )}
         </div>
       )}
+
+      {/* Sidebar end */}
     </div>
   );
 };
