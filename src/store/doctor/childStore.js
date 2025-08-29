@@ -76,6 +76,7 @@ const useChildStore = create((set, get) => ({
     set({ childRecordLoading: true, childRecordError: null });
     try {
       const response = await getChildRecord(childId);
+     
       set({
         childRecord: response.data || null,
         childRecordLoading: false,

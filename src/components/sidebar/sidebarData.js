@@ -75,6 +75,12 @@ export const doctorRoutes = [
     label: "Patients",
     path: "/patients",
   },
+  {
+    key: "/children",
+    icon: TbVaccine,
+    label: "Children Management",
+    path: "/children",
+  },
 ];
 export const secretaryRoutes = [
   {

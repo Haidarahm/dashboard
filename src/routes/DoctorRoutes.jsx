@@ -1,39 +1,41 @@
 import { Routes, Route, Navigate, Outlet } from "react-router";
-import Appointments from '../pages/doctor/appoinments/Appoinments';
-import Patients from '../pages/doctor/patients/Patients';
-import React, { useState } from 'react'
+import Appointments from "../pages/doctor/appoinments/Appoinments";
+import Patients from "../pages/doctor/patients/Patients";
+import React, { useState } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
 import Profile from "../pages/doctor/profile/Profile";
 import TodaysAppointments from "../pages/doctor/todays-appointments/TodaysAppointments";
+import ChildrenManagement from "../pages/doctor/children/ChildrenManagement";
 function DoctorRoutes() {
-    function DashboardLayout() {
-        const [collapsed, setCollapsed] = useState(false);
-        return (
-          <div className="flex flex-col h-screen">
-            <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
-            <div className="flex flex-1 overflow-hidden">
-              <Sidebar collapsed={collapsed} />
-              <div className="flex-1 overflow-auto">
-                <Outlet />
-              </div>
-            </div>
+  function DashboardLayout() {
+    const [collapsed, setCollapsed] = useState(false);
+    return (
+      <div className="flex flex-col h-screen">
+        <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar collapsed={collapsed} />
+          <div className="flex-1 overflow-auto">
+            <Outlet />
           </div>
-        );
-      }
-      
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
-    <Route path="/" element={<DashboardLayout />}>
-      <Route index element={<Navigate to="/appointments" replace />} />
-      <Route path="appointments" element={<Appointments />} />
-      <Route path="patients" element={<Patients />} />
-      <Route path="profile" element={<Profile />} />
-      <Route path="todays-appointments" element={<TodaysAppointments />} />
-      {/* Add more nested routes here */}
-    </Route>
-  </Routes>
-  )
+      <Route path="/" element={<DashboardLayout />}>
+        <Route index element={<Navigate to="/appointments" replace />} />
+        <Route path="appointments" element={<Appointments />} />
+        <Route path="patients" element={<Patients />} />
+        <Route path="children" element={<ChildrenManagement />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="todays-appointments" element={<TodaysAppointments />} />
+        {/* Add more nested routes here */}
+      </Route>
+    </Routes>
+  );
 }
 
-export default DoctorRoutes
+export default DoctorRoutes;

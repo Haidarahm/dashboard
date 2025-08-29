@@ -1,4 +1,4 @@
-import api from "../api";
+import api from "../../config/config";
 
 // Fetch children with pagination
 export const fetchChildren = async (page = 1, size = 10) => {
@@ -23,7 +23,7 @@ export const getChildRecord = async (childId) => {
         child_id: childId,
       },
     });
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }
