@@ -36,9 +36,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <div
-      className={`sidebar relative bg-white border-r border-gray-200 h-full flex flex-col ${
-        collapsed ? "w-16" : "w-64"
-      } transition-all duration-300 ease-in-out shadow-sm`}
+      className={`sidebar relative bg-white border-r border-gray-200 h-full flex flex-col ${collapsed ? "w-16" : "w-64"
+        } transition-all duration-300 ease-in-out shadow-sm`}
     >
       {/* Header Section */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -48,7 +47,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-gray-900">MediCare</h1>
+              <h1 className="text-lg font-bold text-gray-900">Medivarse</h1>
               <p className="text-xs text-gray-500">Clinic Management</p>
             </div>
           )}
@@ -65,20 +64,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
             <Link
               key={item.key}
               to={item.path}
-              className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                active
+              className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${active
                   ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                }`}
             >
               <Icon
-                className={`flex-shrink-0 ${
-                  collapsed ? "w-5 h-5" : "w-4 h-4 mr-3"
-                } ${
-                  active
+                className={`flex-shrink-0 ${collapsed ? "w-5 h-5" : "w-4 h-4 mr-3"
+                  } ${active
                     ? "text-blue-600"
                     : "text-gray-400 group-hover:text-gray-500"
-                }`}
+                  }`}
               />
               {!collapsed && <span className="truncate">{item.label}</span>}
 

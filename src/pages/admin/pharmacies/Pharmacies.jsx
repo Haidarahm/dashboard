@@ -252,7 +252,8 @@ function Pharmacies() {
       closeModal();
       fetchPharmacies(pagination.current, pagination.pageSize);
     } catch (error) {
-      toast.error(error);
+      console.log("Haidar", error)
+      toast.error(error.message[0]);
     } finally {
       setLoading(false);
     }
@@ -484,8 +485,8 @@ function Pharmacies() {
           modalType === "view"
             ? "Pharmacy Details"
             : modalType === "create"
-            ? "Create New Pharmacy"
-            : "Edit Pharmacy"
+              ? "Create New Pharmacy"
+              : "Edit Pharmacy"
         }
         open={showModal}
         onCancel={closeModal}
