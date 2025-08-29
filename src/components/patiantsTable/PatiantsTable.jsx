@@ -64,9 +64,34 @@ const PatientsTable = () => {
     },
     {
       title: "Age",
-      dataIndex: "age",
       key: "age",
       width: 80,
+      render: (_, record) => {
+        if (record.birth_date) {
+          const birthDate = new Date(record.birth_date);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
+
+          // If age is less than 1 year, calculate months
+          if (age < 1) {
+            const months = Math.floor(
+              (today - birthDate) / (1000 * 60 * 60 * 24 * 30.44)
+            );
+            return <Text>{months} months</Text>;
+          }
+
+          return <Text>{age} years</Text>;
+        }
+        return <Text>Unknown</Text>;
+      },
     },
     {
       title: "Address",
