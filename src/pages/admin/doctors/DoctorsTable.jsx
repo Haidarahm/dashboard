@@ -84,7 +84,7 @@ function DoctorsTable({ onShowReviews }) {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: 0,
   });
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -96,7 +96,7 @@ function DoctorsTable({ onShowReviews }) {
 
   // Fetch doctors and clinics on mount
   useEffect(() => {
-    fetchDoctors(1, 10);
+    fetchDoctors(1, 5);
     if (!clinics || clinics.length === 0) {
       fetchClinics();
     }
@@ -108,7 +108,7 @@ function DoctorsTable({ onShowReviews }) {
       setPagination((prev) => ({
         ...prev,
         current: meta.current_page || 1,
-        pageSize: meta.per_page || 10,
+        pageSize: 5,
         total: meta.total || 0,
       }));
     }
@@ -478,18 +478,14 @@ function DoctorsTable({ onShowReviews }) {
           rowKey="id"
           pagination={{
             current: pagination.current,
-            pageSize: pagination.pageSize,
+            pageSize: 5,
             total: pagination.total,
-            showSizeChanger: true,
-            showQuickJumper: true,
+            showSizeChanger: false,
+           
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} doctors`,
-            pageSizeOptions: ["10", "20", "50"],
-            onChange: (page, pageSize) => {
-              fetchDoctors(page, pageSize);
-            },
-            onShowSizeChange: (current, size) => {
-              fetchDoctors(1, size);
+            onChange: (page) => {
+              fetchDoctors(page, 5);
             },
           }}
           scroll={{ x: 1400 }}
