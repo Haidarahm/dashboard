@@ -77,7 +77,6 @@ const SecretaryAppointments = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [doctorFilter, setDoctorFilter] = useState(null);
   const [clinicFilter, setClinicFilter] = useState(null);
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState(null);
 
   // Doctors and clinics data for filters
   const [doctors, setDoctors] = useState([]);
@@ -112,7 +111,7 @@ const SecretaryAppointments = () => {
       try {
         const response = await fetchClinics(1, 100);
         console.log(response.data);
-        setClinics(response.data || []); // Clinics response is direct array
+        setClinics(response.data || []); // Clinics response now has data wrapper
       } catch (error) {
         console.error("Failed to fetch clinics:", error);
         message.error("Failed to load clinics");
@@ -125,13 +124,12 @@ const SecretaryAppointments = () => {
     fetchClinicsData();
   }, []);
 
-  // Fetch appointments when month or filters change
+  // Fetch appointments when month changes
   useEffect(() => {
     const monthYear = getMonthYearString(currentDate);
-    if (!statusFilter && !doctorFilter && !clinicFilter) {
-      fetchAllByDate(monthYear);
-      return;
-    }
+    setCurrentMonthYear(monthYear);
+
+    // Apply current filters when month changes
     if (doctorFilter && statusFilter) {
       fetchByDoctorStatus(monthYear, statusFilter, doctorFilter);
     } else if (doctorFilter) {
@@ -140,13 +138,11 @@ const SecretaryAppointments = () => {
       fetchByStatus(statusFilter, monthYear);
     } else if (clinicFilter) {
       fetchByClinic(monthYear, clinicFilter);
+    } else {
+      fetchAllByDate(monthYear);
     }
-    setCurrentMonthYear(monthYear);
   }, [
     currentDate,
-    statusFilter,
-    doctorFilter,
-    clinicFilter,
     fetchAllByDate,
     fetchByDoctor,
     fetchByStatus,
@@ -161,12 +157,6 @@ const SecretaryAppointments = () => {
       statusFilter || doctorFilter || clinicFilter
         ? filteredAppointments || []
         : allAppointments;
-    // Filter by payment status if selected
-    if (paymentStatusFilter) {
-      appointments = appointments.filter(
-        (apt) => apt?.payment_status === paymentStatusFilter
-      );
-    }
     return appointments;
   };
 
@@ -334,21 +324,60 @@ const SecretaryAppointments = () => {
 
   const handleStatusFilterChange = (value) => {
     setStatusFilter(value);
+    // Trigger filtering when status changes
+    const monthYear = getMonthYearString(currentDate);
+    if (value && doctorFilter) {
+      fetchByDoctorStatus(monthYear, value, doctorFilter);
+    } else if (value) {
+      fetchByStatus(value, monthYear);
+    } else if (doctorFilter) {
+      fetchByDoctor(doctorFilter, monthYear);
+    } else if (clinicFilter) {
+      fetchByClinic(monthYear, clinicFilter);
+    } else {
+      fetchAllByDate(monthYear);
+    }
   };
+
   const handleDoctorFilterChange = (value) => {
     setDoctorFilter(value);
+    // Trigger filtering when doctor changes
+    const monthYear = getMonthYearString(currentDate);
+    if (value && statusFilter) {
+      fetchByDoctorStatus(monthYear, statusFilter, value);
+    } else if (value) {
+      fetchByDoctor(value, monthYear);
+    } else if (statusFilter) {
+      fetchByStatus(statusFilter, monthYear);
+    } else if (clinicFilter) {
+      fetchByClinic(monthYear, clinicFilter);
+    } else {
+      fetchAllByDate(monthYear);
+    }
   };
+
   const handleClinicFilterChange = (value) => {
     setClinicFilter(value);
+
+    // Clear other filters when clinic is selected
+    if (value) {
+      setStatusFilter(null);
+      setDoctorFilter(null);
+    }
+
+    // Trigger filtering when clinic changes
+    const monthYear = getMonthYearString(currentDate);
+    if (value) {
+      fetchByClinic(monthYear, value);
+    } else {
+      fetchAllByDate(monthYear);
+    }
   };
-  const handlePaymentStatusFilterChange = (value) => {
-    setPaymentStatusFilter(value);
-  };
+
   const handleClearFilters = () => {
     setStatusFilter(null);
     setDoctorFilter(null);
     setClinicFilter(null);
-    setPaymentStatusFilter(null);
     clearFilters();
     const monthYear = getMonthYearString(currentDate);
     fetchAllByDate(monthYear);
@@ -717,18 +746,11 @@ const SecretaryAppointments = () => {
               >
                 <Filter className="w-4 h-4" />
                 Filters
-                {(statusFilter ||
-                  doctorFilter ||
-                  clinicFilter ||
-                  paymentStatusFilter) && (
+                {(statusFilter || doctorFilter || clinicFilter) && (
                   <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                     {
-                      [
-                        statusFilter,
-                        doctorFilter,
-                        clinicFilter,
-                        paymentStatusFilter,
-                      ].filter(Boolean).length
+                      [statusFilter, doctorFilter, clinicFilter].filter(Boolean)
+                        .length
                     }
                   </span>
                 )}
@@ -801,23 +823,6 @@ const SecretaryAppointments = () => {
                     <Option value="cancelled">Cancelled</Option>
                   </Select>
                 </div>
-                {/* Payment Status Filter */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Payment:
-                  </label>
-                  <Select
-                    value={paymentStatusFilter}
-                    onChange={handlePaymentStatusFilterChange}
-                    style={{ width: 120 }}
-                    allowClear
-                    placeholder="Payment"
-                  >
-                    <Option value="paid">Paid</Option>
-                    <Option value="pending">Pending</Option>
-                    <Option value="cancelled">Cancelled</Option>
-                  </Select>
-                </div>
                 {/* Doctor Filter */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -853,16 +858,13 @@ const SecretaryAppointments = () => {
                     loading={clinicsLoading}
                   >
                     {clinics.map((clinic) => (
-                      <Option key={clinic.name} value={clinic.name}>
+                      <Option key={clinic.id} value={clinic.id}>
                         {clinic.name} ({clinic.numOfDoctors} doctors)
                       </Option>
                     ))}
                   </Select>
                 </div>
-                {(statusFilter ||
-                  doctorFilter ||
-                  clinicFilter ||
-                  paymentStatusFilter) && (
+                {(statusFilter || doctorFilter || clinicFilter) && (
                   <button
                     onClick={handleClearFilters}
                     className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
