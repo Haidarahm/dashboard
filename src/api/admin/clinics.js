@@ -104,7 +104,7 @@ export const updateClinic = async (clinicId, name, photo) => {
 };
 
 export async function getClinicById(clinic_id) {
-  const response = await api.get("/api/admin/showDetails", {
+  const response = await api.get("/api/admin/showClinicDetails", {
     params: { clinic_id },
   });
   return response.data;

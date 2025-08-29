@@ -42,7 +42,7 @@ const useSecretaryAuthStore = create((set, get) => ({
 
       return response;
     } catch (err) {
-      const errorMsg = err?.message || err.toString();
+      const errorMsg = err?.error || err.toString();
       set({
         error: errorMsg,
         loading: false,
