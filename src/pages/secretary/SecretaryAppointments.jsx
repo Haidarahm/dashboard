@@ -33,9 +33,10 @@ import {
   ClockCircleOutlined,
   DollarOutlined,
   IdcardOutlined,
-
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import { fetchDoctors } from "../../api/secretary/doctors";
+import { fetchClinics } from "../../api/secretary/clinics";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -78,12 +79,51 @@ const SecretaryAppointments = () => {
   const [clinicFilter, setClinicFilter] = useState(null);
   const [paymentStatusFilter, setPaymentStatusFilter] = useState(null);
 
+  // Doctors and clinics data for filters
+  const [doctors, setDoctors] = useState([]);
+  const [clinics, setClinics] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+  const [clinicsLoading, setClinicsLoading] = useState(false);
+
   // Helper to format date as MM-YYYY
   const getMonthYearString = (date) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${month}-${year}`;
   };
+
+  // Fetch doctors and clinics data on component mount
+  useEffect(() => {
+    const fetchDoctorsData = async () => {
+      setDoctorsLoading(true);
+      try {
+        const response = await fetchDoctors(1, 100); // Fetch all doctors
+        setDoctors(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch doctors:", error);
+        message.error("Failed to load doctors");
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
+    const fetchClinicsData = async () => {
+      setClinicsLoading(true);
+      try {
+        const response = await fetchClinics(1, 100);
+        console.log(response.data);
+        setClinics(response.data || []); // Clinics response is direct array
+      } catch (error) {
+        console.error("Failed to fetch clinics:", error);
+        message.error("Failed to load clinics");
+      } finally {
+        setClinicsLoading(false);
+      }
+    };
+
+    fetchDoctorsData();
+    fetchClinicsData();
+  }, []);
 
   // Fetch appointments when month or filters change
   useEffect(() => {
@@ -413,7 +453,7 @@ const SecretaryAppointments = () => {
         footer={null}
         width={800}
         centered
-        destroyOnClose
+        destroyOnHidden
       >
         {selectedAppointmentModal && (
           <Card>
@@ -789,8 +829,14 @@ const SecretaryAppointments = () => {
                     style={{ width: 150 }}
                     allowClear
                     placeholder="Doctor"
+                    loading={doctorsLoading}
                   >
-                    {/* TODO: Populate with doctor list from API/store */}
+                    {doctors.map((doctor) => (
+                      <Option key={doctor.id} value={doctor.id}>
+                        {doctor.first_name} {doctor.last_name} -{" "}
+                        {doctor.speciality}
+                      </Option>
+                    ))}
                   </Select>
                 </div>
                 {/* Clinic Filter */}
@@ -804,8 +850,13 @@ const SecretaryAppointments = () => {
                     style={{ width: 150 }}
                     allowClear
                     placeholder="Clinic"
+                    loading={clinicsLoading}
                   >
-                    {/* TODO: Populate with clinic list from API/store */}
+                    {clinics.map((clinic) => (
+                      <Option key={clinic.name} value={clinic.name}>
+                        {clinic.name} ({clinic.numOfDoctors} doctors)
+                      </Option>
+                    ))}
                   </Select>
                 </div>
                 {(statusFilter ||
@@ -942,7 +993,6 @@ const SecretaryAppointments = () => {
                 ? `Appointments - ${selectedDate.toLocaleDateString()}`
                 : "Select a date"}
             </h3>
-          
           </div>
           {selectedAppointments?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">

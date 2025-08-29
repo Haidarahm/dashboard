@@ -1,4 +1,4 @@
-import api from "../api";
+import api from "../../config/config";
 
 // Fetch clinics for secretary
 export const fetchClinics = async (page = 1, size = 5) => {
