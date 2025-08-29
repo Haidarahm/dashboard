@@ -114,14 +114,16 @@ const Navbar = ({ collapsed, setCollapsed }) => {
 
         {/* Right Section */}
         <div className="flex items-center space-x-4">
-          {/* Notifications */}
-          <div className="relative">
-            <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
-              <Badge count={3} size="small" className="text-xs">
-                <FiBell className="w-5 h-5 text-gray-600" />
-              </Badge>
-            </button>
-          </div>
+          {/* Notifications - Hide for secretary role */}
+          {userRole !== "secretary" && (
+            <div className="relative">
+              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
+                <Badge count={3} size="small" className="text-xs">
+                  <FiBell className="w-5 h-5 text-gray-600" />
+                </Badge>
+              </button>
+            </div>
+          )}
 
           {/* User Menu */}
           <Dropdown

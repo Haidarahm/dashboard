@@ -27,6 +27,7 @@ function SecretaryRoutes() {
   >
     <Routes>
       <Route path="/" element={<DashboardLayout />}>
+      <Route index element={<Navigate to="/appointments" replace />} />
       <Route path="appointments" element={<Appointments />} />
       </Route>
     </Routes>

@@ -22,7 +22,7 @@ const usePatientsStore = create((set, get) => ({
   error: null,
   currentPage: 1,
   total: 0,
-  perPage: 10,
+  perPage: 5,
   searchQuery: "",
   // Patient appointments pagination
   appointmentsCurrentPage: 1,
@@ -52,7 +52,7 @@ const usePatientsStore = create((set, get) => ({
   },
 
   // Search patient by name (with pagination if supported)
-  searchForPatient: async (name, page = 1, perPage = 10) => {
+  searchForPatient: async (name, page = 1, perPage = 5) => {
     set({ loading: true, error: null, searchQuery: name });
     try {
       const res = await searchPatient(name);

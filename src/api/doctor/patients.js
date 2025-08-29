@@ -4,7 +4,7 @@ import api from "../../config/config";
 export const getPatientsRecord = async (page = 1, perPage = 10) => {
   try {
     const response = await api.get("/api/doctor/patientsRecord", {
-      params: { page, per_page: perPage },
+      params: { page, size: perPage },
     });
     return response.data;
   } catch (error) {

@@ -13,7 +13,6 @@ import {
 import {
   SearchOutlined,
   UserOutlined,
-  CloseOutlined,
   CalendarOutlined,
   ExperimentOutlined,
 } from "@ant-design/icons";
