@@ -163,15 +163,7 @@ const DoctorsDetailsTable = () => {
         boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
         border: "1px solid #e8e8e8",
       }}
-      bodyStyle={{
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        scrollbarWidth: "thin",
-
-        overflow: "auto",
-      }}
+      
 
       bordered={false}
     >

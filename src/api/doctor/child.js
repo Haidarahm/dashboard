@@ -42,7 +42,7 @@ export const addChildRecords = async (recordsData) => {
 // Edit child records
 export const editChildRecords = async (recordsData) => {
   try {
-    const response = await api.put(`/api/doctor/editChildRecords`, recordsData);
+    const response = await api.post(`/api/doctor/editChildRecords`, recordsData);
     return response.data;
   } catch (error) {
     throw error;

@@ -8,6 +8,7 @@ import {
   Pagination,
   Spin,
   Empty,
+  message,
 } from "antd";
 import {
   FaEye,
@@ -17,7 +18,6 @@ import {
   FaBaby,
   FaTint,
   FaFileAlt,
-  FaEditAlt,
 } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 
@@ -53,10 +53,16 @@ const ChildrenManagement = ({
   const [selectedChildForRecord, setSelectedChildForRecord] = useState(null);
   const [addRecordModalVisible, setAddRecordModalVisible] = useState(false);
   const [editRecordModalVisible, setEditRecordModalVisible] = useState(false);
+  const [editButtonLoading, setEditButtonLoading] = useState({});
 
   useEffect(() => {
     fetchChildren(currentPage, pageSize);
   }, [currentPage, pageSize]);
+
+  // Debug effect to monitor childRecord changes
+  useEffect(() => {
+    console.log("childRecord changed:", childRecord);
+  }, [childRecord]);
 
   const handlePageChange = (page, size) => {
     setCurrentPage(page);
@@ -89,10 +95,32 @@ const ChildrenManagement = ({
     setAddRecordModalVisible(false);
   };
 
-  const handleOpenEditRecordModal = (childId = null) => {
-    setEditRecordModalVisible(true);
+  const handleOpenEditRecordModal = async (childId = null) => {
     if (childId) {
-      setSelectedChildForRecord({ id: childId });
+      try {
+        // Set loading state for this specific button
+        setEditButtonLoading((prev) => ({ ...prev, [childId]: true }));
+
+        // First fetch the child record to get default values
+        const recordData = await getChildRecord(childId);
+        console.log("Fetched record data for editing:", recordData);
+        console.log("Current childRecord state:", childRecord);
+        setSelectedChildForRecord({ id: childId });
+        // Wait a bit to ensure the state is updated before opening modal
+        setTimeout(() => {
+          console.log("Opening edit modal with childRecord:", childRecord);
+          setEditRecordModalVisible(true);
+        }, 100);
+      } catch (error) {
+        console.error("Failed to fetch child record for editing:", error);
+        // Show error message to user
+        message.error("Failed to load record data for editing");
+      } finally {
+        // Clear loading state regardless of success/failure
+        setEditButtonLoading((prev) => ({ ...prev, [childId]: false }));
+      }
+    } else {
+      setEditRecordModalVisible(true);
     }
   };
 
@@ -179,6 +207,7 @@ const ChildrenManagement = ({
     {
       title: "Name",
       key: "name",
+      width: 150,
       render: (_, record) => (
         <div>
           <Text strong className="text-base">
@@ -191,6 +220,7 @@ const ChildrenManagement = ({
     {
       title: "Age",
       key: "age",
+      width: 150,
       render: (_, record) => (
         <div className="flex items-center gap-2">
           <FaBaby className="text-blue-500" />
@@ -202,6 +232,7 @@ const ChildrenManagement = ({
     {
       title: "Gender",
       key: "gender",
+      width: 100,
       render: (_, record) => (
         <Tag color={getGenderColor(record.gender)} className="font-medium">
           {record.gender?.charAt(0)?.toUpperCase() + record.gender?.slice(1)}
@@ -216,6 +247,7 @@ const ChildrenManagement = ({
     {
       title: "Blood Type",
       key: "blood_type",
+      width: 120,
       render: (_, record) => (
         <div className="flex items-center gap-2">
           <FaTint className="text-red-500" />
@@ -242,6 +274,7 @@ const ChildrenManagement = ({
     {
       title: "Birth Date",
       key: "birth_date",
+      width: 150,
       render: (_, record) => (
         <div className="flex items-center gap-2">
           <FaCalendarAlt className="text-green-500" />
@@ -286,9 +319,10 @@ const ChildrenManagement = ({
           <Button
             type="default"
             size="small"
-            icon={<FaEdit  />}
+            icon={<FaEdit />}
             onClick={() => handleOpenEditRecordModal(record.id)}
             disabled={record.child_record === null}
+            loading={editButtonLoading[record.id] || false}
             className={`${
               record.child_record !== null
                 ? "border-purple-500 text-purple-500 hover:border-purple-600 hover:text-purple-600"
@@ -373,6 +407,7 @@ const ChildrenManagement = ({
               pagination={false}
               scroll={{ x: 1300 }}
               className="mb-4"
+              tableLayout="auto"
               rowClassName="hover:bg-gray-50"
             />
 
@@ -430,6 +465,8 @@ const ChildrenManagement = ({
         children={children}
         selectedChildId={selectedChildForRecord?.id}
         isEdit={true}
+        existingRecord={childRecord}
+        key={`edit-${childRecord?.id || "new"}`}
       />
     </div>
   );

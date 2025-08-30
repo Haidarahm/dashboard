@@ -68,7 +68,7 @@ const ChildRecord = ({ visible, onCancel, childRecord, loading, error }) => {
       width={800}
       centered
       className="my-8"
-      bodyStyle={{ padding: "24px" }}
+      styles={{ body: { padding: "24px" } }}
     >
       {loading ? (
         <div className="text-center py-8">

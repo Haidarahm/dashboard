@@ -391,7 +391,7 @@ function Clinics() {
               background: "linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%)",
               padding: 0,
             }}
-            bodyStyle={{ padding: 0 }}
+            styles={{ body: { padding: 0 } }}
           >
             <Row gutter={[32, 0]} align="middle">
               <Col xs={24} sm={8} style={{ textAlign: "center", padding: 32 }}>

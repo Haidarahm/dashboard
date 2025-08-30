@@ -1,24 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Select,
-  DatePicker,
-  Button,
-  message,
-  Spin,
-  Row,
-  Col,
-  Typography,
-} from "antd";
+import { Modal, Form, Input, Select, DatePicker, Button, Row, Col } from "antd";
 import { FaBaby, FaSave } from "react-icons/fa";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
-const { Title } = Typography;
 
 const AddChildRecord = ({
   visible,
@@ -27,19 +14,44 @@ const AddChildRecord = ({
   loading,
   children,
   selectedChildId,
+  isEdit = false,
+  existingRecord = null,
 }) => {
   const [form] = Form.useForm();
   const [submitLoading, setSubmitLoading] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      form.resetFields();
-      // If a child ID is provided, set it automatically
-      if (selectedChildId) {
-        form.setFieldsValue({ child_id: selectedChildId });
+      if (isEdit && existingRecord) {
+        // Set form values from existing record for editing
+        form.setFieldsValue({
+          child_id: existingRecord.child_id || selectedChildId,
+          height_cm: existingRecord.height_cm,
+          weight_kg: existingRecord.weight_kg,
+          head_circumference_cm: existingRecord.head_circumference_cm,
+          growth_notes: existingRecord.growth_notes || "",
+          developmental_observations:
+            existingRecord.developmental_observations || "",
+          allergies: existingRecord.allergies || "",
+          doctor_notes: existingRecord.doctor_notes || "",
+          feeding_type: existingRecord.feeding_type || "natural",
+          last_visit_date: existingRecord.last_visit_date
+            ? dayjs(existingRecord.last_visit_date)
+            : null,
+          next_visit_date: existingRecord.next_visit_date
+            ? dayjs(existingRecord.next_visit_date)
+            : null,
+        });
+      } else {
+        // Reset form for adding new record
+        form.resetFields();
+        // If a child ID is provided, set it automatically
+        if (selectedChildId) {
+          form.setFieldsValue({ child_id: selectedChildId });
+        }
       }
     }
-  }, [visible, form, selectedChildId]);
+  }, [visible, form, selectedChildId, isEdit, existingRecord]);
 
   const handleSubmit = async (values) => {
     setSubmitLoading(true);
@@ -78,9 +90,20 @@ const AddChildRecord = ({
           : null,
       };
 
+      // Add record_id when editing
+      if (isEdit && existingRecord && existingRecord.id) {
+        formData.record_id = existingRecord.id;
+      }
+
       await onSubmit(formData);
-      toast.success("Child record added successfully!");
-      form.resetFields();
+      toast.success(
+        isEdit
+          ? "Child record updated successfully!"
+          : "Child record added successfully!"
+      );
+      if (!isEdit) {
+        form.resetFields();
+      }
       onCancel();
     } catch (error) {
       console.log(error);
@@ -101,7 +124,7 @@ const AddChildRecord = ({
       title={
         <div className="flex items-center gap-2">
           <FaBaby className="text-blue-500" />
-          <span>Add Child Record</span>
+          <span>{isEdit ? "Edit Child Record" : "Add Child Record"}</span>
         </div>
       }
       open={visible}
@@ -111,15 +134,15 @@ const AddChildRecord = ({
       centered
       destroyOnClose
       className="my-8"
-      bodyStyle={{ padding: "24px" }}
+      styles={{ body: { padding: "24px" } }}
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{
-          feeding_type: "natural",
-        }}
+        initialValues={
+          isEdit && existingRecord ? {} : { feeding_type: "natural" }
+        }
       >
         <Row gutter={16}>
           {/* Child Selection */}
@@ -134,7 +157,7 @@ const AddChildRecord = ({
                 showSearch
                 optionFilterProp="children"
                 loading={loading}
-                disabled={!!selectedChildId}
+                disabled={!!selectedChildId || isEdit}
               >
                 {children?.map((child) => (
                   <Option key={child.id} value={child.id}>
@@ -402,7 +425,13 @@ const AddChildRecord = ({
               icon={<FaSave />}
               className="bg-blue-500 hover:bg-blue-600"
             >
-              {submitLoading ? "Adding..." : "Add Record"}
+              {submitLoading
+                ? isEdit
+                  ? "Updating..."
+                  : "Adding..."
+                : isEdit
+                ? "Update Record"
+                : "Add Record"}
             </Button>
           </Col>
         </Row>

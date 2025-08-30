@@ -73,7 +73,7 @@ const ReportsCardContainer = () => {
               boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
               transition: "all 0.2s ease",
             }}
-            bodyStyle={{ padding: "16px" }}
+            styles={{ body: { padding: "16px" } }}
             title={
               <Text strong style={{ fontSize: "14px", color: "#1890ff" }}>
                 {report.type}
@@ -110,12 +110,14 @@ const ReportsCardContainer = () => {
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         border: "1px solid #e8e8e8",
       }}
-      bodyStyle={{
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
+      styles={{
+        body: {
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          overflow: "hidden",
+        },
       }}
       bordered={false}
     >
@@ -148,7 +150,6 @@ const ReportsCardContainer = () => {
             total={total}
             pageSize={pageSize}
             onChange={setCurrentPage}
-          
             showTotal={(total, range) =>
               `${range[0]}-${range[1]} of ${total} reports`
             }
