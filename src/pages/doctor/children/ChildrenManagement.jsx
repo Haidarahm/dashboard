@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Table,
-  Avatar,
   Tag,
   Button,
   Space,
@@ -14,12 +13,17 @@ import {
   FaEye,
   FaEdit,
   FaTrash,
-  FaUser,
   FaCalendarAlt,
   FaBaby,
   FaTint,
+  FaFileAlt,
+  FaEditAlt,
 } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
+
 import useChildStore from "../../../store/doctor/childStore";
+import ChildRecord from "./ChildRecord";
+import AddChildRecord from "./AddChildRecord";
 
 const { Text, Title } = Typography;
 
@@ -35,10 +39,20 @@ const ChildrenManagement = ({
     childrenLoading,
     childrenError,
     fetchChildren,
+    getChildRecord,
+    addChildRecords,
+    editChildRecords,
+    childRecord,
+    childRecordLoading,
+    childRecordError,
   } = useChildStore();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [recordModalVisible, setRecordModalVisible] = useState(false);
+  const [selectedChildForRecord, setSelectedChildForRecord] = useState(null);
+  const [addRecordModalVisible, setAddRecordModalVisible] = useState(false);
+  const [editRecordModalVisible, setEditRecordModalVisible] = useState(false);
 
   useEffect(() => {
     fetchChildren(currentPage, pageSize);
@@ -47,6 +61,63 @@ const ChildrenManagement = ({
   const handlePageChange = (page, size) => {
     setCurrentPage(page);
     setPageSize(size);
+  };
+
+  const handleViewRecord = async (child) => {
+    setSelectedChildForRecord(child);
+    setRecordModalVisible(true);
+    try {
+      await getChildRecord(child.id);
+    } catch (error) {
+      console.error("Failed to fetch child record:", error);
+    }
+  };
+
+  const handleCloseRecordModal = () => {
+    setRecordModalVisible(false);
+    setSelectedChildForRecord(null);
+  };
+
+  const handleOpenAddRecordModal = (childId = null) => {
+    setAddRecordModalVisible(true);
+    if (childId) {
+      setSelectedChildForRecord({ id: childId });
+    }
+  };
+
+  const handleCloseAddRecordModal = () => {
+    setAddRecordModalVisible(false);
+  };
+
+  const handleOpenEditRecordModal = (childId = null) => {
+    setEditRecordModalVisible(true);
+    if (childId) {
+      setSelectedChildForRecord({ id: childId });
+    }
+  };
+
+  const handleCloseEditRecordModal = () => {
+    setEditRecordModalVisible(false);
+  };
+
+  const handleAddChildRecord = async (formData) => {
+    try {
+      await addChildRecords(formData);
+      // Refresh the children list to show any updates
+      await fetchChildren(currentPage, pageSize);
+    } catch (error) {
+      throw error.response.data; // Re-throw to let the AddChildRecord component handle the error
+    }
+  };
+
+  const handleEditChildRecord = async (formData) => {
+    try {
+      await editChildRecords(formData);
+      // Refresh the children list to show any updates
+      await fetchChildren(currentPage, pageSize);
+    } catch (error) {
+      throw error.response.data; // Re-throw to let the AddChildRecord component handle the error
+    }
   };
 
   const calculateAge = (birthDate) => {
@@ -94,16 +165,15 @@ const ChildrenManagement = ({
 
   const columns = [
     {
-      title: "Photo",
-      key: "photo",
-      width: 80,
-      render: (_, record) => (
-        <Avatar
-          size={50}
-          src={record.photo}
-          icon={<FaUser className="text-lg" />}
-          className="bg-blue-100 text-blue-600"
-        />
+      title: "#",
+      key: "index",
+      width: 60,
+      render: (_, record, index) => (
+        <div className="text-center">
+          <Text strong className="text-gray-600">
+            {(currentPage - 1) * pageSize + index + 1}
+          </Text>
+        </div>
       ),
     },
     {
@@ -187,9 +257,46 @@ const ChildrenManagement = ({
     columns.push({
       title: "Actions",
       key: "actions",
-      width: 200,
+      width: 380,
       render: (_, record) => (
         <Space>
+          <Button
+            type="default"
+            size="small"
+            icon={<FaFileAlt />}
+            onClick={() => handleViewRecord(record)}
+            className="border-green-500 text-green-500 hover:border-green-600 hover:text-green-600"
+          >
+            View Record
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            icon={<FaPlus />}
+            onClick={() => handleOpenAddRecordModal(record.id)}
+            disabled={record.child_record !== null}
+            className={`${
+              record.child_record === null
+                ? "border-blue-500 text-blue-500 hover:border-blue-600 hover:text-blue-600"
+                : "border-gray-300 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {record.child_record === null ? "Add Record" : "Record Exists"}
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            icon={<FaEdit  />}
+            onClick={() => handleOpenEditRecordModal(record.id)}
+            disabled={record.child_record === null}
+            className={`${
+              record.child_record !== null
+                ? "border-purple-500 text-purple-500 hover:border-purple-600 hover:text-purple-600"
+                : "border-gray-300 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {record.child_record !== null ? "Edit Record" : "No Record"}
+          </Button>
           {onChildSelect && (
             <Button
               type="primary"
@@ -240,11 +347,13 @@ const ChildrenManagement = ({
   return (
     <div className="bg-white rounded-lg">
       <div className="p-4 border-b border-gray-200">
-        <Title level={4} className="mb-0 flex items-center gap-2">
-          <FaBaby className="text-blue-500" />
-          Children List
-        </Title>
-        <Text type="secondary">Total: {childrenMeta.total} children</Text>
+        <div>
+          <Title level={4} className="mb-0 flex items-center gap-2">
+            <FaBaby className="text-blue-500" />
+            Children List
+          </Title>
+          <Text type="secondary">Total: {childrenMeta.total} children</Text>
+        </div>
       </div>
 
       <div className="p-4">
@@ -262,7 +371,7 @@ const ChildrenManagement = ({
               dataSource={children}
               rowKey="id"
               pagination={false}
-              scroll={{ x: 1000 }}
+              scroll={{ x: 1300 }}
               className="mb-4"
               rowClassName="hover:bg-gray-50"
             />
@@ -292,6 +401,36 @@ const ChildrenManagement = ({
           />
         )}
       </div>
+
+      {/* Child Record Modal */}
+      <ChildRecord
+        visible={recordModalVisible}
+        onCancel={handleCloseRecordModal}
+        childRecord={childRecord}
+        loading={childRecordLoading}
+        error={childRecordError}
+      />
+
+      {/* Add Child Record Modal */}
+      <AddChildRecord
+        visible={addRecordModalVisible}
+        onCancel={handleCloseAddRecordModal}
+        onSubmit={handleAddChildRecord}
+        loading={childrenLoading}
+        children={children}
+        selectedChildId={selectedChildForRecord?.id}
+      />
+
+      {/* Edit Child Record Modal */}
+      <AddChildRecord
+        visible={editRecordModalVisible}
+        onCancel={handleCloseEditRecordModal}
+        onSubmit={handleEditChildRecord}
+        loading={childrenLoading}
+        children={children}
+        selectedChildId={selectedChildForRecord?.id}
+        isEdit={true}
+      />
     </div>
   );
 };
