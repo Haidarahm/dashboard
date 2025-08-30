@@ -1,13 +1,12 @@
 import React from "react";
 import {
   FiMenu,
-  FiBell,
   FiUser,
   FiLogOut,
   FiSettings,
   FiChevronDown,
 } from "react-icons/fi";
-import { Avatar, Badge, Dropdown } from "antd";
+import { Avatar, Dropdown } from "antd";
 import { logoutUser } from "../../utils/auth";
 import { logout } from "../../api/admin/auth";
 import { User } from "lucide-react";
@@ -114,17 +113,6 @@ const Navbar = ({ collapsed, setCollapsed }) => {
 
         {/* Right Section */}
         <div className="flex items-center space-x-4">
-          {/* Notifications - Hide for secretary role */}
-          {userRole !== "secretary" && (
-            <div className="relative">
-              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
-                <Badge count={3} size="small" className="text-xs">
-                  <FiBell className="w-5 h-5 text-gray-600" />
-                </Badge>
-              </button>
-            </div>
-          )}
-
           {/* User Menu */}
           <Dropdown
             menu={{ items: userMenuItems, onClick: handleMenuClick }}

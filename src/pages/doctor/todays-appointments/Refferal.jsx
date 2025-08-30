@@ -23,7 +23,6 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
   const [doctorId, setDoctorId] = useState(null);
   const [selectedDateIso, setSelectedDateIso] = useState(null); // YYYY-MM-DD
   const [selectedTime, setSelectedTime] = useState(null);
-  const [appointmentType, setAppointmentType] = useState("visit");
   const [selectedDoctorBookingType, setSelectedDoctorBookingType] =
     useState(null);
 
@@ -51,7 +50,6 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
       setDoctorId(null);
       setSelectedDateIso(null);
       setSelectedTime(null);
-      setAppointmentType("visit");
       setSelectedDoctorBookingType(null);
       showClinicsAction();
     }
@@ -168,7 +166,7 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
       doctor_id: doctorId,
       date: dateShort,
       time: selectedTime || null, // Time is optional for auto booking
-      appointment_type: isChild ? appointmentType : "visit",
+      appointment_type: "visit",
     });
     if (res) {
       toast.success("Referral reservation added");
@@ -294,8 +292,7 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
                 <Text>{dayjs(selectedDateIso).format("YYYY-MM-DD")}</Text>
               </div>
               <div>
-                <Text strong>Appointment type:</Text>{" "}
-                <Text>{isChild ? appointmentType : "visit"}</Text>
+                <Text strong>Appointment type:</Text> <Text>Visit</Text>
               </div>
             </div>
             <Space>
@@ -376,8 +373,7 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
                 <Text strong>Time:</Text> <Text>{selectedTime}</Text>
               </div>
               <div>
-                <Text strong>Appointment type:</Text>{" "}
-                <Text>{isChild ? appointmentType : "visit"}</Text>
+                <Text strong>Appointment type:</Text> <Text>Visit</Text>
               </div>
             </div>
             <Space>
@@ -417,7 +413,6 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
     patientName,
     patientId,
     isChild,
-    appointmentType,
   ]);
 
   return (
@@ -433,23 +428,6 @@ function Refferal({ open, onClose, patientId, patientName, isChild }) {
       }
     >
       <Space direction="vertical" style={{ width: "100%" }} size={16}>
-        {/* Appointment type selection for child appointments */}
-        {isChild ? (
-          <div>
-            <Text type="secondary">Appointment type</Text>
-            <div style={{ marginTop: 8 }}>
-              <Select
-                value={appointmentType}
-                onChange={setAppointmentType}
-                style={{ width: 240 }}
-              >
-                <Option value="vaccination">Vaccination</Option>
-                <Option value="visit">Visit</Option>
-              </Select>
-            </div>
-          </div>
-        ) : null}
-
         <Steps
           current={current}
           items={steps.map((s) => ({ title: s.title }))}
