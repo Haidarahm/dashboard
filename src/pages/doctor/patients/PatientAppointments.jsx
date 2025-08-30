@@ -125,9 +125,7 @@ const PatientAppointments = ({
               content={
                 <div style={{ maxWidth: "300px" }}>
                   <Descriptions column={1} size="small">
-                    <Descriptions.Item label="ID">
-                      {record.id}
-                    </Descriptions.Item>
+                 
                     <Descriptions.Item label="Patient Name">
                       {record.patient_first_name} {record.patient_last_name}
                     </Descriptions.Item>

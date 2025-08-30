@@ -7,7 +7,7 @@ const CancelAppointmentsModal = ({
   onCancel,
   onSubmit,
   loading,
-  allowedWeekdays = [],
+  availableDates = [],
 }) => {
   const [form] = Form.useForm();
 
@@ -21,16 +21,17 @@ const CancelAppointmentsModal = ({
       const [startDate, endDate] = values.dates;
       const [startTime, endTime] = values.times;
 
-      // Guard: ensure start/end days are allowed
-      const startDay = startDate.day();
-      const endDay = endDate.day();
+      // Guard: ensure start/end dates are in available dates
+      const startDateStr = startDate.format("YYYY-MM-DD");
+      const endDateStr = endDate.format("YYYY-MM-DD");
+
       if (
-        allowedWeekdays &&
-        allowedWeekdays.length > 0 &&
-        (!allowedWeekdays.includes(startDay) ||
-          !allowedWeekdays.includes(endDay))
+        availableDates &&
+        availableDates.length > 0 &&
+        (!availableDates.includes(startDateStr) ||
+          !availableDates.includes(endDateStr))
       ) {
-        message.error("Selected dates must be on your scheduled days.");
+        message.error("Selected dates must be on your available work days.");
         return;
       }
 
@@ -47,9 +48,10 @@ const CancelAppointmentsModal = ({
 
   const disabledDate = (current) => {
     if (!current) return false;
-    if (!allowedWeekdays || allowedWeekdays.length === 0) return false;
-    const day = current.day(); // 0 (Sunday) - 6 (Saturday)
-    return !allowedWeekdays.includes(day);
+    if (!availableDates || availableDates.length === 0) return false;
+
+    const dateStr = current.format("YYYY-MM-DD");
+    return !availableDates.includes(dateStr);
   };
 
   return (
@@ -73,18 +75,20 @@ const CancelAppointmentsModal = ({
               validator() {
                 const val = getFieldValue("dates");
                 if (!val || val.length !== 2) return Promise.resolve();
-                if (!allowedWeekdays || allowedWeekdays.length === 0)
+                if (!availableDates || availableDates.length === 0)
                   return Promise.resolve();
                 const [s, e] = val;
-                const sDay = s?.day();
-                const eDay = e?.day();
+                const sDateStr = s?.format("YYYY-MM-DD");
+                const eDateStr = e?.format("YYYY-MM-DD");
                 if (
-                  allowedWeekdays.includes(sDay) &&
-                  allowedWeekdays.includes(eDay)
+                  availableDates.includes(sDateStr) &&
+                  availableDates.includes(eDateStr)
                 )
                   return Promise.resolve();
                 return Promise.reject(
-                  new Error("Selected dates must be on your scheduled days.")
+                  new Error(
+                    "Selected dates must be on your available work days."
+                  )
                 );
               },
             }),

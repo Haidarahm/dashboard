@@ -12,7 +12,7 @@ import {
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import { Select, DatePicker, message } from "antd";
 import CancelAppointmentsModal from "./CancelAppointmentsModal";
-import { useProfileStore } from "../../../store/doctor/profileStore";
+import  useCheckupStore from "../../../store/doctor/checkupStore";
 const { Option } = Select;
 
 const DoctorAppointments = () => {
@@ -26,7 +26,7 @@ const DoctorAppointments = () => {
   const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
   const [isResizing, setIsResizing] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // 'list' or 'grid'
-  const [allowedWeekdays, setAllowedWeekdays] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
 
   const {
     allAppointments,
@@ -41,35 +41,25 @@ const DoctorAppointments = () => {
     cancelAppointments,
   } = useAppointmentsStore();
 
-  const { profile, fetchProfile } = useProfileStore();
+  const { workDays, showDoctorWorkDaysAction, loadingWorkDays } =
+    useCheckupStore();
 
   useEffect(() => {
-    const ensureProfile = async () => {
+    const fetchWorkDays = async () => {
       try {
-        if (!profile) {
-          await fetchProfile();
-        }
-      } catch {}
+        await showDoctorWorkDaysAction();
+      } catch (error) {
+        console.error("Failed to fetch work days:", error);
+      }
     };
-    ensureProfile();
-  }, [profile, fetchProfile]);
+    fetchWorkDays();
+  }, [showDoctorWorkDaysAction]);
 
   useEffect(() => {
-    if (!profile || !Array.isArray(profile.schedule)) return;
-    const dayNameToIndex = {
-      Sunday: 0,
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-      Saturday: 6,
-    };
-    const indices = profile.schedule
-      .map((s) => dayNameToIndex[s?.day])
-      .filter((v) => typeof v === "number");
-    setAllowedWeekdays(Array.from(new Set(indices)));
-  }, [profile]);
+    if (workDays && Array.isArray(workDays)) {
+      setAvailableDates(workDays);
+    }
+  }, [workDays]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -412,7 +402,7 @@ const DoctorAppointments = () => {
         onCancel={() => setShowCancelModal(false)}
         onSubmit={handleBulkCancel}
         loading={cancelLoading}
-        allowedWeekdays={allowedWeekdays}
+        availableDates={availableDates}
       />
 
       {/* Calendar Section */}
