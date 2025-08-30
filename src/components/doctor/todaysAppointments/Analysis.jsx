@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, Form, Input, Button, Typography, message, Space } from "antd";
 import { ExperimentOutlined } from "@ant-design/icons";
 import useAnalyzeStore from "../../../store/doctor/analyzeStore";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -22,11 +23,11 @@ const Analysis = ({ visible, onClose, patientId, patientName }) => {
       });
 
       if (result) {
-        message.success("Analysis request submitted successfully");
+        toast.success("Analysis request submitted successfully");
         form.resetFields();
         onClose();
       } else {
-        message.error("Failed to submit analysis request");
+        toast.error("Failed to submit analysis request");
       }
     } catch (error) {
       message.error("Error submitting analysis request");
