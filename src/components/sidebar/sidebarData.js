@@ -89,4 +89,10 @@ export const secretaryRoutes = [
     label: "Appointments",
     path: "/appointments",
   },
+  {
+    key: "/cancelled-appointments",
+    icon: FaRegCalendarCheck,
+    label: "Cancelled Appointments",
+    path: "/cancelled-appointments",
+  },
 ];

@@ -40,7 +40,9 @@ import {
 import { fetchDoctors } from "../../api/secretary/doctors";
 import { fetchClinics } from "../../api/secretary/clinics";
 import { addBill } from "../../api/secretary/addBill";
+import { fetchDoctorWorkDays } from "../../api/secretary/doctorWorkDays";
 import { toast } from "react-toastify";
+import CancelAppointmentsModal from "../../components/secretary/CancelAppointmentsModal";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -93,6 +95,13 @@ const SecretaryAppointments = () => {
   const [discountPoints, setDiscountPoints] = useState({});
   const [submittingBill, setSubmittingBill] = useState({});
 
+  // Cancel Appointments functionality
+  const [showCancelAppointmentsModal, setShowCancelAppointmentsModal] =
+    useState(false);
+  const [selectedDoctorForCancel, setSelectedDoctorForCancel] = useState(null);
+  const [doctorWorkDays, setDoctorWorkDays] = useState([]);
+  const [loadingWorkDays, setLoadingWorkDays] = useState(false);
+
   // Helper to format date as MM-YYYY
   const getMonthYearString = (date) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -131,6 +140,74 @@ const SecretaryAppointments = () => {
       console.error("Error adding bill:", error);
     } finally {
       setSubmittingBill((prev) => ({ ...prev, [appointmentId]: false }));
+    }
+  };
+
+  // Handle cancel appointments functionality
+  const handleCancelAppointmentsClick = () => {
+    setShowCancelAppointmentsModal(true);
+    setSelectedDoctorForCancel(null);
+    setDoctorWorkDays([]);
+  };
+
+  const handleCancelAppointmentsModalClose = () => {
+    setShowCancelAppointmentsModal(false);
+    setSelectedDoctorForCancel(null);
+    setDoctorWorkDays([]);
+    setLoadingWorkDays(false);
+  };
+
+  const handleDoctorSelectForCancel = async (doctorId) => {
+    console.log("handleDoctorSelectForCancel called with:", doctorId);
+    setSelectedDoctorForCancel(doctorId);
+    setLoadingWorkDays(true);
+    setDoctorWorkDays([]); // Clear previous work days
+
+    try {
+      const workDays = await fetchDoctorWorkDays(doctorId);
+      console.log("Fetched work days:", workDays); // Debug log
+
+      if (!workDays || workDays.length === 0) {
+        toast.warning("This doctor has no scheduled work days available.");
+      }
+
+      setDoctorWorkDays(workDays || []);
+    } catch (error) {
+      toast.error("Failed to fetch doctor work days. Please try again.");
+      console.error("Error fetching work days:", error);
+      setDoctorWorkDays([]); // Ensure work days are cleared on error
+    } finally {
+      setLoadingWorkDays(false);
+    }
+  };
+
+  const handleCancelAppointmentsSubmit = async (payload) => {
+    if (!selectedDoctorForCancel) {
+      toast.error("Please select a doctor first");
+      return;
+    }
+
+    setCancelLoading(true);
+    try {
+      const success = await cancelDoctorsAppointments({
+        ...payload,
+        doctor_id: selectedDoctorForCancel,
+      });
+
+      if (success) {
+        toast.success("Appointments cancelled successfully.");
+        handleCancelAppointmentsModalClose();
+        // Refresh appointments
+        const monthYear = getMonthYearString(currentDate);
+        fetchAllByDate(monthYear);
+      } else {
+        toast.error("Failed to cancel appointments.");
+      }
+    } catch (error) {
+      toast.error("Failed to cancel appointments. Please try again.");
+      console.error("Error cancelling appointments:", error);
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -798,6 +875,14 @@ const SecretaryAppointments = () => {
                   </span>
                 )}
               </button>
+              <button
+                onClick={handleCancelAppointmentsClick}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                title="Cancel appointments in a date/time range"
+              >
+                <X className="w-4 h-4" />
+                Cancel Appointments
+              </button>
               <DatePicker
                 placeholder="Select Date"
                 onChange={(date) => {
@@ -1258,6 +1343,19 @@ const SecretaryAppointments = () => {
           )}
         </div>
       )}
+
+      {/* Cancel Appointments Modal */}
+      <CancelAppointmentsModal
+        visible={showCancelAppointmentsModal}
+        onCancel={handleCancelAppointmentsModalClose}
+        onSubmit={handleCancelAppointmentsSubmit}
+        loading={cancelLoading}
+        availableDates={doctorWorkDays}
+        doctors={doctors}
+        selectedDoctor={selectedDoctorForCancel}
+        onDoctorSelect={handleDoctorSelectForCancel}
+        loadingWorkDays={loadingWorkDays}
+      />
     </div>
   );
 };

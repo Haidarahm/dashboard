@@ -3,6 +3,8 @@ import React, { Suspense, useState } from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import Navbar from "../components/navbar/Navbar";
 import Appointments from "../pages/secretary/SecretaryAppointments";
+import CancelledAppointments from "../pages/secretary/CancelledAppointments";
+
 function SecretaryRoutes() {
   function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false);
@@ -21,17 +23,21 @@ function SecretaryRoutes() {
 
   return (
     <Suspense
-    fallback={
-      <div style={{ textAlign: "center", padding: 40 }}>Loading...</div>
-    }
-  >
-    <Routes>
-      <Route path="/" element={<DashboardLayout />}>
-      <Route index element={<Navigate to="/appointments" replace />} />
-      <Route path="appointments" element={<Appointments />} />
-      </Route>
-    </Routes>
-  </Suspense>
+      fallback={
+        <div style={{ textAlign: "center", padding: 40 }}>Loading...</div>
+      }
+    >
+      <Routes>
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index element={<Navigate to="/appointments" replace />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route
+            path="cancelled-appointments"
+            element={<CancelledAppointments />}
+          />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
