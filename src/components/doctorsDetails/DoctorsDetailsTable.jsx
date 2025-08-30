@@ -95,23 +95,6 @@ const DoctorsDetailsTable = () => {
 
   const columns = [
     {
-      title: "Image",
-      dataIndex: "photo",
-      key: "photo",
-      width: 80,
-      render: (photo) => (
-        <Avatar
-          size={48}
-          src={photo}
-          icon={<UserOutlined />}
-          style={{
-            backgroundColor: photo ? "transparent" : "#1890ff",
-            border: "1px solid #f0f0f0",
-          }}
-        />
-      ),
-    },
-    {
       title: "Doctor Name",
       dataIndex: "first_name",
       key: "name",
@@ -136,8 +119,8 @@ const DoctorsDetailsTable = () => {
   ];
 
   const handleTableChange = (pagination) => {
-    setPage(pagination.current)
-  }
+    setPage(pagination.current);
+  };
   return (
     <Card
       title={
@@ -148,6 +131,7 @@ const DoctorsDetailsTable = () => {
             fontWeight: 600,
             display: "flex",
             alignItems: "center",
+
             gap: 8,
           }}
         >
@@ -162,9 +146,8 @@ const DoctorsDetailsTable = () => {
         borderRadius: "12px",
         boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
         border: "1px solid #e8e8e8",
+        overflow: "auto",
       }}
-      
-
       bordered={false}
     >
       <Table
@@ -193,7 +176,6 @@ const DoctorsDetailsTable = () => {
           borderRadius: "8px",
           fontSize: 14,
         }}
-
         bordered={false}
         showHeader={true}
         rowClassName={() => "doctor-table-row"}
