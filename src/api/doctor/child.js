@@ -97,7 +97,7 @@ export const getVaccineRecordDetails = async (vaccinationRecordId) => {
 // Edit vaccine record information
 export const editVaccineRecordInfo = async (vaccineData) => {
   try {
-    const response = await api.put(
+    const response = await api.post(
       `/api/doctor/editVaccineRecordInfo`,
       vaccineData
     );

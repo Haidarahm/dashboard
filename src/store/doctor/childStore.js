@@ -258,7 +258,7 @@ const useChildStore = create((set, get) => ({
     try {
       const response = await getAppointmentVaccinationRecord(appointmentId);
       set({
-        appointmentVaccinationRecord: response.data || null,
+        appointmentVaccinationRecord: response || null,
         loading: false,
       });
       return response.data;
