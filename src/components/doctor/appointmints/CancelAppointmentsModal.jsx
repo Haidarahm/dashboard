@@ -42,7 +42,7 @@ const CancelAppointmentsModal = ({
         end_leave_time: endTime.format("HH:mm"),
       });
     } catch (err) {
-      // Validation error
+
     }
   };
 

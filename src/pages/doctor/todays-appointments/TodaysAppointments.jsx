@@ -17,6 +17,7 @@ import {
   PlusOutlined,
   ShareAltOutlined,
 } from "@ant-design/icons";
+import { FaSyringe } from "react-icons/fa";
 import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import usePatientsStore from "../../../store/doctor/patientsStore";
 import PatientDetails from "./PatientDetails";
@@ -25,6 +26,7 @@ import usePrescriptionStore from "../../../store/doctor/prescriptionStore";
 import Analysis from "../../../components/doctor/todaysAppointments/Analysis";
 import Refferal from "./Refferal";
 import CheckUp from "./CheckUp";
+import Vaccines from "./Vaccines";
 
 const { Title } = Typography;
 
@@ -43,6 +45,8 @@ function TodaysAppointments() {
   const [selectedForCheckup, setSelectedForCheckup] = useState(null);
   const [referralVisible, setReferralVisible] = useState(false);
   const [selectedForReferral, setSelectedForReferral] = useState(null);
+  const [vaccinesVisible, setVaccinesVisible] = useState(false);
+  const [selectedForVaccines, setSelectedForVaccines] = useState(null);
 
   const {
     filteredAppointments,
@@ -134,6 +138,16 @@ function TodaysAppointments() {
       }`.trim(),
     });
     setCheckupVisible(true);
+  };
+
+  const handleOpenVaccines = (record) => {
+    setSelectedForVaccines({
+      patient_id: record.patient_id,
+      name: `${record.patient_first_name || ""} ${
+        record.patient_last_name || ""
+      }`.trim(),
+    });
+    setVaccinesVisible(true);
   };
 
   const handleCloseCheckup = () => {
@@ -252,6 +266,17 @@ function TodaysAppointments() {
               size="small"
             />
           </Tooltip>
+          {record.appointment_info === "vaccination" && record.is_child && (
+            <Tooltip title="View Vaccines">
+              <Button
+                icon={<FaSyringe />}
+                onClick={() => handleOpenVaccines(record)}
+                size="small"
+                type="primary"
+                className="bg-green-500 hover:bg-green-600 border-green-500"
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -324,6 +349,13 @@ function TodaysAppointments() {
         patientId={selectedForCheckup?.patient_id}
         appointmentId={selectedForCheckup?.appointment_id}
         isChild={selectedForCheckup?.is_child}
+      />
+
+      <Vaccines
+        visible={vaccinesVisible}
+        onCancel={() => setVaccinesVisible(false)}
+        childId={selectedForVaccines?.patient_id}
+        childName={selectedForVaccines?.name}
       />
     </div>
   );

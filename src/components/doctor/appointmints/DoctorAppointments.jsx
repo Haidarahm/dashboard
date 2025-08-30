@@ -13,6 +13,7 @@ import { useAppointmentsStore } from "../../../store/doctor/appointmentsStore";
 import { Select, DatePicker, message } from "antd";
 import CancelAppointmentsModal from "./CancelAppointmentsModal";
 import  useCheckupStore from "../../../store/doctor/checkupStore";
+import { toast } from "react-toastify";
 const { Option } = Select;
 
 const DoctorAppointments = () => {
@@ -224,13 +225,13 @@ const DoctorAppointments = () => {
     try {
       const success = await cancelAppointments(payload);
       if (success) {
-        message.success("Appointments cancelled successfully.");
+        toast.success("Appointments cancelled successfully.");
         setShowCancelModal(false);
         // Refresh appointments after closing modal
         const monthYear = getMonthYearString(currentDate);
         fetchAllByDate(monthYear);
       } else {
-        message.error("Failed to cancel appointments.");
+        toast.error("Failed to cancel appointments.");
       }
     } finally {
       setCancelLoading(false);

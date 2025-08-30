@@ -162,7 +162,7 @@ const useChildStore = create((set, get) => ({
   },
 
   // Get child vaccine records
-  getChildVaccineRecords: async (childId, page = 1, size = 10) => {
+  getChildVaccineRecords: async (childId, page , size = 5) => {
     set({ vaccineRecordsLoading: true, vaccineRecordsError: null });
     try {
       const response = await getChildVaccineRecords(childId, page, size);
