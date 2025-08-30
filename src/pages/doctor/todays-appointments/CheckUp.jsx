@@ -13,6 +13,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import useCheckupStore from "../../../store/doctor/checkupStore";
+import { useProfileStore } from "../../../store/doctor/profileStore";
 import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
@@ -35,6 +36,8 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
     clearTimes,
   } = useCheckupStore();
 
+  const { profile, fetchProfile } = useProfileStore();
+
   useEffect(() => {
     if (open) {
       setSelectedDateIso(null);
@@ -42,9 +45,26 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
       setAppointmentType("visit");
       clearTimes();
       showDoctorWorkDaysAction();
+      fetchProfile(); // Fetch doctor profile to get booking_type
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Check if confirm button should be enabled based on booking type
+  const canConfirmCheckup = useMemo(() => {
+    if (!selectedDateIso) return false;
+
+    if (profile?.booking_type === "auto") {
+      // For auto booking: only date is required
+      return true;
+    } else if (profile?.booking_type === "manual") {
+      // For manual booking: both date and time are required
+      return selectedDateIso && selectedTime;
+    }
+
+    // Default: require both date and time
+    return selectedDateIso && selectedTime;
+  }, [selectedDateIso, selectedTime, profile?.booking_type]);
 
   const availableDates = useMemo(() => {
     // API example: { available_dates: ["2025-08-12", ...] }
@@ -69,14 +89,20 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
   };
 
   const handleConfirmCheckup = async () => {
-    if (!patientId || !appointmentId || !selectedDateIso || !selectedTime)
+    if (!patientId || !appointmentId || !selectedDateIso) return;
+
+    // For manual booking, require time selection
+    if (profile?.booking_type === "manual" && !selectedTime) {
+      toast.error("Time selection is required for manual booking");
       return;
+    }
+
     // Send date as DD/MM/YY e.g., 20/07/25
     const dateShort = dayjs(selectedDateIso).format("DD/MM/YY");
     const res = await addCheckupAction({
       patient_id: patientId,
       date: dateShort,
-      time: selectedTime,
+      time: selectedTime || null,
       this_appointment_id: appointmentId,
       appointment_type: appointmentType,
     });
@@ -165,7 +191,17 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
         <Divider style={{ margin: "12px 0" }} />
 
         <div>
-          <Text type="secondary">Select a time</Text>
+          <Text type="secondary">
+            Select a time{" "}
+            {profile?.booking_type === "auto" ? "(not required)" : "(required)"}
+          </Text>
+          <div style={{ marginTop: 4 }}>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              {profile?.booking_type === "auto"
+                ? "Time selection is not required for auto booking. You can confirm the checkup with just a date."
+                : "Time selection is required for manual booking. You must select both date and time."}
+            </Text>
+          </div>
           <div style={{ marginTop: 8 }}>
             <Spin spinning={loadingTimes || addingCheckup}>
               <Space direction="vertical" size={12} style={{ width: "100%" }}>
@@ -185,26 +221,44 @@ function CheckUp({ open, onClose, patientId, appointmentId }) {
                   ) : (
                     <Text type="secondary">
                       {selectedDateIso
-                        ? "No times loaded yet."
+                        ? profile?.booking_type === "auto"
+                          ? "No times available for this date. You can still confirm the checkup without selecting a time."
+                          : "No times available for this date. Time selection is required for manual booking."
                         : "Pick an available date first."}
                     </Text>
                   )}
                 </Space>
-                {selectedTime && (
-                  <div>
-                    <Button
-                      type="primary"
-                      onClick={handleConfirmCheckup}
-                      loading={addingCheckup}
-                    >
-                      Confirm checkup
-                    </Button>
-                  </div>
-                )}
               </Space>
             </Spin>
           </div>
         </div>
+
+        {/* Confirm Button - Always visible when date is selected */}
+        {selectedDateIso && (
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleConfirmCheckup}
+              loading={addingCheckup}
+              disabled={!canConfirmCheckup}
+            >
+              Confirm Checkup
+            </Button>
+            {selectedTime && (
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary">Time selected: {selectedTime}</Text>
+              </div>
+            )}
+            {profile?.booking_type === "manual" && !selectedTime && (
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary" style={{ color: "#ff4d4f" }}>
+                  Time selection is required for manual booking
+                </Text>
+              </div>
+            )}
+          </div>
+        )}
       </Space>
     </Modal>
   );
