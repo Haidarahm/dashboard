@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Table, Tag, Typography, Pagination, Spin, Empty } from "antd";
+import {
+  Modal,
+  Table,
+  Tag,
+  Typography,
+  Pagination,
+  Spin,
+  Empty,
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+} from "antd";
 import {
   FaSyringe,
   FaCalendarAlt,
   FaCheckCircle,
   FaClock,
+  FaEdit,
 } from "react-icons/fa";
 import useChildStore from "../../../store/doctor/childStore";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 const Vaccines = ({ visible, onCancel, childId, childName }) => {
   const {
@@ -17,10 +35,15 @@ const Vaccines = ({ visible, onCancel, childId, childName }) => {
     vaccineRecordsLoading,
     vaccineRecordsError,
     getChildVaccineRecords,
+    editVaccineRecordInfo,
+    editVaccineLoading,
   } = useChildStore();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedVaccineRecord, setSelectedVaccineRecord] = useState(null);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (visible && childId) {
@@ -31,6 +54,48 @@ const Vaccines = ({ visible, onCancel, childId, childName }) => {
   const handlePageChange = (page, size) => {
     setCurrentPage(page);
     setPageSize(size);
+  };
+
+  const handleEdit = (record) => {
+    setSelectedVaccineRecord(record);
+    form.setFieldsValue({
+      dose_number: record.dose_number,
+      notes: record.notes || "",
+      isTaken: record.isTaken,
+      next_vaccine_date: record.next_vaccine_date
+        ? dayjs(record.next_vaccine_date)
+        : null,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditModalVisible(false);
+    setSelectedVaccineRecord(null);
+    form.resetFields();
+  };
+
+  const handleSave = async (values) => {
+    try {
+      const editData = {
+        dose_number: values.dose_number,
+        notes: values.notes,
+        isTaken: values.isTaken,
+        next_vaccine_date: values.next_vaccine_date
+          ? values.next_vaccine_date.format("YYYY-MM-DD")
+          : null,
+        record_id: selectedVaccineRecord.id,
+      };
+
+      await editVaccineRecordInfo(editData);
+      toast.success("Vaccine record updated successfully");
+      handleCancelEdit();
+      // Refresh the data
+      getChildVaccineRecords(childId, currentPage, pageSize);
+    } catch (error) {
+      toast.error("Failed to update vaccine record");
+      console.error("Error updating vaccine record:", error);
+    }
   };
 
   const getStatusColor = (isTaken) => {
@@ -141,6 +206,26 @@ const Vaccines = ({ visible, onCancel, childId, childName }) => {
       key: "notes",
       render: (_, record) => <Text>{record.notes || "No notes"}</Text>,
     },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<FaEdit />}
+          onClick={() => handleEdit(record)}
+          disabled={!record.appointment_id}
+          size="small"
+          className={
+            record.appointment_id
+              ? "bg-blue-500 hover:bg-blue-600 border-blue-500"
+              : "bg-gray-400"
+          }
+        >
+          Edit
+        </Button>
+      ),
+    },
   ];
 
   if (vaccineRecordsError) {
@@ -161,69 +246,138 @@ const Vaccines = ({ visible, onCancel, childId, childName }) => {
   }
 
   return (
-    <Modal
-      title={
-        <div className="flex items-center gap-2">
-          <FaSyringe className="text-blue-500" />
-          <span>Vaccination Records - {childName}</span>
-        </div>
-      }
-      open={visible}
-      onCancel={onCancel}
-      footer={null}
-      width={1200}
-      destroyOnClose
-    >
-      <div className="mb-4">
-        <Text type="secondary">
-          Child ID: {childId} | Total Records: {vaccineRecordsMeta.total || 0}
-        </Text>
-      </div>
-
-      {vaccineRecordsLoading ? (
-        <div className="text-center py-8">
-          <Spin size="large" />
-          <div className="mt-2">
-            <Text type="secondary">Loading vaccination records...</Text>
+    <>
+      {/* Main Vaccines Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FaSyringe className="text-blue-500" />
+            <span>Vaccination Records - {childName}</span>
           </div>
+        }
+        open={visible}
+        onCancel={onCancel}
+        footer={null}
+        width={1200}
+        destroyOnClose
+      >
+        <div className="mb-4">
+          <Text type="secondary">
+            Child ID: {childId} | Total Records: {vaccineRecordsMeta.total || 0}
+          </Text>
         </div>
-      ) : childVaccineRecords && childVaccineRecords.length > 0 ? (
-        <>
-          <Table
-            columns={columns}
-            dataSource={childVaccineRecords}
-            rowKey="id"
-            pagination={false}
-            scroll={{ x: 1000 }}
-            className="mb-4"
-            rowClassName="hover:bg-gray-50"
-          />
 
-          <div className="flex justify-center">
-            <Pagination
-              current={vaccineRecordsMeta.current_page}
-              total={vaccineRecordsMeta.total}
-              pageSize={vaccineRecordsMeta.per_page}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(total, range) =>
-                `${range[0]}-${range[1]} of ${total} vaccination records`
-              }
-              onChange={handlePageChange}
-              onShowSizeChange={handlePageChange}
-              pageSizeOptions={["10", "20", "50"]}
-              className="mt-4"
+        {vaccineRecordsLoading ? (
+          <div className="text-center py-8">
+            <Spin size="large" />
+            <div className="mt-2">
+              <Text type="secondary">Loading vaccination records...</Text>
+            </div>
+          </div>
+        ) : childVaccineRecords && childVaccineRecords.length > 0 ? (
+          <>
+            <Table
+              columns={columns}
+              dataSource={childVaccineRecords}
+              rowKey="id"
+              pagination={false}
+              scroll={{ x: 1100 }}
+              className="mb-4"
+              rowClassName="hover:bg-gray-50"
             />
+
+            <div className="flex justify-center">
+              <Pagination
+                current={vaccineRecordsMeta.current_page}
+                total={vaccineRecordsMeta.total}
+                pageSize={vaccineRecordsMeta.per_page}
+                showSizeChanger
+                showQuickJumper
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} vaccination records`
+                }
+                onChange={handlePageChange}
+                onShowSizeChange={handlePageChange}
+                pageSizeOptions={["10", "20", "50"]}
+                className="mt-4"
+              />
+            </div>
+          </>
+        ) : (
+          <Empty
+            description="No vaccination records found for this child"
+            className="py-8"
+            image={<FaSyringe className="text-6xl text-gray-300" />}
+          />
+        )}
+      </Modal>
+
+      {/* Edit Vaccine Record Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FaEdit className="text-blue-500" />
+            <span>Edit Vaccine Record</span>
           </div>
-        </>
-      ) : (
-        <Empty
-          description="No vaccination records found for this child"
-          className="py-8"
-          image={<FaSyringe className="text-6xl text-gray-300" />}
-        />
-      )}
-    </Modal>
+        }
+        open={editModalVisible}
+        onCancel={handleCancelEdit}
+        footer={null}
+        width={600}
+        destroyOnClose
+      >
+        {selectedVaccineRecord && (
+          <Form form={form} layout="vertical" onFinish={handleSave}>
+            <div className="space-y-4">
+              <Form.Item
+                label="Dose Number"
+                name="dose_number"
+                rules={[
+                  { required: true, message: "Please enter dose number" },
+                ]}
+              >
+                <InputNumber min={1} className="w-full" />
+              </Form.Item>
+
+              <Form.Item
+                label="Status"
+                name="isTaken"
+                rules={[{ required: true, message: "Please select status" }]}
+              >
+                <Select>
+                  <Select.Option value={0}>Pending</Select.Option>
+                  <Select.Option value={1}>Taken</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Next Vaccine Date" name="next_vaccine_date">
+                <DatePicker className="w-full" format="YYYY-MM-DD" />
+              </Form.Item>
+
+              <Form.Item label="Notes" name="notes">
+                <TextArea
+                  rows={3}
+                  placeholder="Enter any additional notes..."
+                />
+              </Form.Item>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button onClick={handleCancelEdit}>Cancel</Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={editVaccineLoading}
+                  className="bg-green-500 hover:bg-green-600 border-green-500"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Modal>
+    </>
   );
 };
 
