@@ -27,7 +27,6 @@ import {
   Typography,
   Popover,
   Switch,
- 
 } from "antd";
 import {
   UserOutlined,
@@ -1172,7 +1171,10 @@ const SecretaryAppointments = () => {
                     {appointment?.payment_status === "pending" && (
                       <Popover
                         content={
-                          <div className="p-4 min-w-[250px] z-50">
+                          <div
+                            className="p-4 min-w-[250px] z-50"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <div className="mb-4">
                               <h4 className="font-medium text-gray-900 mb-2">
                                 Add Bill
@@ -1196,6 +1198,7 @@ const SecretaryAppointments = () => {
                                   )
                                 }
                                 size="small"
+                                onClick={(e) => e.stopPropagation()}
                               />
                             </div>
                             <div className="flex justify-end">
@@ -1203,7 +1206,10 @@ const SecretaryAppointments = () => {
                                 type="primary"
                                 size="small"
                                 loading={submittingBill[appointment.id]}
-                                onClick={() => handleSubmitBill(appointment.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSubmitBill(appointment.id);
+                                }}
                                 className="bg-blue-600 hover:bg-blue-700"
                               >
                                 Submit Bill
