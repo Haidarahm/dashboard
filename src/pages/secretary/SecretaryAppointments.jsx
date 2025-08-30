@@ -25,6 +25,9 @@ import {
   Row,
   Col,
   Typography,
+  Popover,
+  Switch,
+ 
 } from "antd";
 import {
   UserOutlined,
@@ -37,6 +40,8 @@ import {
 } from "@ant-design/icons";
 import { fetchDoctors } from "../../api/secretary/doctors";
 import { fetchClinics } from "../../api/secretary/clinics";
+import { addBill } from "../../api/secretary/addBill";
+import { toast } from "react-toastify";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -84,11 +89,50 @@ const SecretaryAppointments = () => {
   const [doctorsLoading, setDoctorsLoading] = useState(false);
   const [clinicsLoading, setClinicsLoading] = useState(false);
 
+  // Add Bill functionality
+  const [addBillPopoverVisible, setAddBillPopoverVisible] = useState({});
+  const [discountPoints, setDiscountPoints] = useState({});
+  const [submittingBill, setSubmittingBill] = useState({});
+
   // Helper to format date as MM-YYYY
   const getMonthYearString = (date) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${month}-${year}`;
+  };
+
+  // Handle add bill functionality
+  const handleAddBillClick = (appointmentId, e) => {
+    e.stopPropagation();
+    setAddBillPopoverVisible((prev) => ({ ...prev, [appointmentId]: true }));
+    // Initialize discount points to false for this appointment
+    setDiscountPoints((prev) => ({ ...prev, [appointmentId]: false }));
+  };
+
+  const handleDiscountPointsChange = (appointmentId, checked) => {
+    setDiscountPoints((prev) => ({ ...prev, [appointmentId]: checked }));
+  };
+
+  const handleSubmitBill = async (appointmentId) => {
+    setSubmittingBill((prev) => ({ ...prev, [appointmentId]: true }));
+    try {
+      await addBill({
+        appointment_id: appointmentId,
+        discount_points: discountPoints[appointmentId] || false,
+      });
+
+      toast.success("Bill added successfully!");
+      setAddBillPopoverVisible((prev) => ({ ...prev, [appointmentId]: false }));
+
+      // Refresh appointments to update payment status
+      const currentMonthYear = getMonthYearString(currentDate);
+      fetchAllByDate(currentMonthYear);
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error("Error adding bill:", error);
+    } finally {
+      setSubmittingBill((prev) => ({ ...prev, [appointmentId]: false }));
+    }
   };
 
   // Fetch doctors and clinics data on component mount
@@ -1122,10 +1166,75 @@ const SecretaryAppointments = () => {
                       </p>
                     </div>
                   )}
-                  {/* Cancel Button */}
-                  {(appointment.status === "pending" ||
-                    appointment.status === "today") && (
-                    <div className="mt-4 flex justify-end">
+                  {/* Action Buttons */}
+                  <div className="mt-4 flex justify-end gap-2">
+                    {/* Add Bill Button - Show only for pending payment status */}
+                    {appointment?.payment_status === "pending" && (
+                      <Popover
+                        content={
+                          <div className="p-4 min-w-[250px] z-50">
+                            <div className="mb-4">
+                              <h4 className="font-medium text-gray-900 mb-2">
+                                Add Bill
+                              </h4>
+                              <p className="text-sm text-gray-600 mb-3">
+                                Configure bill settings for this appointment
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between mb-4">
+                              <span className="text-sm text-gray-700">
+                                Apply Discount Points
+                              </span>
+                              <Switch
+                                checked={
+                                  discountPoints[appointment.id] || false
+                                }
+                                onChange={(checked) =>
+                                  handleDiscountPointsChange(
+                                    appointment.id,
+                                    checked
+                                  )
+                                }
+                                size="small"
+                              />
+                            </div>
+                            <div className="flex justify-end">
+                              <Button
+                                type="primary"
+                                size="small"
+                                loading={submittingBill[appointment.id]}
+                                onClick={() => handleSubmitBill(appointment.id)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                Submit Bill
+                              </Button>
+                            </div>
+                          </div>
+                        }
+                        title={null}
+                        trigger="click"
+                        open={addBillPopoverVisible[appointment.id]}
+                        onOpenChange={(visible) =>
+                          setAddBillPopoverVisible((prev) => ({
+                            ...prev,
+                            [appointment.id]: visible,
+                          }))
+                        }
+                        placement="bottomRight"
+                      >
+                        <button
+                          onClick={(e) => handleAddBillClick(appointment.id, e)}
+                          className="px-3 py-2 text-sm text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-md transition-colors font-medium flex items-center gap-1"
+                        >
+                          <DollarOutlined className="w-3 h-3" />
+                          Add Bill
+                        </button>
+                      </Popover>
+                    )}
+
+                    {/* Cancel Button */}
+                    {(appointment.status === "pending" ||
+                      appointment.status === "today") && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1135,8 +1244,8 @@ const SecretaryAppointments = () => {
                       >
                         Cancel Appointment
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
