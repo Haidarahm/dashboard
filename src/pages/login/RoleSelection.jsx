@@ -49,7 +49,15 @@ const RoleSelection = ({ onRoleSelect }) => {
       <div className="max-w-5xl w-full">
         {/* Header */}
         <div className="text-center mb-16" data-aos="fade-down">
-    
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <img
+              src="/logo.webp"
+              alt="Clinic Management System Logo"
+              className="h-20 w-auto object-contain"
+            />
+          </div>
+
           <h1 className="text-5xl h-[80px] font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Clinic Management System
           </h1>
