@@ -18,12 +18,14 @@ import {
   FaBaby,
   FaTint,
   FaFileAlt,
+  FaSyringe,
 } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 
 import useChildStore from "../../../store/doctor/childStore";
 import ChildRecord from "./ChildRecord";
 import AddChildRecord from "./AddChildRecord";
+import Vaccines from "./Vaccines";
 
 const { Text, Title } = Typography;
 
@@ -54,6 +56,8 @@ const ChildrenManagement = ({
   const [addRecordModalVisible, setAddRecordModalVisible] = useState(false);
   const [editRecordModalVisible, setEditRecordModalVisible] = useState(false);
   const [editButtonLoading, setEditButtonLoading] = useState({});
+  const [vaccinesVisible, setVaccinesVisible] = useState(false);
+  const [selectedForVaccines, setSelectedForVaccines] = useState(null);
 
   useEffect(() => {
     fetchChildren(currentPage, pageSize);
@@ -93,6 +97,14 @@ const ChildrenManagement = ({
 
   const handleCloseAddRecordModal = () => {
     setAddRecordModalVisible(false);
+  };
+
+  const handleOpenVaccines = (child) => {
+    setSelectedForVaccines({
+      id: child.id,
+      name: `${child.first_name || ""} ${child.last_name || ""}`.trim(),
+    });
+    setVaccinesVisible(true);
   };
 
   const handleOpenEditRecordModal = async (childId = null) => {
@@ -331,6 +343,15 @@ const ChildrenManagement = ({
           >
             {record.child_record !== null ? "Edit Record" : "No Record"}
           </Button>
+          <Button
+            type="primary"
+            size="small"
+            icon={<FaSyringe />}
+            onClick={() => handleOpenVaccines(record)}
+            className="bg-green-500 hover:bg-green-600 border-green-500"
+          >
+            View Vaccines
+          </Button>
           {onChildSelect && (
             <Button
               type="primary"
@@ -467,6 +488,14 @@ const ChildrenManagement = ({
         isEdit={true}
         existingRecord={childRecord}
         key={`edit-${childRecord?.id || "new"}`}
+      />
+
+      {/* Vaccines Modal */}
+      <Vaccines
+        visible={vaccinesVisible}
+        onCancel={() => setVaccinesVisible(false)}
+        childId={selectedForVaccines?.id}
+        childName={selectedForVaccines?.name}
       />
     </div>
   );
