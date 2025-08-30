@@ -42,8 +42,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       {/* Header Section */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-            <FaClinicMedical className="text-white text-sm" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm">
+            <img src="/logo.webp" alt="logo" className="w-full h-full object-contain" />
           </div>
           {!collapsed && (
             <div>
