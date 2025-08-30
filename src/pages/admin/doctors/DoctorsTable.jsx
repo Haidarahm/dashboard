@@ -244,7 +244,7 @@ function DoctorsTable({ onShowReviews }) {
       render: (_, record) => (
         <Avatar
           size={40}
-          src={record.photo}
+          src={`http://127.0.0.1:8000${record.photo}`}
           icon={<UserOutlined />}
           style={{ backgroundColor: record.photo ? "transparent" : "#1890ff" }}
         />

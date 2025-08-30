@@ -89,7 +89,7 @@ const DoctorDetails = ({ doctor }) => {
         <Col xs={24} sm={8} style={{ textAlign: "center", padding: 32 }}>
           <Avatar
             size={100}
-            src={doctor.photo}
+            src={`http://127.0.0.1:8000${doctor.photo}`}
             icon={<User size={40} />}
             style={{
               backgroundColor: doctor.photo ? "#fff" : "#3b82f6",
